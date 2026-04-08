@@ -1,47 +1,584 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>EPIC Sales Weekly</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EPIC Sales Weekly Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f3;
+      color: #1a1a1a;
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .header {
+      background: #1B2E5E;
+      color: white;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .header h1 {
+      margin: 0 0 6px 0;
+      font-size: 24px;
+    }
+    .sub {
+      color: #c7d7ee;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .focus {
+      text-align: right;
+      min-width: 180px;
+    }
+    .focus small {
+      color: #c7d7ee;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .focus strong {
+      font-size: 20px;
+    }
+    .topbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn {
+      background: white;
+      border: 1px solid #ddd;
+    }
+    .btn-primary {
+      background: #2A4A8A;
+      color: white;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: white;
+      border: 1px solid #ddd;
+      color: #333;
+    }
+    .tab-btn.active {
+      background: #2A4A8A;
+      color: white;
+      border-color: #2A4A8A;
+    }
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .metric {
+      text-align: center;
+      background: #ececea;
+    }
+    .metric .label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    .metric .value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .section-title {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .alert {
+      border-left: 4px solid #2A4A8A;
+      background: #eef4ff;
+    }
+    textarea, input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d8d8d8;
+      border-radius: 10px;
+      font: inherit;
+      background: white;
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .list-item {
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    th, td {
+      border-bottom: 1px solid #e6e6e6;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    th {
+      background: #f1f1ef;
+      color: #555;
+      font-weight: bold;
+    }
+    .row-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .small {
+      font-size: 12px;
+      color: #666;
+    }
+    .done-row {
+      background: #f7faf5;
+    }
+    .status-note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #2f5f1b;
+    }
+    @media (max-width: 900px) {
+      .grid-3, .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .focus {
+        text-align: left;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1 id="titleText">EPIC Sales Weekly Feedback</h1>
+        <div class="sub" id="subText">
+          Uma House by Yurbban South Beach · Sales Manager: Aymin · For: General Manager
+        </div>
+        <div class="sub" id="sourceText">
+          Consultant Review · Source: TravelClick Agency 360 · Forward-looking demand (next 90 days)
+        </div>
+      </div>
+      <div class="focus">
+        <small>Action focus</small>
+        <strong id="focusText">Next 90 days</strong>
+      </div>
+    </div>
 
-<h2>EPIC Sales Weekly – Shared App</h2>
+    <div class="topbar">
+      <button class="btn-primary" onclick="saveData()">Save dashboard</button>
+      <button class="btn" onclick="loadData()">Load latest</button>
+      <button class="btn" onclick="addChecklistRow()">Add checklist item</button>
+    </div>
 
-<textarea id="data" style="width:100%;height:200px;"></textarea>
-<br><br>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('exec', this)">Executive Summary</button>
+      <button class="tab-btn" onclick="showTab('market', this)">Market Position</button>
+      <button class="tab-btn" onclick="showTab('agency', this)">Agency Opportunities</button>
+      <button class="tab-btn" onclick="showTab('activity', this)">Sales Activity</button>
+      <button class="tab-btn" onclick="showTab('checklist', this)">Weekly Checklist</button>
+      <button class="tab-btn" onclick="showTab('updates', this)">Team Updates</button>
+    </div>
 
-<button onclick="saveData()">Save</button>
-<button onclick="loadData()">Load</button>
+    <div id="exec" class="panel active">
+      <div class="grid-3">
+        <div class="card metric">
+          <div class="label">Total market room nights</div>
+          <div class="value" contenteditable="true" id="metric1">11,845</div>
+        </div>
+        <div class="card metric">
+          <div class="label">Uma House GDS bookings</div>
+          <div class="value" contenteditable="true" id="metric2">0</div>
+        </div>
+        <div class="card metric">
+          <div class="label">Compset GDS bookings</div>
+          <div class="value" contenteditable="true" id="metric3">195</div>
+        </div>
+      </div>
 
-<p id="status"></p>
+      <div class="card alert">
+        <div class="section-title">For the General Manager — one-paragraph overview</div>
+        <textarea id="execSummary">The forward-looking GDS data shows the market is healthy and growing. Uma House's competitive set is actively capturing major corporate demand, while the hotel is not yet showing GDS production. The opportunity is clear: ensuring GDS visibility while continuing targeted agency and corporate outreach will position the hotel to begin capturing this demand over the next 90 days.</textarea>
+      </div>
 
-<script>
-const SUPABASE_URL = "https://utcgwkgtjlyfjgwoczw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_XXXX";
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-title">What is working well</div>
+          <textarea id="workingWell">Aymin is making calls consistently across NYC, Miami, and Nashville
+Good first contacts at McKinsey and Royal Caribbean
+House of Travel site visit confirmed
+Written call script in place and being used</textarea>
+        </div>
+        <div class="card">
+          <div class="section-title">Immediate commercial focus</div>
+          <textarea id="commercialFocus">Amazon remains highest priority based on demand
+Fedrooms access path should be corrected to CWTSATO
+Agency conversations should lead with a defined rate position
+Early calls should confirm decision-maker and booking flow</textarea>
+        </div>
+      </div>
 
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      <div class="card">
+        <div class="section-title">Leadership alignment</div>
+        <textarea id="leadership">GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport
+Rates: Approve corporate rate range for agency outreach
+Fedrooms: Decide go / no-go and align with CWTSATO path
+Positioning: Align on what is being used in calls
+Constraints: Confirm no availability or rate restrictions blocking bookings</textarea>
+      </div>
+    </div>
 
-async function saveData() {
-  const text = document.getElementById("data").value;
-  await client.from("reports").insert([{ data: { text } }]);
-  document.getElementById("status").innerText = "Saved";
-}
+    <div id="market" class="panel">
+      <div class="card">
+        <div class="section-title">Market Position</div>
+        <textarea id="marketSummary">The majority of this demand is corporate travel booked through agencies and travel management companies via GDS, not direct hotel relationships. The compset is capturing room nights from these accounts while Uma House is not yet participating, indicating this is an access issue rather than a demand issue.</textarea>
+      </div>
+      <div class="card">
+        <table id="marketTable">
+          <thead>
+            <tr>
+              <th>Corporation</th>
+              <th>Market RNs</th>
+              <th>Compset RNs</th>
+              <th>Hotel RNs</th>
+              <th>Compset Share</th>
+              <th>YOY</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td contenteditable="true">Fedrooms (Primary)</td><td contenteditable="true">2,098</td><td contenteditable="true">83</td><td contenteditable="true">0</td><td contenteditable="true">4%</td><td contenteditable="true">+949</td></tr>
+            <tr><td contenteditable="true">Amazon (Primary)</td><td contenteditable="true">855</td><td contenteditable="true">52</td><td contenteditable="true">0</td><td contenteditable="true">6.1%</td><td contenteditable="true">+417</td></tr>
+            <tr><td contenteditable="true">Royal Caribbean (Secondary)</td><td contenteditable="true">801</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+106</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-async function loadData() {
-  const { data } = await client
-    .from("reports")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1);
+    <div id="agency" class="panel">
+      <div class="card">
+        <div class="section-title">Agency Opportunities</div>
+        <table id="agencyTable">
+          <thead>
+            <tr>
+              <th>Agency</th>
+              <th>Primary demand drivers</th>
+              <th>Contact path</th>
+              <th>Opportunity gap</th>
+              <th>Revenue at 10%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td contenteditable="true">BCD 1S US</td><td contenteditable="true">Amazon, Fedrooms</td><td contenteditable="true">Atlanta office → sourcing desk</td><td contenteditable="true">−3,587</td><td contenteditable="true">~$65K</td></tr>
+            <tr><td contenteditable="true">NAVAN</td><td contenteditable="true">Tech corporate</td><td contenteditable="true">navanforhotels.com</td><td contenteditable="true">−3,511</td><td contenteditable="true">~$80K</td></tr>
+            <tr><td contenteditable="true">CONNEXIONS</td><td contenteditable="true">Leisure corporate mix</td><td contenteditable="true">Preferred hotel program</td><td contenteditable="true">−6,094</td><td contenteditable="true">~$126K</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-  if (data && data.length > 0) {
-    document.getElementById("data").value = data[0].data.text;
-    document.getElementById("status").innerText = "Loaded";
-  }
-}
-</script>
+    <div id="activity" class="panel">
+      <div class="card">
+        <div class="section-title">Key contacts and outreach path</div>
+        <table id="contactsTable">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Agency / Channel</th>
+              <th>Contact</th>
+              <th>Phone</th>
+              <th>Website</th>
+              <th>Recommended approach</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td contenteditable="true">Amazon</td>
+              <td contenteditable="true">BCD Travel (Atlanta)</td>
+              <td contenteditable="true">Atlanta sourcing desk</td>
+              <td contenteditable="true">(678) 579-8741</td>
+              <td contenteditable="true">www.bcdtravel.com</td>
+              <td contenteditable="true">Ask for Amazon sourcing or travel manager. Position corporate rate before call.</td>
+            </tr>
+            <tr>
+              <td contenteditable="true">Fedrooms</td>
+              <td contenteditable="true">CWTSATO Travel</td>
+              <td contenteditable="true">kfarwell@cwtsato.com</td>
+              <td contenteditable="true">866-576-4635</td>
+              <td contenteditable="true">www.cwtsatotravel.com</td>
+              <td contenteditable="true">Confirm GSA eligibility first, then position property for government travel.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
+    <div id="checklist" class="panel">
+      <div class="card">
+        <div class="section-title">Pending items (this week)</div>
+        <div class="small">Aymin can update status, notes, and add activities here.</div>
+        <table id="checklistTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Action</th>
+              <th>Owner</th>
+              <th>Status</th>
+              <th>Done</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="checklistBody">
+            <tr>
+              <td>1</td>
+              <td contenteditable="true">Verify live availability in GDS through spot-check search</td>
+              <td contenteditable="true">Aymin</td>
+              <td>
+                <select>
+                  <option>Pending</option>
+                  <option>In Progress</option>
+                  <option>Done</option>
+                </select>
+              </td>
+              <td><input type="checkbox" /></td>
+              <td contenteditable="true"></td>
+              <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td contenteditable="true">Validate Fedrooms eligibility requirements before outreach</td>
+              <td contenteditable="true">Aymin</td>
+              <td>
+                <select>
+                  <option>Pending</option>
+                  <option>In Progress</option>
+                  <option>Done</option>
+                </select>
+              </td>
+              <td><input type="checkbox" /></td>
+              <td contenteditable="true"></td>
+              <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="updates" class="panel">
+      <div class="card">
+        <div class="section-title">Team Updates</div>
+        <textarea id="teamUpdates">Use this section for comments from Aymin, advisor notes, and weekly follow-up updates.</textarea>
+      </div>
+    </div>
+
+    <div id="status" class="status-note"></div>
+  </div>
+
+  <script>
+   const SUPABASE_URL = "https://utcgwkgtjlyfjgwoczw.supabase.co";
+   const SUPABASE_KEY = "sb_publishable_XXXX";
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function showTab(id, btn) {
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      btn.classList.add("active");
+    }
+
+    function addChecklistRow() {
+      const body = document.getElementById("checklistBody");
+      const rowCount = body.querySelectorAll("tr").length + 1;
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${rowCount}</td>
+        <td contenteditable="true">New activity</td>
+        <td contenteditable="true">Aymin</td>
+        <td>
+          <select>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Done</option>
+          </select>
+        </td>
+        <td><input type="checkbox" /></td>
+        <td contenteditable="true"></td>
+        <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
+      `;
+      body.appendChild(row);
+    }
+
+    function deleteRow(button) {
+      const row = button.closest("tr");
+      row.remove();
+      renumberRows();
+    }
+
+    function renumberRows() {
+      document.querySelectorAll("#checklistBody tr").forEach((row, index) => {
+        row.cells[0].innerText = index + 1;
+      });
+    }
+
+    function collectTable(tableId) {
+      const rows = [];
+      document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
+        const row = [];
+        tr.querySelectorAll("td").forEach(td => {
+          const select = td.querySelector("select");
+          const checkbox = td.querySelector("input[type='checkbox']");
+          if (select) row.push(select.value);
+          else if (checkbox) row.push(checkbox.checked);
+          else row.push(td.innerText);
+        });
+        rows.push(row);
+      });
+      return rows;
+    }
+
+    function restoreTable(tableId, rows, checklist = false) {
+      const body = document.querySelector(`#${tableId} tbody`);
+      body.innerHTML = "";
+      rows.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        if (checklist) {
+          tr.innerHTML = `
+            <td>${r[0] || i + 1}</td>
+            <td contenteditable="true">${r[1] || ""}</td>
+            <td contenteditable="true">${r[2] || ""}</td>
+            <td>
+              <select>
+                <option ${r[3] === "Pending" ? "selected" : ""}>Pending</option>
+                <option ${r[3] === "In Progress" ? "selected" : ""}>In Progress</option>
+                <option ${r[3] === "Done" ? "selected" : ""}>Done</option>
+              </select>
+            </td>
+            <td><input type="checkbox" ${r[4] ? "checked" : ""} /></td>
+            <td contenteditable="true">${r[5] || ""}</td>
+            <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
+          `;
+        } else {
+          tr.innerHTML = r.map(cell => `<td contenteditable="true">${cell || ""}</td>`).join("");
+        }
+        body.appendChild(tr);
+      });
+    }
+
+    function getDashboardData() {
+      return {
+        titleText: document.getElementById("titleText").innerText,
+        subText: document.getElementById("subText").innerText,
+        sourceText: document.getElementById("sourceText").innerText,
+        focusText: document.getElementById("focusText").innerText,
+        metric1: document.getElementById("metric1").innerText,
+        metric2: document.getElementById("metric2").innerText,
+        metric3: document.getElementById("metric3").innerText,
+        execSummary: document.getElementById("execSummary").value,
+        workingWell: document.getElementById("workingWell").value,
+        commercialFocus: document.getElementById("commercialFocus").value,
+        leadership: document.getElementById("leadership").value,
+        marketSummary: document.getElementById("marketSummary").value,
+        teamUpdates: document.getElementById("teamUpdates").value,
+        marketRows: collectTable("marketTable"),
+        agencyRows: collectTable("agencyTable"),
+        contactsRows: collectTable("contactsTable"),
+        checklistRows: collectTable("checklistTable")
+      };
+    }
+
+    function setDashboardData(data) {
+      document.getElementById("titleText").innerText = data.titleText || "";
+      document.getElementById("subText").innerText = data.subText || "";
+      document.getElementById("sourceText").innerText = data.sourceText || "";
+      document.getElementById("focusText").innerText = data.focusText || "";
+      document.getElementById("metric1").innerText = data.metric1 || "";
+      document.getElementById("metric2").innerText = data.metric2 || "";
+      document.getElementById("metric3").innerText = data.metric3 || "";
+      document.getElementById("execSummary").value = data.execSummary || "";
+      document.getElementById("workingWell").value = data.workingWell || "";
+      document.getElementById("commercialFocus").value = data.commercialFocus || "";
+      document.getElementById("leadership").value = data.leadership || "";
+      document.getElementById("marketSummary").value = data.marketSummary || "";
+      document.getElementById("teamUpdates").value = data.teamUpdates || "";
+
+      if (data.marketRows) restoreTable("marketTable", data.marketRows, false);
+      if (data.agencyRows) restoreTable("agencyTable", data.agencyRows, false);
+      if (data.contactsRows) restoreTable("contactsTable", data.contactsRows, false);
+      if (data.checklistRows) restoreTable("checklistTable", data.checklistRows, true);
+    }
+
+    async function saveData() {
+      const payload = getDashboardData();
+      const { error } = await client.from("reports").insert([{ data: payload }]);
+      document.getElementById("status").innerText = error ? "Save failed" : "Dashboard saved successfully";
+    }
+
+    async function loadData() {
+      const { data, error } = await client
+        .from("reports")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        document.getElementById("status").innerText = "Load failed";
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setDashboardData(data[0].data);
+        document.getElementById("status").innerText = "Latest dashboard loaded";
+      } else {
+        document.getElementById("status").innerText = "No saved data yet";
+      }
+    }
+  </script>
 </body>
 </html>
