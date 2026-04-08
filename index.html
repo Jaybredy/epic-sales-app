@@ -1,380 +1,784 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EPIC Sales Weekly Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f3; color: #1a1a1a; }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
-    .header { background: #1B2E5E; color: white; border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-    .header h1 { margin: 0 0 6px 0; font-size: 24px; }
-    .sub { color: #c7d7ee; font-size: 14px; line-height: 1.5; }
-    .focus { text-align: right; min-width: 180px; }
-    .focus small { color: #c7d7ee; display: block; margin-bottom: 4px; }
-    .focus strong { font-size: 20px; }
-    .topbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-    button { border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; font-size: 14px; }
-    .btn { background: white; border: 1px solid #ddd; }
-    .btn-primary { background: #2A4A8A; color: white; }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    .tab-btn { background: white; border: 1px solid #ddd; color: #333; }
-    .tab-btn.active { background: #2A4A8A; color: white; border-color: #2A4A8A; }
-    .panel { display: none; }
-    .panel.active { display: block; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
-    .card { background: white; border: 1px solid #ddd; border-radius: 16px; padding: 16px; margin-bottom: 14px; }
-    .metric { text-align: center; background: #ececea; }
-    .metric .label { font-size: 12px; color: #666; margin-bottom: 6px; }
-    .metric .value { font-size: 28px; font-weight: bold; }
-    .section-title { margin: 0 0 10px 0; font-size: 16px; font-weight: bold; }
-    .alert { border-left: 4px solid #2A4A8A; background: #eef4ff; }
-    textarea, input, select {
-      width: 100%; padding: 10px; border: 1px solid #d8d8d8; border-radius: 10px; font: inherit; background: white;
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; }
-    th, td { border-bottom: 1px solid #e6e6e6; padding: 10px; text-align: left; vertical-align: top; font-size: 14px; }
-    th { background: #f1f1ef; color: #555; font-weight: bold; }
-    .small { font-size: 12px; color: #666; }
-    .status-note { margin-top: 10px; font-size: 13px; color: #2f5f1b; }
-    .hover-item { border: 1px solid transparent; border-radius: 12px; padding: 8px; margin-bottom: 8px; }
-    .hover-item:hover { border-color: #d8d8d8; background: #fafafa; }
-    @media (max-width: 900px) {
-      .grid-3, .grid-2 { grid-template-columns: 1fr; }
-      .focus { text-align: left; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EPIC Sales Advisory Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --navy: #1B2E5E;
+    --navy-mid: #2A4A8A;
+    --navy-light: #EEF3FB;
+    --gold: #C9A84C;
+    --gold-light: #FDF6E7;
+    --green: #2D6A3F;
+    --green-light: #EAF4ED;
+    --red: #B03A2E;
+    --red-light: #FDECEA;
+    --amber: #B7660A;
+    --amber-light: #FEF3E2;
+    --text: #1a1a1a;
+    --text-mid: #444;
+    --text-muted: #888;
+    --border: #E2E2DE;
+    --bg: #F6F5F1;
+    --white: #FFFFFF;
+    --card-radius: 14px;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    background: var(--navy);
+    color: white;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  .topbar-brand { font-family: var(--font-display); font-size: 20px; letter-spacing: 0.02em; }
+  .topbar-brand span { color: var(--gold); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .view-toggle { display: flex; background: rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden; }
+  .view-btn { padding: 6px 14px; font-size: 12px; font-family: var(--font-body); font-weight: 500; color: rgba(255,255,255,0.6); background: none; border: none; cursor: pointer; transition: all 0.2s; }
+  .view-btn.active { background: var(--gold); color: var(--navy); }
+  .week-select { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 5px 10px; font-family: var(--font-body); font-size: 12px; cursor: pointer; }
+  .week-select option { background: var(--navy); }
+  .save-btn { background: var(--gold); color: var(--navy); border: none; border-radius: 8px; padding: 7px 16px; font-weight: 600; font-size: 12px; cursor: pointer; font-family: var(--font-body); transition: opacity 0.2s; }
+  .save-btn:hover { opacity: 0.85; }
+  .load-btn { background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 7px 14px; font-size: 12px; cursor: pointer; font-family: var(--font-body); }
+
+  /* ─── HERO HEADER ─── */
+  .hero {
+    background: var(--navy);
+    background-image: linear-gradient(135deg, #1B2E5E 0%, #243D7A 60%, #1B3070 100%);
+    color: white;
+    padding: 32px 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px; }
+  .hero-left h1 { font-family: var(--font-display); font-size: 28px; font-weight: 400; margin-bottom: 6px; }
+  .hero-meta { color: rgba(255,255,255,0.65); font-size: 13px; line-height: 1.7; }
+  .hero-meta strong { color: rgba(255,255,255,0.9); }
+  .hero-focus { text-align: right; }
+  .hero-focus .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+  .hero-focus .value { font-family: var(--font-display); font-size: 22px; color: var(--gold); }
+  .hero-badge { display: inline-block; background: rgba(201,168,76,0.2); border: 1px solid rgba(201,168,76,0.4); color: var(--gold); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
+
+  /* ─── STATUS BAR ─── */
+  .status-bar { background: white; border-bottom: 1px solid var(--border); padding: 8px 32px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; display: inline-block; }
+  .status-dot.saved { background: var(--green); }
+  .status-dot.saving { background: var(--amber); animation: pulse 1s infinite; }
+  .status-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ─── LAYOUT ─── */
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 24px 60px; }
+
+  /* ─── METRICS ROW ─── */
+  .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric-card { background: white; border: 1px solid var(--border); border-radius: var(--card-radius); padding: 18px; text-align: center; }
+  .metric-card .m-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 6px; }
+  .metric-card .m-value { font-family: var(--font-display); font-size: 32px; color: var(--navy); }
+  .metric-card .m-value.zero { color: var(--red); }
+  .metric-card .m-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .metric-card.highlight { background: var(--navy); border-color: var(--navy); }
+  .metric-card.highlight .m-label { color: rgba(255,255,255,0.5); }
+  .metric-card.highlight .m-value { color: var(--gold); }
+  .metric-card.highlight .m-sub { color: rgba(255,255,255,0.4); }
+
+  /* ─── TABS ─── */
+  .tabs-wrap { background: white; border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; margin-bottom: 20px; }
+  .tab-list { display: flex; overflow-x: auto; border-bottom: 1px solid var(--border); scrollbar-width: none; }
+  .tab-list::-webkit-scrollbar { display: none; }
+  .tab-btn { flex-shrink: 0; padding: 13px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--text-muted); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.18s; white-space: nowrap; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--navy); background: var(--navy-light); }
+  .tab-btn.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 600; }
+  .tab-content { padding: 24px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ─── CARDS ─── */
+  .card { background: white; border: 1px solid var(--border); border-radius: var(--card-radius); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-family: var(--font-display); font-size: 17px; font-weight: 400; color: var(--navy); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .card.alert-card { border-left: 4px solid var(--navy-mid); background: var(--navy-light); }
+  .card.green-card { border-left: 4px solid var(--green); background: var(--green-light); }
+  .card.amber-card { border-left: 4px solid var(--amber); background: var(--amber-light); }
+  .card.red-card { border-left: 4px solid var(--red); background: var(--red-light); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+
+  /* ─── INPUTS ─── */
+  textarea, input[type=text], input[type=date], select {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-family: var(--font-body); font-size: 13px; color: var(--text); background: var(--white);
+    transition: border-color 0.15s;
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  textarea:focus, input:focus, select:focus { outline: none; border-color: var(--navy-mid); box-shadow: 0 0 0 3px rgba(42,74,138,0.08); }
+  .readonly-mode textarea, .readonly-mode input, .readonly-mode select, .readonly-mode [contenteditable] {
+    pointer-events: none; background: transparent; border-color: transparent; resize: none;
+  }
+  .readonly-mode .edit-only { display: none !important; }
+
+  /* ─── TABLES ─── */
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
+  th { background: #F4F3EF; color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 12px; text-align: left; }
+  td { padding: 10px 12px; border-top: 1px solid var(--border); vertical-align: top; }
+  td[contenteditable="true"]:hover { background: var(--navy-light); border-radius: 4px; cursor: text; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ─── BADGES ─── */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-navy { background: var(--navy-light); color: var(--navy-mid); }
+
+  /* ─── CHECKLIST ─── */
+  .checklist-row td input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--navy); }
+  .btn-del { background: var(--red-light); color: var(--red); border: none; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+  .btn-add { background: var(--navy-light); color: var(--navy-mid); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font-body); margin-top: 10px; }
+  .btn-add:hover { background: var(--navy-mid); color: white; }
+
+  /* ─── COMMENT THREAD ─── */
+  .comment-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .comment-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .comment-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .comment-author { font-weight: 600; font-size: 13px; color: var(--navy); }
+  .comment-role { font-size: 11px; color: var(--text-muted); }
+  .comment-date { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+  .comment-body { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+  .comment-form { background: var(--navy-light); border-radius: 10px; padding: 16px; }
+  .comment-form .form-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .comment-form input[type=text] { flex: 1; min-width: 120px; }
+  .comment-form select { width: auto; }
+  .comment-submit { background: var(--navy); color: white; border: none; border-radius: 8px; padding: 9px 20px; font-family: var(--font-body); font-weight: 600; font-size: 13px; cursor: pointer; }
+
+  /* ─── LIST ITEMS ─── */
+  .list-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .list-item:last-child { border-bottom: none; }
+  .list-bullet { color: var(--gold); font-weight: bold; margin-top: 2px; flex-shrink: 0; }
+  .list-item textarea { border: none; background: transparent; padding: 0; min-height: unset; height: auto; resize: none; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .hero-inner { flex-direction: column; }
+    .hero-focus { text-align: left; }
+    .topbar-brand { font-size: 16px; }
+    .topbar-right { gap: 6px; }
+    .week-select, .load-btn { display: none; }
+  }
+  @media (max-width: 480px) {
+    .metrics-row { grid-template-columns: 1fr 1fr; }
+    .view-toggle { display: none; }
+  }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div>
-        <h1 id="titleText" contenteditable="true">EPIC Sales Weekly Feedback</h1>
-        <div class="sub" id="subText" contenteditable="true">Uma House by Yurbban South Beach · Sales Manager: Aymin · For: General Manager</div>
-        <div class="sub" id="sourceText" contenteditable="true">Consultant Review · Source: TravelClick Agency 360 · Forward-looking demand (next 90 days)</div>
-      </div>
-      <div class="focus">
-        <small>Action focus</small>
-        <strong id="focusText" contenteditable="true">Next 90 days</strong>
-      </div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">EPIC <span>Sales</span> Portal</div>
+  <div class="topbar-right">
+    <select class="week-select" id="weekSelect" onchange="onWeekChange()">
+      <option value="">Select week…</option>
+    </select>
+    <div class="view-toggle">
+      <button class="view-btn active" onclick="setView('edit', this)">Consultant</button>
+      <button class="view-btn" onclick="setView('readonly', this)">GM View</button>
     </div>
-
-    <div class="topbar">
-      <button class="btn-primary" onclick="saveData()">Save dashboard</button>
-      <button class="btn" onclick="loadData()">Load latest</button>
-      <button class="btn" onclick="addChecklistRow()">Add activity</button>
-      <button class="btn" onclick="addComment()">Add comment</button>
-    </div>
-
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('exec', this)">Executive summary</button>
-      <button class="tab-btn" onclick="showTab('market', this)">Market position</button>
-      <button class="tab-btn" onclick="showTab('agency', this)">Agency opportunities</button>
-      <button class="tab-btn" onclick="showTab('feedback', this)">My feedback & follow-up</button>
-      <button class="tab-btn" onclick="showTab('checklist', this)">Weekly checklist</button>
-      <button class="tab-btn" onclick="showTab('updates', this)">Comments & updates</button>
-    </div>
-
-    <div id="exec" class="panel active">
-      <div class="grid-3">
-        <div class="card metric"><div class="label">Total market room nights</div><div class="value" contenteditable="true" id="metric1">11,845</div></div>
-        <div class="card metric"><div class="label">Uma House GDS bookings</div><div class="value" contenteditable="true" id="metric2">0</div></div>
-        <div class="card metric"><div class="label">Compset GDS bookings</div><div class="value" contenteditable="true" id="metric3">195</div></div>
-      </div>
-
-      <div class="card alert">
-        <div class="section-title">For the General Manager — one-paragraph overview</div>
-        <textarea id="execSummary">The forward-looking GDS data shows the market is healthy and growing. Uma House's competitive set is actively capturing major corporate demand, while the hotel is not yet showing GDS production. The opportunity is clear: ensuring GDS visibility while continuing targeted agency and corporate outreach will position the hotel to begin capturing this demand over the next 90 days.</textarea>
-      </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <div class="section-title">What is working well</div>
-          <div id="workingWellList"></div>
-        </div>
-        <div class="card">
-          <div class="section-title">Immediate commercial focus</div>
-          <div id="commercialFocusList"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Leadership alignment</div>
-        <div id="leadershipList"></div>
-      </div>
-    </div>
-</div>
+    <button class="load-btn" onclick="loadData()">Load</button>
+    <button class="save-btn edit-only" onclick="saveData()">Save</button>
+  </div>
 </div>
 
-<!-- ADD HERE -->
-<div class="grid-2">
-  <div class="card">
-    <div class="section-title">Strengths this week</div>
-    <textarea id="strengthsText" rows="7">• High call volume across NYC, Miami, and Nashville
+<!-- HERO HEADER -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-badge">Consultant Review</div>
+      <h1 id="titleText" contenteditable="true">EPIC Sales Weekly Feedback</h1>
+      <div class="hero-meta">
+        <strong id="hotelText" contenteditable="true">Uma House by Yurbban South Beach</strong><br>
+        Sales Manager: <span id="managerText" contenteditable="true">Aymin</span> &nbsp;·&nbsp;
+        Source: <span id="sourceText" contenteditable="true">TravelClick Agency 360</span><br>
+        <span id="periodText" contenteditable="true">Forward-looking demand · Next 90 days</span>
+      </div>
+    </div>
+    <div class="hero-focus">
+      <div class="label">Action Focus</div>
+      <div class="value" id="focusText" contenteditable="true">Next 90 days</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span class="status-dot" id="statusDot"></span>
+  <span id="statusText">Ready — click Save to store your work</span>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="wrap">
+
+  <!-- METRICS -->
+  <div class="metrics-row">
+    <div class="metric-card highlight">
+      <div class="m-label">Total Market RNs</div>
+      <div class="m-value" id="metric1" contenteditable="true">11,845</div>
+      <div class="m-sub">Next 90 days</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-label">Uma House GDS</div>
+      <div class="m-value zero" id="metric2" contenteditable="true">0</div>
+      <div class="m-sub">Bookings captured</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-label">Compset GDS</div>
+      <div class="m-value" id="metric3" contenteditable="true">195</div>
+      <div class="m-sub">Room nights</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-label">Revenue Opportunity</div>
+      <div class="m-value" id="metric4" contenteditable="true">$271K</div>
+      <div class="m-sub">At 10% capture rate</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrap">
+    <div class="tab-list">
+      <button class="tab-btn active" onclick="showTab('exec', this)">Executive Summary</button>
+      <button class="tab-btn" onclick="showTab('market', this)">Market Position</button>
+      <button class="tab-btn" onclick="showTab('agency', this)">Agency Opportunities</button>
+      <button class="tab-btn" onclick="showTab('feedback', this)">My Feedback</button>
+      <button class="tab-btn" onclick="showTab('checklist', this)">Weekly Checklist</button>
+      <button class="tab-btn" onclick="showTab('comments', this)">Comments & Updates</button>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- ── EXECUTIVE SUMMARY ── -->
+      <div id="exec" class="panel active">
+        <div class="card alert-card">
+          <div class="card-title">For the General Manager — Overview</div>
+          <textarea id="execSummary">The forward-looking GDS data shows the market is healthy and growing. Uma House's competitive set is actively capturing major corporate demand, while the hotel is not yet showing GDS production. The opportunity is clear: ensuring GDS visibility while continuing targeted agency and corporate outreach will position the hotel to begin capturing this demand over the next 90 days.</textarea>
+        </div>
+
+        <div class="grid-2">
+          <div class="card green-card">
+            <div class="card-title">What is Working Well</div>
+            <div id="workingWellList"></div>
+          </div>
+          <div class="card amber-card">
+            <div class="card-title">Immediate Commercial Focus</div>
+            <div id="commercialFocusList"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Leadership Alignment Required</div>
+          <div id="leadershipList"></div>
+        </div>
+      </div>
+
+      <!-- ── MARKET POSITION ── -->
+      <div id="market" class="panel">
+        <div class="card">
+          <div class="card-title">Market Context</div>
+          <textarea id="marketSummary">The majority of this demand is corporate travel booked through agencies and travel management companies via GDS, not direct hotel relationships. The compset is capturing room nights from these accounts while Uma House is not yet participating, indicating this is an access issue rather than a demand issue.</textarea>
+        </div>
+        <div class="card">
+          <div class="card-title">Corporate Demand Breakdown</div>
+          <div class="table-wrap">
+            <table id="marketTable">
+              <thead><tr><th>Corporation</th><th>Priority</th><th>Market RNs</th><th>Compset RNs</th><th>Hotel RNs</th><th>Compset Share</th><th>YOY Change</th></tr></thead>
+              <tbody>
+                <tr><td contenteditable="true">Fedrooms</td><td><span class="badge badge-red">Primary</span></td><td contenteditable="true">2,098</td><td contenteditable="true">83</td><td contenteditable="true">0</td><td contenteditable="true">4%</td><td contenteditable="true">+949</td></tr>
+                <tr><td contenteditable="true">Amazon</td><td><span class="badge badge-red">Primary</span></td><td contenteditable="true">855</td><td contenteditable="true">52</td><td contenteditable="true">0</td><td contenteditable="true">6.1%</td><td contenteditable="true">+417</td></tr>
+                <tr><td contenteditable="true">Royal Caribbean</td><td><span class="badge badge-amber">Secondary</span></td><td contenteditable="true">801</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+106</td></tr>
+                <tr><td contenteditable="true">McKinsey</td><td><span class="badge badge-navy">Emerging</span></td><td contenteditable="true">—</td><td contenteditable="true">—</td><td contenteditable="true">0</td><td contenteditable="true">—</td><td contenteditable="true">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn-add edit-only" onclick="addMarketRow()">+ Add corporation</button>
+        </div>
+      </div>
+
+      <!-- ── AGENCY OPPORTUNITIES ── -->
+      <div id="agency" class="panel">
+        <div class="card">
+          <div class="card-title">Top Agency Opportunities</div>
+          <div class="table-wrap">
+            <table id="agencyTable">
+              <thead><tr><th>Agency</th><th>Primary Demand Drivers</th><th>Contact Path</th><th>Opportunity Gap (RNs)</th><th>Revenue at 10%</th></tr></thead>
+              <tbody>
+                <tr><td contenteditable="true">BCD 1S US</td><td contenteditable="true">Amazon, Fedrooms</td><td contenteditable="true">Atlanta office → sourcing desk</td><td contenteditable="true">−3,587</td><td contenteditable="true">~$65K</td></tr>
+                <tr><td contenteditable="true">NAVAN</td><td contenteditable="true">Tech corporate</td><td contenteditable="true">navanforhotels.com</td><td contenteditable="true">−3,511</td><td contenteditable="true">~$80K</td></tr>
+                <tr><td contenteditable="true">CONNEXIONS</td><td contenteditable="true">Leisure corporate mix</td><td contenteditable="true">Preferred hotel program</td><td contenteditable="true">−6,094</td><td contenteditable="true">~$126K</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn-add edit-only" onclick="addAgencyRow()">+ Add agency</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Key Contacts & Outreach Path</div>
+          <div class="table-wrap">
+            <table id="contactsTable">
+              <thead><tr><th>Account</th><th>Agency / Channel</th><th>Contact</th><th>Phone</th><th>Website</th><th>Recommended Approach</th></tr></thead>
+              <tbody>
+                <tr><td contenteditable="true">Amazon</td><td contenteditable="true">BCD Travel (Atlanta)</td><td contenteditable="true">Atlanta sourcing desk</td><td contenteditable="true">(678) 579-8741</td><td contenteditable="true">bcdtravel.com</td><td contenteditable="true">Ask for Amazon sourcing or travel manager. Position corporate rate before call.</td></tr>
+                <tr><td contenteditable="true">Fedrooms</td><td contenteditable="true">CWTSATO Travel</td><td contenteditable="true"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fb909d9a898c9e9797bb988c8f889a8f94d5989496">[email&#160;protected]</a></td><td contenteditable="true">866-576-4635</td><td contenteditable="true">cwtsatotravel.com</td><td contenteditable="true">Confirm GSA eligibility first, then position property for government travel.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn-add edit-only" onclick="addContactRow()">+ Add contact</button>
+        </div>
+      </div>
+
+      <!-- ── MY FEEDBACK ── -->
+      <div id="feedback" class="panel">
+        <div class="grid-2">
+          <div class="card green-card">
+            <div class="card-title">Strengths This Week</div>
+            <textarea id="strengthsText" rows="8">• High call volume across NYC, Miami, and Nashville
 • Written cold-call script in use
 • First contact at McKinsey and Royal Caribbean achieved
 • House of Travel site visit confirmed</textarea>
-  </div>
-
-  <div class="card">
-    <div class="section-title">My follow-up and guidance</div>
-    <textarea id="guidanceText" rows="7">• Amazon: Outreach has not yet been initiated despite being the highest priority demand driver
+          </div>
+          <div class="card amber-card">
+            <div class="card-title">My Follow-Up & Guidance</div>
+            <textarea id="guidanceText" rows="8">• Amazon: Outreach has not yet been initiated despite being the highest priority demand driver
 • Fedrooms: Outreach path misaligned and should route through CWTSATO
 • Call effectiveness: Script lacks a defined closing step to secure next action
 • Royal Caribbean: Current contact sits in crew operations; need to identify corporate travel decision-maker</textarea>
-  </div>
-</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Account-by-Account Status & Next Step</div>
+          <div class="table-wrap">
+            <table id="accountStatusTable">
+              <thead><tr><th>Account</th><th>Status</th><th>Contact Reached</th><th>Recommended Next Step</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td contenteditable="true">Amazon</td>
+                  <td><select onchange="updateStatusBadge(this)"><option value="not-started">Not Started</option><option value="in-progress">In Progress</option><option value="done">Done</option><option value="redirect">Redirect Needed</option></select></td>
+                  <td contenteditable="true">—</td>
+                  <td contenteditable="true">Call BCD Travel Atlanta and ask for Amazon sourcing manager.</td>
+                </tr>
+                <tr>
+                  <td contenteditable="true">Fedrooms</td>
+                  <td><select onchange="updateStatusBadge(this)"><option value="not-started">Not Started</option><option value="in-progress">In Progress</option><option value="done">Done</option><option value="redirect" selected>Redirect Needed</option></select></td>
+                  <td contenteditable="true">Current path misaligned</td>
+                  <td contenteditable="true">Route through CWTSATO. Confirm GSA eligibility first.</td>
+                </tr>
+                <tr>
+                  <td contenteditable="true">Royal Caribbean</td>
+                  <td><select onchange="updateStatusBadge(this)"><option value="not-started">Not Started</option><option value="in-progress" selected>In Progress</option><option value="done">Done</option><option value="redirect">Redirect Needed</option></select></td>
+                  <td contenteditable="true">Initial crew ops contact</td>
+                  <td contenteditable="true">Identify corporate travel decision-maker. Escalate from crew ops.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn-add edit-only" onclick="addAccountRow()">+ Add account</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Consultant Notes</div>
+          <textarea id="consultantNotes" rows="5" placeholder="Private notes for this advisory session…"></textarea>
+        </div>
+      </div>
 
-<div id="market" class="panel">
-    <div id="market" class="panel">
-      <div class="card">
-        <div class="section-title">Market Position</div>
-        <textarea id="marketSummary">The majority of this demand is corporate travel booked through agencies and travel management companies via GDS, not direct hotel relationships. The compset is capturing room nights from these accounts while Uma House is not yet participating, indicating this is an access issue rather than a demand issue.</textarea>
+      <!-- ── WEEKLY CHECKLIST ── -->
+      <div id="checklist" class="panel">
+        <div class="card">
+          <div class="card-title">Weekly Sales Activities</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Track outreach, follow-ups, meetings, rate submissions, and outcomes each week.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Priority</th><th>Status</th><th>✓</th><th>Due</th><th>Notes</th><th class="edit-only"></th></tr></thead>
+              <tbody id="checklistBody">
+                <tr class="checklist-row">
+                  <td>1</td>
+                  <td contenteditable="true">Verify live availability in GDS through spot-check search</td>
+                  <td contenteditable="true">Aymin</td>
+                  <td><select><option>High</option><option>Medium</option><option>Low</option></select></td>
+                  <td><select><option>Pending</option><option>In Progress</option><option>Done</option></select></td>
+                  <td><input type="checkbox"></td>
+                  <td><input type="date"></td>
+                  <td contenteditable="true"></td>
+                  <td class="edit-only"><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>
+                </tr>
+                <tr class="checklist-row">
+                  <td>2</td>
+                  <td contenteditable="true">Call BCD Travel Atlanta re: Amazon corporate rate</td>
+                  <td contenteditable="true">Aymin</td>
+                  <td><select><option>High</option><option>Medium</option><option>Low</option></select></td>
+                  <td><select><option>Pending</option><option>In Progress</option><option>Done</option></select></td>
+                  <td><input type="checkbox"></td>
+                  <td><input type="date"></td>
+                  <td contenteditable="true"></td>
+                  <td class="edit-only"><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>
+                </tr>
+                <tr class="checklist-row">
+                  <td>3</td>
+                  <td contenteditable="true">Contact CWTSATO re: Fedrooms / GSA eligibility</td>
+                  <td contenteditable="true">Aymin</td>
+                  <td><select><option>High</option><option>Medium</option><option>Low</option></select></td>
+                  <td><select><option>Pending</option><option>In Progress</option><option>Done</option></select></td>
+                  <td><input type="checkbox"></td>
+                  <td><input type="date"></td>
+                  <td contenteditable="true"></td>
+                  <td class="edit-only"><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn-add edit-only" onclick="addChecklistRow()">+ Add activity</button>
+        </div>
       </div>
-      <div class="card">
-        <table id="marketTable">
-          <thead><tr><th>Corporation</th><th>Market RNs</th><th>Compset RNs</th><th>Hotel RNs</th><th>Compset Share</th><th>YOY</th></tr></thead>
-          <tbody>
-            <tr><td contenteditable="true">Fedrooms (Primary)</td><td contenteditable="true">2,098</td><td contenteditable="true">83</td><td contenteditable="true">0</td><td contenteditable="true">4%</td><td contenteditable="true">+949</td></tr>
-            <tr><td contenteditable="true">Amazon (Primary)</td><td contenteditable="true">855</td><td contenteditable="true">52</td><td contenteditable="true">0</td><td contenteditable="true">6.1%</td><td contenteditable="true">+417</td></tr>
-            <tr><td contenteditable="true">Royal Caribbean (Secondary)</td><td contenteditable="true">801</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+106</td></tr>
-          </tbody>
-        </table>
+
+      <!-- ── COMMENTS & UPDATES ── -->
+      <div id="comments" class="panel">
+        <div class="card">
+          <div class="card-title">Thread</div>
+          <div class="comment-list" id="commentList">
+            <div class="comment-item">
+              <div class="comment-meta">
+                <span class="comment-author">EPIC Consultant</span>
+                <span class="comment-role badge badge-navy">Advisor</span>
+                <span class="comment-date">Week of Apr 7, 2025</span>
+              </div>
+              <div class="comment-body">Initial report delivered. Priority focus: GDS visibility and Amazon/Fedrooms outreach. Please review the checklist and confirm ownership of each action item before our next sync.</div>
+            </div>
+          </div>
+          <div class="comment-form edit-only">
+            <div class="form-row">
+              <input type="text" id="commentAuthor" placeholder="Your name" value="">
+              <select id="commentRole">
+                <option value="Advisor">Advisor</option>
+                <option value="Sales Manager">Sales Manager</option>
+                <option value="General Manager">General Manager</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <textarea id="commentText" rows="3" placeholder="Add a comment, question, or update…"></textarea>
+            <br><br>
+            <button class="comment-submit" onclick="addComment()">Post Comment</button>
+          </div>
+        </div>
       </div>
+
+    </div><!-- /tab-content -->
+  </div><!-- /tabs-wrap -->
+
+</div><!-- /wrap -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ─── SUPABASE ───
+// ⚠️  Replace these with your real Supabase URL and anon key from your project settings
+const SUPABASE_URL = "https://utcgwkgtjlyfjgwoczw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_04bk4CRev2bCOzW5kylipw_YqNs3lpaE";
+let supabaseClient = null;
+try {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch(e) {
+  console.warn("Supabase init failed — save/load will use localStorage fallback", e);
+}
+
+// ─── WEEK SELECTOR ───
+function populateWeeks() {
+  const sel = document.getElementById('weekSelect');
+  const now = new Date();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - (i * 7));
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - d.getDay() + 1);
+    const label = monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const val = monday.toISOString().split('T')[0];
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = `Week of ${label}`;
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+populateWeeks();
+function onWeekChange() { /* could trigger load for that week */ }
+
+// ─── TABS ───
+function showTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── VIEW MODE ───
+function setView(mode, btn) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (mode === 'readonly') {
+    document.body.classList.add('readonly-mode');
+    document.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
+  } else {
+    document.body.classList.remove('readonly-mode');
+    document.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'true'));
+  }
+}
+
+// ─── STATUS ───
+function setStatus(state, msg) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot ' + state;
+  txt.textContent = msg;
+}
+
+// ─── RENDER LISTS ───
+const workingWellItems = [
+  "Aymin is making calls consistently across NYC, Miami, and Nashville",
+  "Good first contacts at McKinsey and Royal Caribbean achieved",
+  "House of Travel site visit confirmed",
+  "Written call script in place and being used"
+];
+const commercialFocusItems = [
+  "Amazon remains highest priority — outreach must start this week",
+  "Fedrooms access path should be corrected to CWTSATO",
+  "Agency conversations should lead with a defined rate position",
+  "Early calls should confirm decision-maker and booking flow"
+];
+const leadershipItems = [
+  "GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport",
+  "Rates: Approve corporate rate range for agency outreach",
+  "Fedrooms: Decide go/no-go and align with CWTSATO path",
+  "Positioning: Align on what is being communicated in sales calls",
+  "Constraints: Confirm no availability or rate restrictions blocking bookings"
+];
+
+function renderList(targetId, items) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  target.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `<span class="list-bullet">›</span><textarea rows="2">${item}</textarea>`;
+    target.appendChild(div);
+  });
+}
+renderList('workingWellList', workingWellItems);
+renderList('commercialFocusList', commercialFocusItems);
+renderList('leadershipList', leadershipItems);
+
+// ─── CHECKLIST ───
+let rowCount = 3;
+function addChecklistRow() {
+  rowCount++;
+  const tbody = document.getElementById('checklistBody');
+  const tr = document.createElement('tr');
+  tr.className = 'checklist-row';
+  tr.innerHTML = `
+    <td>${rowCount}</td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true">Aymin</td>
+    <td><select><option>High</option><option>Medium</option><option>Low</option></select></td>
+    <td><select><option>Pending</option><option>In Progress</option><option>Done</option></select></td>
+    <td><input type="checkbox"></td>
+    <td><input type="date"></td>
+    <td contenteditable="true"></td>
+    <td class="edit-only"><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+// ─── TABLE ROW ADDERS ───
+function addMarketRow() {
+  const tb = document.querySelector('#marketTable tbody');
+  tb.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true">New Corp</td><td><span class="badge badge-navy">Emerging</span></td><td contenteditable="true">—</td><td contenteditable="true">—</td><td contenteditable="true">0</td><td contenteditable="true">—</td><td contenteditable="true">—</td></tr>`);
+}
+function addAgencyRow() {
+  const tb = document.querySelector('#agencyTable tbody');
+  tb.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true">Agency Name</td><td contenteditable="true">—</td><td contenteditable="true">—</td><td contenteditable="true">—</td><td contenteditable="true">—</td></tr>`);
+}
+function addContactRow() {
+  const tb = document.querySelector('#contactsTable tbody');
+  tb.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true">Account</td><td contenteditable="true">Agency</td><td contenteditable="true">Contact</td><td contenteditable="true">—</td><td contenteditable="true">—</td><td contenteditable="true">—</td></tr>`);
+}
+function addAccountRow() {
+  const tb = document.querySelector('#accountStatusTable tbody');
+  tb.insertAdjacentHTML('beforeend', `<tr><td contenteditable="true">Account</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">—</td><td contenteditable="true">—</td></tr>`);
+}
+
+// ─── COMMENTS ───
+function addComment() {
+  const author = document.getElementById('commentAuthor').value.trim() || 'Anonymous';
+  const role = document.getElementById('commentRole').value;
+  const body = document.getElementById('commentText').value.trim();
+  if (!body) return;
+  const list = document.getElementById('commentList');
+  const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const roleClass = role === 'Advisor' ? 'badge-navy' : role === 'General Manager' ? 'badge-green' : 'badge-amber';
+  const item = document.createElement('div');
+  item.className = 'comment-item';
+  item.innerHTML = `
+    <div class="comment-meta">
+      <span class="comment-author">${author}</span>
+      <span class="comment-role badge ${roleClass}">${role}</span>
+      <span class="comment-date">${now}</span>
     </div>
+    <div class="comment-body">${body}</div>
+  `;
+  list.appendChild(item);
+  document.getElementById('commentText').value = '';
+  setStatus('saved', 'Comment added — remember to save.');
+}
 
-    <div id="agency" class="panel">
-      <div class="card">
-        <div class="section-title">Agency Opportunities</div>
-        <table id="agencyTable">
-          <thead><tr><th>Agency</th><th>Primary demand drivers</th><th>Contact path</th><th>Opportunity gap</th><th>Revenue at 10%</th></tr></thead>
-          <tbody>
-            <tr><td contenteditable="true">BCD 1S US</td><td contenteditable="true">Amazon, Fedrooms</td><td contenteditable="true">Atlanta office → sourcing desk</td><td contenteditable="true">−3,587</td><td contenteditable="true">~$65K</td></tr>
-            <tr><td contenteditable="true">NAVAN</td><td contenteditable="true">Tech corporate</td><td contenteditable="true">navanforhotels.com</td><td contenteditable="true">−3,511</td><td contenteditable="true">~$80K</td></tr>
-            <tr><td contenteditable="true">CONNEXIONS</td><td contenteditable="true">Leisure corporate mix</td><td contenteditable="true">Preferred hotel program</td><td contenteditable="true">−6,094</td><td contenteditable="true">~$126K</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+// ─── COLLECT ALL DATA ───
+function collectData() {
+  const checklist = [];
+  document.querySelectorAll('#checklistBody tr').forEach((tr, i) => {
+    const cells = tr.querySelectorAll('td');
+    checklist.push({
+      n: i + 1,
+      action: cells[1]?.textContent,
+      owner: cells[2]?.textContent,
+      priority: cells[3]?.querySelector('select')?.value,
+      status: cells[4]?.querySelector('select')?.value,
+      done: cells[5]?.querySelector('input')?.checked,
+      due: cells[6]?.querySelector('input')?.value,
+      notes: cells[7]?.textContent
+    });
+  });
 
-    <div id="feedback" class="panel">
-      <div class="card">
-        <div class="section-title">Key contacts and outreach path</div>
-        <table id="contactsTable">
-          <thead><tr><th>Account</th><th>Agency / Channel</th><th>Contact</th><th>Phone</th><th>Website</th><th>Recommended approach</th></tr></thead>
-          <tbody>
-            <tr><td contenteditable="true">Amazon</td><td contenteditable="true">BCD Travel (Atlanta)</td><td contenteditable="true">Atlanta sourcing desk</td><td contenteditable="true">(678) 579-8741</td><td contenteditable="true">www.bcdtravel.com</td><td contenteditable="true">Ask for Amazon sourcing or travel manager. Position corporate rate before call.</td></tr>
-            <tr><td contenteditable="true">Fedrooms</td><td contenteditable="true">CWTSATO Travel</td><td contenteditable="true">kfarwell@cwtsato.com</td><td contenteditable="true">866-576-4635</td><td contenteditable="true">www.cwtsatotravel.com</td><td contenteditable="true">Confirm GSA eligibility first, then position property for government travel.</td></tr>
-          </tbody>
-        </table>
-      </div>
+  const comments = [];
+  document.querySelectorAll('#commentList .comment-item').forEach(item => {
+    comments.push({
+      author: item.querySelector('.comment-author')?.textContent,
+      role: item.querySelector('.comment-role')?.textContent,
+      date: item.querySelector('.comment-date')?.textContent,
+      body: item.querySelector('.comment-body')?.textContent
+    });
+  });
 
-      <div class="grid-2">
-        <div class="card"><div class="section-title">Strengths this week</div><div id="strengthsList"></div></div>
-        <div class="card"><div class="section-title">My follow-up and guidance</div><div id="guidanceList"></div></div>
-      </div>
+  return {
+    week: document.getElementById('weekSelect').value,
+    titleText: document.getElementById('titleText').textContent,
+    hotelText: document.getElementById('hotelText').textContent,
+    managerText: document.getElementById('managerText').textContent,
+    sourceText: document.getElementById('sourceText').textContent,
+    periodText: document.getElementById('periodText').textContent,
+    focusText: document.getElementById('focusText').textContent,
+    metric1: document.getElementById('metric1').textContent,
+    metric2: document.getElementById('metric2').textContent,
+    metric3: document.getElementById('metric3').textContent,
+    metric4: document.getElementById('metric4').textContent,
+    execSummary: document.getElementById('execSummary').value,
+    marketSummary: document.getElementById('marketSummary').value,
+    strengthsText: document.getElementById('strengthsText').value,
+    guidanceText: document.getElementById('guidanceText').value,
+    consultantNotes: document.getElementById('consultantNotes').value,
+    workingWell: Array.from(document.querySelectorAll('#workingWellList textarea')).map(t => t.value),
+    commercialFocus: Array.from(document.querySelectorAll('#commercialFocusList textarea')).map(t => t.value),
+    leadership: Array.from(document.querySelectorAll('#leadershipList textarea')).map(t => t.value),
+    checklist,
+    comments
+  };
+}
 
-      <div class="card">
-        <div class="section-title">Account-by-account status and next step</div>
-        <table id="accountStatusTable">
-          <thead><tr><th>Account</th><th>Status</th><th>Contact reached</th><th>Recommended next step</th></tr></thead>
-          <tbody>
-            <tr><td contenteditable="true">Amazon</td><td contenteditable="true">Not yet started</td><td contenteditable="true">—</td><td contenteditable="true">Call BCD Travel Atlanta and ask for Amazon sourcing manager.</td></tr>
-            <tr><td contenteditable="true">Fedrooms</td><td contenteditable="true">Redirect needed</td><td contenteditable="true">Current path misaligned</td><td contenteditable="true">Route through CWTSATO. Confirm GSA eligibility first.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+// ─── SAVE ───
+async function saveData() {
+  setStatus('saving', 'Saving…');
+  const data = collectData();
+  const week = data.week || new Date().toISOString().split('T')[0];
 
-    <div id="checklist" class="panel">
-      <div class="card">
-        <div class="section-title">Weekly checklist and initiatives</div>
-        <div class="small">Use this section to track outreach, follow-ups, meetings, rate submissions, and outcomes each week.</div>
-        <table id="checklistTable">
-          <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Priority</th><th>Status</th><th>Done</th><th>Due</th><th>Notes</th><th></th></tr></thead>
-          <tbody id="checklistBody">
-            <tr>
-              <td>1</td>
-              <td contenteditable="true">Verify live availability in GDS through spot-check search</td>
-              <td contenteditable="true">Aymin</td>
-              <td><select><option>High</option><option>Medium</option><option>Low</option></select></td>
-              <td><select><option>Pending</option><option>In Progress</option><option>Done</option></select></td>
-              <td><input type="checkbox"></td>
-              <td contenteditable="true"></td>
-              <td contenteditable="true"></td>
-              <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Comments on activity and follow-up</div>
-        <textarea id="commentBox" placeholder="Add comments, questions, or follow-up notes here..."></textarea>
-      </div>
-    </div>
-
-    <div id="updates" class="panel">
-      <div class="card">
-        <div class="section-title">Comments & updates</div>
-        <textarea id="teamUpdates">Use this section for comments from Aymin, advisor notes, and weekly updates.</textarea>
-      </div>
-    </div>
-
-    <div id="status" class="status-note"></div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://utcgwkgtjlyfjgwoczw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_6jTOUqHNB5f4YdiTYfOsHQ_3Q-AEzZk";
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const workingWell = [
-      "Aymin is making calls consistently across NYC, Miami, and Nashville",
-      "Good first contacts at McKinsey and Royal Caribbean",
-      "House of Travel site visit confirmed",
-      "Written call script in place and being used"
-    ];
-    const commercialFocus = [
-      "Amazon remains highest priority based on demand",
-      "Fedrooms access path should be corrected to CWTSATO",
-      "Agency conversations should lead with a defined rate position",
-      "Early calls should confirm decision-maker and booking flow"
-    ];
-    const leadership = [
-      "GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport",
-      "Rates: Approve corporate rate range for agency outreach",
-      "Fedrooms: Decide go / no-go and align with CWTSATO path",
-      "Positioning: Align on what is being used in calls",
-      "Constraints: Confirm no availability or rate restrictions blocking bookings"
-    ];
-    const strengths = [
-      "High call volume across NYC, Miami, and Nashville",
-      "Written cold-call script in use",
-      "First contact at McKinsey and Royal Caribbean achieved",
-      "House of Travel site visit confirmed"
-    ];
-    const guidance = [
-      "Amazon: Outreach has not yet been initiated despite being the highest priority demand driver",
-      "Fedrooms: Outreach path misaligned and should route through CWTSATO",
-      "Call effectiveness: Script lacks a defined closing step to secure next action",
-      "Royal Caribbean: Current contact sits in crew operations; need to identify corporate travel decision-maker"
-    ];
-
-    function renderList(targetId, items) {
-      const target = document.getElementById(targetId);
-      target.innerHTML = "";
-      items.forEach((item) => {
-        const wrap = document.createElement("div");
-        wrap.className = "hover-item";
-        const ta = document.createElement("textarea");
-        ta.value = item;
-        ta.rows = 2;
-        wrap.appendChild(ta);
-        target.appendChild(wrap);
-      });
+  // Try Supabase first
+  if (supabaseClient && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY_HERE') {
+    try {
+      const { error } = await supabaseClient
+        .from('epic_dashboard')
+        .upsert({ week_key: week, data: JSON.stringify(data), updated_at: new Date().toISOString() }, { onConflict: 'week_key' });
+      if (error) throw error;
+      setStatus('saved', `Saved to Supabase — week of ${week}`);
+      return;
+    } catch (e) {
+      console.warn('Supabase save failed, falling back to localStorage', e);
     }
+  }
 
-    renderList("workingWellList", workingWell);
-    renderList("commercialFocusList", commercialFocus);
-    renderList("leadershipList", leadership);
-    renderList("strengthsList", strengths);
-    renderList("guidanceList", guidance);
+  // Fallback: localStorage
+  try {
+    localStorage.setItem('epic_dashboard_' + week, JSON.stringify(data));
+    localStorage.setItem('epic_dashboard_latest', week);
+    setStatus('saved', `Saved locally — week of ${week} (Supabase key not yet configured)`);
+  } catch(e) {
+    setStatus('error', 'Save failed — ' + e.message);
+  }
+}
 
-    function showTab(id, btn) {
-      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      btn.classList.add("active");
+// ─── LOAD ───
+async function loadData() {
+  setStatus('saving', 'Loading…');
+  const week = document.getElementById('weekSelect').value;
+
+  if (supabaseClient && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY_HERE') {
+    try {
+      const { data: rows, error } = await supabaseClient
+        .from('epic_dashboard')
+        .select('data')
+        .eq('week_key', week)
+        .single();
+      if (error) throw error;
+      applyData(JSON.parse(rows.data));
+      setStatus('saved', `Loaded from Supabase — week of ${week}`);
+      return;
+    } catch(e) {
+      console.warn('Supabase load failed, trying localStorage', e);
     }
+  }
 
-    function addChecklistRow() {
-      const body = document.getElementById("checklistBody");
-      const rowCount = body.querySelectorAll("tr").length + 1;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${rowCount}</td>
-        <td contenteditable="true">New activity</td>
-        <td contenteditable="true">Aymin</td>
-        <td><select><option>High</option><option>Medium</option><option>Low</option></select></td>
-        <td><select><option>Pending</option><option>In Progress</option><option>Done</option></select></td>
-        <td><input type="checkbox"></td>
-        <td contenteditable="true"></td>
-        <td contenteditable="true"></td>
-        <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
-      `;
-      body.appendChild(row);
-    }
+  const raw = localStorage.getItem('epic_dashboard_' + week);
+  if (raw) {
+    applyData(JSON.parse(raw));
+    setStatus('saved', `Loaded from local storage — week of ${week}`);
+  } else {
+    setStatus('error', 'No saved data found for that week.');
+  }
+}
 
-    function deleteRow(button) {
-      button.closest("tr").remove();
-      document.querySelectorAll("#checklistBody tr").forEach((row, index) => row.cells[0].innerText = index + 1);
-    }
-
-    function collectTable(tableId) {
-      const rows = [];
-      document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
-        const row = [];
-        tr.querySelectorAll("td").forEach(td => {
-          const select = td.querySelector("select");
-          const checkbox = td.querySelector("input[type='checkbox']");
-          const textarea = td.querySelector("textarea");
-          if (select) row.push(select.value);
-          else if (checkbox) row.push(checkbox.checked);
-          else if (textarea) row.push(textarea.value);
-          else row.push(td.innerText);
-        });
-        rows.push(row);
-      });
-      return rows;
-    }
-
-    function getListValues(id) {
-      return Array.from(document.querySelectorAll(`#${id} textarea`)).map(el => el.value);
-    }
-
-    function getDashboardData() {
-      return {
-        titleText: document.getElementById("titleText").innerText,
-        subText: document.getElementById("subText").innerText,
-        sourceText: document.getElementById("sourceText").innerText,
-        focusText: document.getElementById("focusText").innerText,
-        metric1: document.getElementById("metric1").innerText,
-        metric2: document.getElementById("metric2").innerText,
-        metric3: document.getElementById("metric3").innerText,
-        execSummary: document.getElementById("execSummary").value,
-        marketSummary: document.getElementById("marketSummary").value,
-        commentBox: document.getElementById("commentBox").value,
-        teamUpdates: document.getElementById("teamUpdates").value,
-        workingWell: getListValues("workingWellList"),
-        commercialFocus: getListValues("commercialFocusList"),
-        leadership: getListValues("leadershipList"),
-        strengths: getListValues("strengthsList"),
-        guidance: getListValues("guidanceList"),
-        marketRows: collectTable("marketTable"),
-        agencyRows: collectTable("agencyTable"),
-        contactsRows: collectTable("contactsTable"),
-        accountStatusRows: collectTable("accountStatusTable"),
-        checklistRows: collectTable("checklistTable")
-      };
-    }
-
-    function saveData() {
-      const payload = getDashboardData();
-      client.from("reports").insert([{ data: payload }]).then(({ error }) => {
-        document.getElementById("status").innerText = error ? "Save failed" : "Dashboard saved successfully";
-      });
-    }
-
-    function loadData() {
-      client.from("reports").select("*").order("created_at", { ascending: false }).limit(1).then(({ data, error }) => {
-        document.getElementById("status").innerText = error ? "Load failed" : data && data.length ? "Latest dashboard loaded" : "No saved data yet";
-      });
-    }
-  </script>
-</body>
-</html>
+function applyData(d) {
+  if (!d) return;
+  const fields = ['titleText','hotelText','managerText','sourceText','periodText','focusText','metric1','metric2','metric3','metric4'];
+  fields.forEach(id => { const el = document.getElementById(id); if (el && d[id]) el.textContent = d[id]; });
+  ['execSummary','marketSummary','strengthsText','guidanceText','consultantNotes'].forEach(id => {
+    const el = document.getElementById(id); if (el && d[id] !== undefined) el.value = d[id];
+  });
+  if (d
