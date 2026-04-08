@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>EPIC Sales Weekly</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<h2>EPIC Sales Weekly – Shared App</h2>
+
+<textarea id="data" style="width:100%;height:200px;"></textarea>
+<br><br>
+
+<button onclick="saveData()">Save</button>
+<button onclick="loadData()">Load</button>
+
+<p id="status"></p>
+
+<script>
+const SUPABASE_URL = "https://utcgwkgtjlyfjgwoczw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_XXXX";
+
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function saveData() {
+  const text = document.getElementById("data").value;
+  await client.from("reports").insert([{ data: { text } }]);
+  document.getElementById("status").innerText = "Saved";
+}
+
+async function loadData() {
+  const { data } = await client
+    .from("reports")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (data && data.length > 0) {
+    document.getElementById("data").value = data[0].data.text;
+    document.getElementById("status").innerText = "Loaded";
+  }
+}
+</script>
+
+</body>
+</html>
