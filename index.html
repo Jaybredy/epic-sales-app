@@ -1,584 +1,489 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EPIC Sales Weekly Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f3;
-      color: #1a1a1a;
-    }
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-    .header {
-      background: #1B2E5E;
-      color: white;
-      border-radius: 16px;
-      padding: 20px 24px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .header h1 {
-      margin: 0 0 6px 0;
-      font-size: 24px;
-    }
-    .sub {
-      color: #c7d7ee;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    .focus {
-      text-align: right;
-      min-width: 180px;
-    }
-    .focus small {
-      color: #c7d7ee;
-      display: block;
-      margin-bottom: 4px;
-    }
-    .focus strong {
-      font-size: 20px;
-    }
-    .topbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    button {
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 14px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .btn {
-      background: white;
-      border: 1px solid #ddd;
-    }
-    .btn-primary {
-      background: #2A4A8A;
-      color: white;
-    }
-    .tabs {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    .tab-btn {
-      background: white;
-      border: 1px solid #ddd;
-      color: #333;
-    }
-    .tab-btn.active {
-      background: #2A4A8A;
-      color: white;
-      border-color: #2A4A8A;
-    }
-    .panel {
-      display: none;
-    }
-    .panel.active {
-      display: block;
-    }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 14px;
-    }
-    .metric {
-      text-align: center;
-      background: #ececea;
-    }
-    .metric .label {
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 6px;
-    }
-    .metric .value {
-      font-size: 28px;
-      font-weight: bold;
-    }
-    .section-title {
-      margin: 0 0 10px 0;
-      font-size: 16px;
-      font-weight: bold;
-    }
-    .alert {
-      border-left: 4px solid #2A4A8A;
-      background: #eef4ff;
-    }
-    textarea, input, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #d8d8d8;
-      border-radius: 10px;
-      font: inherit;
-      background: white;
-    }
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-    .list-item {
-      margin-bottom: 10px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 16px;
-      overflow: hidden;
-    }
-    th, td {
-      border-bottom: 1px solid #e6e6e6;
-      padding: 10px;
-      text-align: left;
-      vertical-align: top;
-      font-size: 14px;
-    }
-    th {
-      background: #f1f1ef;
-      color: #555;
-      font-weight: bold;
-    }
-    .row-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .small {
-      font-size: 12px;
-      color: #666;
-    }
-    .done-row {
-      background: #f7faf5;
-    }
-    .status-note {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #2f5f1b;
-    }
-    @media (max-width: 900px) {
-      .grid-3, .grid-2 {
-        grid-template-columns: 1fr;
-      }
-      .focus {
-        text-align: left;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="header">
-      <div>
-        <h1 id="titleText">EPIC Sales Weekly Feedback</h1>
-        <div class="sub" id="subText">
-          Uma House by Yurbban South Beach · Sales Manager: Aymin · For: General Manager
-        </div>
-        <div class="sub" id="sourceText">
-          Consultant Review · Source: TravelClick Agency 360 · Forward-looking demand (next 90 days)
-        </div>
-      </div>
-      <div class="focus">
-        <small>Action focus</small>
-        <strong id="focusText">Next 90 days</strong>
-      </div>
-    </div>
+import React, { useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Trash2, Save, Download, Upload, MessageSquarePlus } from "lucide-react";
 
-    <div class="topbar">
-      <button class="btn-primary" onclick="saveData()">Save dashboard</button>
-      <button class="btn" onclick="loadData()">Load latest</button>
-      <button class="btn" onclick="addChecklistRow()">Add checklist item</button>
-    </div>
+const defaultData = {
+  header: {
+    title: "EPIC Sales Weekly Feedback",
+    property: "Uma House by Yurbban South Beach",
+    manager: "Aymin",
+    audience: "General Manager",
+    source: "TravelClick Agency 360",
+    timeframe: "Forward-looking demand (next 90 days)",
+    actionFocus: "Next 90 days",
+  },
+  metrics: [
+    { label: "Total market room nights", value: "11,845" },
+    { label: "Uma House GDS bookings", value: "0" },
+    { label: "Compset GDS bookings", value: "195" },
+  ],
+  executive: {
+    summary:
+      "The forward-looking GDS data (next 90 days) shows the market is healthy and growing (+1,182 room nights year over year). Uma House's competitive set is actively capturing 195 room nights from major corporate accounts, while the hotel is not yet showing GDS production. The opportunity is clear: ensuring GDS visibility while continuing targeted agency and corporate outreach will position the hotel to begin capturing this demand over the next 90 days.",
+    workingWell: [
+      "Aymin is making calls consistently across NYC, Miami, and Nashville",
+      "Good first contacts at McKinsey and Royal Caribbean",
+      "House of Travel site visit confirmed for April 15",
+      "SDQ Travel agent booked a personal stay",
+      "Written call script in place and being used",
+    ],
+    focus: [
+      "Amazon remains highest priority based on demand; action via BCD Atlanta",
+      "Fedrooms access path should be corrected to CWTSATO before further outreach",
+      "Agency conversations should lead with a defined rate position and property overview",
+      "Early calls should confirm decision-maker and booking flow and drive next step",
+      "Follow-up discipline should move contacts toward a confirmed next action, not just initial outreach",
+    ],
+    leadership: [
+      "GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport",
+      "Rates: Approve corporate rate range for agency outreach",
+      "Fedrooms: Decide go / no-go and align with CWTSATO path",
+      "Positioning: Align on what is being used in calls, especially for Amazon outreach",
+      "Constraints: Confirm no availability or rate restrictions blocking bookings",
+    ],
+    revenueContext:
+      "At just 10% capture of the top 3 agency opportunities, Uma House would generate an estimated ≈ $271,000 in incremental GDS revenue. The path begins with visibility in GDS and targeted agency outreach.",
+  },
+  marketRows: [
+    ["Fedrooms (Gov't) (Primary)", "2,098", "83", "0", "4%", "+949"],
+    ["Amazon (Primary)", "855", "52", "0", "6.1%", "+417"],
+    ["Royal Caribbean (Secondary)", "801", "0", "0", "0%", "+106"],
+    ["National Airlines", "479", "0", "0", "0%", "+465"],
+  ],
+  agencyRows: [
+    ["CONNEXIONS (P7TC)", "Leisure corporate mix, consortium bookings", "Preferred program enrollment → hotel onboarding team", "−6,094", "166", "4,085", "$308", "~$126K"],
+    ["BCD 1S US (7PBI)", "Amazon, Fedrooms, corporate accounts", "Atlanta office → ask for Amazon / sourcing desk", "−3,587", "83", "1,784", "$363", "~$65K"],
+    ["NAVAN INC (3ZFI)", "Tech corporate (self-booking platform)", "Register via navanforhotels.com → onboarding", "−3,511", "96", "2,603", "$307", "~$80K"],
+    ["AEGBT (2HJI)", "JP Morgan, EY, consulting firms", "Existing relationship → expand account access", "−1,851", "60", "1,635", "$354", "~$58K"],
+  ],
+  contacts: [
+    { account: "Amazon", channel: "BCD Travel (Atlanta)", contact: "Atlanta office / sourcing desk", phone: "(678) 579-8741", website: "www.bcdtravel.com", approach: "Ask for Amazon sourcing or travel manager. Position corporate rate before call." },
+    { account: "Fedrooms", channel: "CWTSATO Travel", contact: "kfarwell@cwtsato.com", phone: "866-576-4635", website: "www.cwtsatotravel.com", approach: "Confirm GSA eligibility first, then position property for government travel." },
+    { account: "McKinsey & Co", channel: "Lawyers Travel Service", contact: "NYC office", phone: "(212) 679-1600", website: "www.lawyerstravel.com", approach: "Request connection to travel manager through assistant contact." },
+    { account: "JP Morgan", channel: "AMEX GBT", contact: "Corporate travel desk", phone: "800-228-7300", website: "www.amexglobalbusinesstravel.com", approach: "Confirm TMC and align rate positioning before follow-up." },
+    { account: "Royal Caribbean", channel: "Internal corporate travel", contact: "Crew ops (current) → redirect", phone: "305-539-6000", website: "www.royalcaribbean.com", approach: "Clarify corporate vs crew and request correct travel decision-maker." },
+    { account: "NAVAN", channel: "Navan", contact: "Self-service registration", phone: "www.navan.com", website: "www.navan.com/for-hotels", approach: "Register property to access corporate demand pipeline." },
+    { account: "CONNEXIONS", channel: "Connexions Travel", contact: "Preferred program onboarding", phone: "407-370-5000", website: "www.connexions.com", approach: "Apply to be included in preferred agency network." },
+  ],
+  strengths: [
+    "High call volume across NYC, Miami, and Nashville",
+    "Written cold-call script in use",
+    "First contact at McKinsey and Royal Caribbean achieved",
+    "House of Travel site visit confirmed",
+    "SDQ Travel agent booked a personal stay",
+  ],
+  improvements: [
+    "Amazon: Outreach has not yet been initiated despite being the highest priority demand driver (action: call BCD Atlanta sourcing desk and position rate)",
+    "Fedrooms: Outreach path misaligned and should route through CWTSATO instead of the current channel",
+    "Call effectiveness: Script is being used but lacks a defined closing step to secure next action",
+    "Royal Caribbean: Current contact sits in crew operations; need to identify corporate travel decision-maker",
+    "Follow-up discipline: No structured tracking in place to confirm responses, next steps, or conversion",
+  ],
+  accountStatusRows: [
+    ["Amazon", "Not yet started", "—", "Call BCD Travel Atlanta and ask for Amazon sourcing manager. Prepare rate before calling."],
+    ["Fedrooms", "Redirect needed", "Current path misaligned", "Route through CWTSATO. Confirm GSA eligibility first."],
+    ["McKinsey & Co", "In progress", "Assistant contact", "Request travel manager referral or Lawyers Travel Service connection."],
+    ["JP Morgan Chase", "In progress", "Corporate contact", "Confirm TMC and align rate positioning before follow-up."],
+    ["Royal Caribbean", "In progress", "Crew ops only", "Clarify crew vs. corporate and secure correct decision-maker."],
+    ["House of Travel", "Confirmed", "Site visit booked", "Prepare for conversion and document follow-up after visit."],
+  ],
+  checklist: [
+    { id: 1, action: "Verify live availability in GDS through spot-check search", owner: "Aymin", priority: "High", status: "Pending", done: false, due: "", notes: "" },
+    { id: 2, action: "Validate Fedrooms eligibility requirements before outreach", owner: "Aymin", priority: "High", status: "Pending", done: false, due: "", notes: "" },
+    { id: 3, action: "Prepare and align corporate rate positioning for agency calls", owner: "Aymin", priority: "High", status: "Pending", done: false, due: "", notes: "" },
+    { id: 4, action: "Prepare Amazon rate offer and call BCD Atlanta", owner: "Aymin", priority: "High", status: "Pending", done: false, due: "", notes: "" },
+    { id: 5, action: "Follow up McKinsey, JP Morgan, and Royal Caribbean contacts", owner: "Aymin", priority: "Medium", status: "Pending", done: false, due: "", notes: "" },
+    { id: 6, action: "Document outcome of House of Travel and SDQ touchpoints", owner: "Aymin", priority: "Medium", status: "Pending", done: false, due: "", notes: "" },
+  ],
+  comments: [
+    { id: 1, person: "Advisor", text: "Use this area for weekly comments, clarifications, and guidance tied to activity execution.", date: new Date().toLocaleString() },
+  ],
+  updates: [
+    { person: "Advisor", text: "Initial weekly report loaded.", date: new Date().toLocaleString() },
+  ],
+};
 
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('exec', this)">Executive Summary</button>
-      <button class="tab-btn" onclick="showTab('market', this)">Market Position</button>
-      <button class="tab-btn" onclick="showTab('agency', this)">Agency Opportunities</button>
-      <button class="tab-btn" onclick="showTab('activity', this)">Sales Activity</button>
-      <button class="tab-btn" onclick="showTab('checklist', this)">Weekly Checklist</button>
-      <button class="tab-btn" onclick="showTab('updates', this)">Team Updates</button>
-    </div>
+function usePersistentState(key, initialValue) {
+  const [state, setState] = useState(initialValue);
+  const [loaded, setLoaded] = useState(false);
 
-    <div id="exec" class="panel active">
-      <div class="grid-3">
-        <div class="card metric">
-          <div class="label">Total market room nights</div>
-          <div class="value" contenteditable="true" id="metric1">11,845</div>
-        </div>
-        <div class="card metric">
-          <div class="label">Uma House GDS bookings</div>
-          <div class="value" contenteditable="true" id="metric2">0</div>
-        </div>
-        <div class="card metric">
-          <div class="label">Compset GDS bookings</div>
-          <div class="value" contenteditable="true" id="metric3">195</div>
-        </div>
-      </div>
-
-      <div class="card alert">
-        <div class="section-title">For the General Manager — one-paragraph overview</div>
-        <textarea id="execSummary">The forward-looking GDS data shows the market is healthy and growing. Uma House's competitive set is actively capturing major corporate demand, while the hotel is not yet showing GDS production. The opportunity is clear: ensuring GDS visibility while continuing targeted agency and corporate outreach will position the hotel to begin capturing this demand over the next 90 days.</textarea>
-      </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <div class="section-title">What is working well</div>
-          <textarea id="workingWell">Aymin is making calls consistently across NYC, Miami, and Nashville
-Good first contacts at McKinsey and Royal Caribbean
-House of Travel site visit confirmed
-Written call script in place and being used</textarea>
-        </div>
-        <div class="card">
-          <div class="section-title">Immediate commercial focus</div>
-          <textarea id="commercialFocus">Amazon remains highest priority based on demand
-Fedrooms access path should be corrected to CWTSATO
-Agency conversations should lead with a defined rate position
-Early calls should confirm decision-maker and booking flow</textarea>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Leadership alignment</div>
-        <textarea id="leadership">GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport
-Rates: Approve corporate rate range for agency outreach
-Fedrooms: Decide go / no-go and align with CWTSATO path
-Positioning: Align on what is being used in calls
-Constraints: Confirm no availability or rate restrictions blocking bookings</textarea>
-      </div>
-    </div>
-
-    <div id="market" class="panel">
-      <div class="card">
-        <div class="section-title">Market Position</div>
-        <textarea id="marketSummary">The majority of this demand is corporate travel booked through agencies and travel management companies via GDS, not direct hotel relationships. The compset is capturing room nights from these accounts while Uma House is not yet participating, indicating this is an access issue rather than a demand issue.</textarea>
-      </div>
-      <div class="card">
-        <table id="marketTable">
-          <thead>
-            <tr>
-              <th>Corporation</th>
-              <th>Market RNs</th>
-              <th>Compset RNs</th>
-              <th>Hotel RNs</th>
-              <th>Compset Share</th>
-              <th>YOY</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td contenteditable="true">Fedrooms (Primary)</td><td contenteditable="true">2,098</td><td contenteditable="true">83</td><td contenteditable="true">0</td><td contenteditable="true">4%</td><td contenteditable="true">+949</td></tr>
-            <tr><td contenteditable="true">Amazon (Primary)</td><td contenteditable="true">855</td><td contenteditable="true">52</td><td contenteditable="true">0</td><td contenteditable="true">6.1%</td><td contenteditable="true">+417</td></tr>
-            <tr><td contenteditable="true">Royal Caribbean (Secondary)</td><td contenteditable="true">801</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+106</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="agency" class="panel">
-      <div class="card">
-        <div class="section-title">Agency Opportunities</div>
-        <table id="agencyTable">
-          <thead>
-            <tr>
-              <th>Agency</th>
-              <th>Primary demand drivers</th>
-              <th>Contact path</th>
-              <th>Opportunity gap</th>
-              <th>Revenue at 10%</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td contenteditable="true">BCD 1S US</td><td contenteditable="true">Amazon, Fedrooms</td><td contenteditable="true">Atlanta office → sourcing desk</td><td contenteditable="true">−3,587</td><td contenteditable="true">~$65K</td></tr>
-            <tr><td contenteditable="true">NAVAN</td><td contenteditable="true">Tech corporate</td><td contenteditable="true">navanforhotels.com</td><td contenteditable="true">−3,511</td><td contenteditable="true">~$80K</td></tr>
-            <tr><td contenteditable="true">CONNEXIONS</td><td contenteditable="true">Leisure corporate mix</td><td contenteditable="true">Preferred hotel program</td><td contenteditable="true">−6,094</td><td contenteditable="true">~$126K</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="activity" class="panel">
-      <div class="card">
-        <div class="section-title">Key contacts and outreach path</div>
-        <table id="contactsTable">
-          <thead>
-            <tr>
-              <th>Account</th>
-              <th>Agency / Channel</th>
-              <th>Contact</th>
-              <th>Phone</th>
-              <th>Website</th>
-              <th>Recommended approach</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td contenteditable="true">Amazon</td>
-              <td contenteditable="true">BCD Travel (Atlanta)</td>
-              <td contenteditable="true">Atlanta sourcing desk</td>
-              <td contenteditable="true">(678) 579-8741</td>
-              <td contenteditable="true">www.bcdtravel.com</td>
-              <td contenteditable="true">Ask for Amazon sourcing or travel manager. Position corporate rate before call.</td>
-            </tr>
-            <tr>
-              <td contenteditable="true">Fedrooms</td>
-              <td contenteditable="true">CWTSATO Travel</td>
-              <td contenteditable="true">kfarwell@cwtsato.com</td>
-              <td contenteditable="true">866-576-4635</td>
-              <td contenteditable="true">www.cwtsatotravel.com</td>
-              <td contenteditable="true">Confirm GSA eligibility first, then position property for government travel.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="checklist" class="panel">
-      <div class="card">
-        <div class="section-title">Pending items (this week)</div>
-        <div class="small">Aymin can update status, notes, and add activities here.</div>
-        <table id="checklistTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Action</th>
-              <th>Owner</th>
-              <th>Status</th>
-              <th>Done</th>
-              <th>Notes</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="checklistBody">
-            <tr>
-              <td>1</td>
-              <td contenteditable="true">Verify live availability in GDS through spot-check search</td>
-              <td contenteditable="true">Aymin</td>
-              <td>
-                <select>
-                  <option>Pending</option>
-                  <option>In Progress</option>
-                  <option>Done</option>
-                </select>
-              </td>
-              <td><input type="checkbox" /></td>
-              <td contenteditable="true"></td>
-              <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td contenteditable="true">Validate Fedrooms eligibility requirements before outreach</td>
-              <td contenteditable="true">Aymin</td>
-              <td>
-                <select>
-                  <option>Pending</option>
-                  <option>In Progress</option>
-                  <option>Done</option>
-                </select>
-              </td>
-              <td><input type="checkbox" /></td>
-              <td contenteditable="true"></td>
-              <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="updates" class="panel">
-      <div class="card">
-        <div class="section-title">Team Updates</div>
-        <textarea id="teamUpdates">Use this section for comments from Aymin, advisor notes, and weekly follow-up updates.</textarea>
-      </div>
-    </div>
-
-    <div id="status" class="status-note"></div>
-  </div>
-
-  <script>
-   const SUPABASE_URL = "https://utcgwkgtjlyfjgwoczw.supabase.co";
-   const SUPABASE_KEY = "sb_publishable_XXXX";
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    function showTab(id, btn) {
-      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      btn.classList.add("active");
-    }
-
-    function addChecklistRow() {
-      const body = document.getElementById("checklistBody");
-      const rowCount = body.querySelectorAll("tr").length + 1;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${rowCount}</td>
-        <td contenteditable="true">New activity</td>
-        <td contenteditable="true">Aymin</td>
-        <td>
-          <select>
-            <option>Pending</option>
-            <option>In Progress</option>
-            <option>Done</option>
-          </select>
-        </td>
-        <td><input type="checkbox" /></td>
-        <td contenteditable="true"></td>
-        <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
-      `;
-      body.appendChild(row);
-    }
-
-    function deleteRow(button) {
-      const row = button.closest("tr");
-      row.remove();
-      renumberRows();
-    }
-
-    function renumberRows() {
-      document.querySelectorAll("#checklistBody tr").forEach((row, index) => {
-        row.cells[0].innerText = index + 1;
-      });
-    }
-
-    function collectTable(tableId) {
-      const rows = [];
-      document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
-        const row = [];
-        tr.querySelectorAll("td").forEach(td => {
-          const select = td.querySelector("select");
-          const checkbox = td.querySelector("input[type='checkbox']");
-          if (select) row.push(select.value);
-          else if (checkbox) row.push(checkbox.checked);
-          else row.push(td.innerText);
-        });
-        rows.push(row);
-      });
-      return rows;
-    }
-
-    function restoreTable(tableId, rows, checklist = false) {
-      const body = document.querySelector(`#${tableId} tbody`);
-      body.innerHTML = "";
-      rows.forEach((r, i) => {
-        const tr = document.createElement("tr");
-        if (checklist) {
-          tr.innerHTML = `
-            <td>${r[0] || i + 1}</td>
-            <td contenteditable="true">${r[1] || ""}</td>
-            <td contenteditable="true">${r[2] || ""}</td>
-            <td>
-              <select>
-                <option ${r[3] === "Pending" ? "selected" : ""}>Pending</option>
-                <option ${r[3] === "In Progress" ? "selected" : ""}>In Progress</option>
-                <option ${r[3] === "Done" ? "selected" : ""}>Done</option>
-              </select>
-            </td>
-            <td><input type="checkbox" ${r[4] ? "checked" : ""} /></td>
-            <td contenteditable="true">${r[5] || ""}</td>
-            <td><button class="btn" onclick="deleteRow(this)">Delete</button></td>
-          `;
-        } else {
-          tr.innerHTML = r.map(cell => `<td contenteditable="true">${cell || ""}</td>`).join("");
+  useEffect(() => {
+    const loadData = async () => {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        try {
+          setState(JSON.parse(saved));
+        } catch {
+          setState(initialValue);
         }
-        body.appendChild(tr);
-      });
-    }
-
-    function getDashboardData() {
-      return {
-        titleText: document.getElementById("titleText").innerText,
-        subText: document.getElementById("subText").innerText,
-        sourceText: document.getElementById("sourceText").innerText,
-        focusText: document.getElementById("focusText").innerText,
-        metric1: document.getElementById("metric1").innerText,
-        metric2: document.getElementById("metric2").innerText,
-        metric3: document.getElementById("metric3").innerText,
-        execSummary: document.getElementById("execSummary").value,
-        workingWell: document.getElementById("workingWell").value,
-        commercialFocus: document.getElementById("commercialFocus").value,
-        leadership: document.getElementById("leadership").value,
-        marketSummary: document.getElementById("marketSummary").value,
-        teamUpdates: document.getElementById("teamUpdates").value,
-        marketRows: collectTable("marketTable"),
-        agencyRows: collectTable("agencyTable"),
-        contactsRows: collectTable("contactsTable"),
-        checklistRows: collectTable("checklistTable")
-      };
-    }
-
-    function setDashboardData(data) {
-      document.getElementById("titleText").innerText = data.titleText || "";
-      document.getElementById("subText").innerText = data.subText || "";
-      document.getElementById("sourceText").innerText = data.sourceText || "";
-      document.getElementById("focusText").innerText = data.focusText || "";
-      document.getElementById("metric1").innerText = data.metric1 || "";
-      document.getElementById("metric2").innerText = data.metric2 || "";
-      document.getElementById("metric3").innerText = data.metric3 || "";
-      document.getElementById("execSummary").value = data.execSummary || "";
-      document.getElementById("workingWell").value = data.workingWell || "";
-      document.getElementById("commercialFocus").value = data.commercialFocus || "";
-      document.getElementById("leadership").value = data.leadership || "";
-      document.getElementById("marketSummary").value = data.marketSummary || "";
-      document.getElementById("teamUpdates").value = data.teamUpdates || "";
-
-      if (data.marketRows) restoreTable("marketTable", data.marketRows, false);
-      if (data.agencyRows) restoreTable("agencyTable", data.agencyRows, false);
-      if (data.contactsRows) restoreTable("contactsTable", data.contactsRows, false);
-      if (data.checklistRows) restoreTable("checklistTable", data.checklistRows, true);
-    }
-
-    async function saveData() {
-      const payload = getDashboardData();
-      const { error } = await client.from("reports").insert([{ data: payload }]);
-      document.getElementById("status").innerText = error ? "Save failed" : "Dashboard saved successfully";
-    }
-
-    async function loadData() {
-      const { data, error } = await client
-        .from("reports")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (error) {
-        document.getElementById("status").innerText = "Load failed";
-        return;
       }
+      setLoaded(true);
+    };
+    loadData();
+  }, [key, initialValue]);
 
-      if (data && data.length > 0) {
-        setDashboardData(data[0].data);
-        document.getElementById("status").innerText = "Latest dashboard loaded";
-      } else {
-        document.getElementById("status").innerText = "No saved data yet";
+  useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem(key, JSON.stringify(state));
+  }, [state, key, loaded]);
+
+  return [state, setState];
+}
+
+function EditableTextArea({ value, onChange, rows = 4, placeholder = "" }) {
+  return (
+    <Textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={rows}
+      placeholder={placeholder}
+      className="min-h-[120px] resize-y rounded-2xl border-slate-200 bg-white leading-7 focus-visible:ring-[#2A4A8A]"
+    />
+  );
+}
+
+function HoverEditableList({ title, colorClass, items, onChange }) {
+  return (
+    <Card className="rounded-3xl border-slate-200 shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className={`text-base font-semibold ${colorClass}`}>{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {items.map((item, i) => (
+          <div key={i} className="rounded-2xl border border-transparent px-3 py-3 transition hover:border-slate-200 hover:bg-slate-50">
+            <Textarea
+              value={item}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = e.target.value;
+                onChange(next);
+              }}
+              rows={2}
+              className="min-h-[68px] resize-none border-0 bg-transparent p-0 leading-7 shadow-none focus-visible:ring-0"
+            />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MetricCard({ label, value, onLabelChange, onValueChange }) {
+  return (
+    <Card className="rounded-3xl bg-stone-200/80 shadow-sm">
+      <CardContent className="p-5 text-center">
+        <Input value={label} onChange={(e) => onLabelChange(e.target.value)} className="border-0 bg-transparent p-0 text-center text-xs text-slate-600 shadow-none focus-visible:ring-0" />
+        <Input value={value} onChange={(e) => onValueChange(e.target.value)} className="border-0 bg-transparent p-0 text-center text-3xl font-semibold shadow-none focus-visible:ring-0" />
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function EpicSalesWeeklyApp() {
+  const [data, setData] = usePersistentState("epic-sales-weekly-app", defaultData);
+  const [newComment, setNewComment] = useState("");
+  const [newUpdate, setNewUpdate] = useState("");
+
+  const completion = useMemo(() => {
+    const total = data.checklist.length || 1;
+    const done = data.checklist.filter((i) => i.done).length;
+    return Math.round((done / total) * 100);
+  }, [data.checklist]);
+
+  const updateChecklist = (id, patch) => {
+    setData((prev) => ({
+      ...prev,
+      checklist: prev.checklist.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    }));
+  };
+
+  const addChecklistItem = () => {
+    setData((prev) => ({
+      ...prev,
+      checklist: [
+        ...prev.checklist,
+        { id: Date.now(), action: "New initiative", owner: "Aymin", priority: "Medium", status: "Pending", done: false, due: "", notes: "" },
+      ],
+    }));
+  };
+
+  const deleteChecklistItem = (id) => {
+    setData((prev) => ({ ...prev, checklist: prev.checklist.filter((i) => i.id !== id) }));
+  };
+
+  const addComment = () => {
+    if (!newComment.trim()) return;
+    setData((prev) => ({
+      ...prev,
+      comments: [
+        { id: Date.now(), person: "Aymin / Advisor", text: newComment.trim(), date: new Date().toLocaleString() },
+        ...prev.comments,
+      ],
+    }));
+    setNewComment("");
+  };
+
+  const addUpdate = () => {
+    if (!newUpdate.trim()) return;
+    setData((prev) => ({
+      ...prev,
+      updates: [
+        { person: "Team update", text: newUpdate.trim(), date: new Date().toLocaleString() },
+        ...prev.updates,
+      ],
+    }));
+    setNewUpdate("");
+  };
+
+  const exportJson = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "epic-sales-weekly-data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importJson = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const parsed = JSON.parse(String(evt.target?.result || "{}"));
+        setData(parsed);
+      } catch {
+        alert("File could not be imported.");
       }
-    }
-  </script>
-</body>
-</html>
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div className="min-h-screen bg-stone-100 p-4 md:p-8">
+      <div className="mx-auto max-w-7xl space-y-4">
+        <Card className="rounded-3xl border-0 bg-[#1B2E5E] text-white shadow-lg">
+          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-2">
+              <Input value={data.header.title} onChange={(e) => setData({ ...data, header: { ...data.header, title: e.target.value } })} className="border-0 bg-transparent p-0 text-xl font-semibold text-white shadow-none focus-visible:ring-0 md:text-2xl" />
+              <Input value={`${data.header.property} · Sales Manager: ${data.header.manager} · For: ${data.header.audience}`} onChange={(e) => {
+                const parts = e.target.value.split(" · Sales Manager: ");
+                const property = parts[0] || "";
+                const right = parts[1]?.split(" · For: ") || [];
+                setData({ ...data, header: { ...data.header, property, manager: right[0] || data.header.manager, audience: right[1] || data.header.audience } });
+              }} className="border-0 bg-transparent p-0 text-sm text-slate-200 shadow-none focus-visible:ring-0" />
+              <Input value={`Consultant Review · Source: ${data.header.source} · ${data.header.timeframe}`} onChange={(e) => setData({ ...data, header: { ...data.header, timeframe: e.target.value.replace(`Consultant Review · Source: ${data.header.source} · `, "") } })} className="border-0 bg-transparent p-0 text-sm text-slate-300 shadow-none focus-visible:ring-0" />
+            </div>
+            <div className="space-y-2 text-left md:text-right">
+              <div className="text-xs text-slate-300">Action focus</div>
+              <Input value={data.header.actionFocus} onChange={(e) => setData({ ...data, header: { ...data.header, actionFocus: e.target.value } })} className="border-0 bg-transparent p-0 text-lg font-semibold text-white shadow-none focus-visible:ring-0 md:text-right" />
+              <div className="text-xs text-slate-300">Checklist completion: {completion}%</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="rounded-2xl" onClick={addChecklistItem}><Plus className="mr-2 h-4 w-4" />Add initiative</Button>
+          <Button variant="outline" className="rounded-2xl" onClick={exportJson}><Download className="mr-2 h-4 w-4" />Export updates</Button>
+          <label className="inline-flex cursor-pointer items-center rounded-2xl border bg-white px-4 py-2 text-sm shadow-sm">
+            <Upload className="mr-2 h-4 w-4" />Import updates
+            <input type="file" accept="application/json" className="hidden" onChange={importJson} />
+          </label>
+        </div>
+
+        <Tabs defaultValue="exec" className="space-y-4">
+          <TabsList className="flex h-auto flex-wrap justify-start gap-2 rounded-2xl bg-transparent p-0">
+            {[
+              ["exec", "Executive summary"],
+              ["market", "Market position"],
+              ["agencies", "Agency opportunities"],
+              ["feedback", "My feedback & follow-up"],
+              ["checklist", "Weekly checklist"],
+              ["updates", "Comments & updates"],
+            ].map(([value, label]) => (
+              <TabsTrigger key={value} value={value} className="rounded-2xl border bg-white px-4 py-2 data-[state=active]:bg-[#2A4A8A] data-[state=active]:text-white">{label}</TabsTrigger>
+            ))}
+          </TabsList>
+
+          <TabsContent value="exec" className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              {data.metrics.map((m, i) => (
+                <MetricCard
+                  key={i}
+                  label={m.label}
+                  value={m.value}
+                  onLabelChange={(v) => {
+                    const metrics = [...data.metrics];
+                    metrics[i].label = v;
+                    setData({ ...data, metrics });
+                  }}
+                  onValueChange={(v) => {
+                    const metrics = [...data.metrics];
+                    metrics[i].value = v;
+                    setData({ ...data, metrics });
+                  }}
+                />
+              ))}
+            </div>
+
+            <Card className="rounded-3xl border-l-4 border-l-blue-600 shadow-sm">
+              <CardHeader><CardTitle className="text-sm">For the General Manager — one-paragraph overview</CardTitle></CardHeader>
+              <CardContent><EditableTextArea value={data.executive.summary} onChange={(v) => setData({ ...data, executive: { ...data.executive, summary: v } })} rows={5} /></CardContent>
+            </Card>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <HoverEditableList title="What is working well" colorClass="text-green-700" items={data.executive.workingWell} onChange={(next) => setData({ ...data, executive: { ...data.executive, workingWell: next } })} />
+              <HoverEditableList title="Immediate commercial focus" colorClass="text-amber-700" items={data.executive.focus} onChange={(next) => setData({ ...data, executive: { ...data.executive, focus: next } })} />
+            </div>
+
+            <HoverEditableList title="Leadership alignment" colorClass="text-red-700" items={data.executive.leadership} onChange={(next) => setData({ ...data, executive: { ...data.executive, leadership: next } })} />
+
+            <Card className="rounded-3xl border-l-4 border-l-green-600 shadow-sm">
+              <CardContent className="p-5"><EditableTextArea value={data.executive.revenueContext} onChange={(v) => setData({ ...data, executive: { ...data.executive, revenueContext: v } })} rows={4} /></CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="market" className="space-y-4">
+            <Card className="rounded-3xl shadow-sm"><CardHeader><CardTitle>Market position</CardTitle></CardHeader><CardContent>
+              <EditableTextArea value={"The majority of this demand is corporate travel booked through agencies and travel management companies via GDS, not direct hotel relationships. The compset is capturing room nights from these accounts while Uma House is not yet participating, indicating this is an access issue rather than a demand issue."} onChange={() => {}} rows={4} />
+            </CardContent></Card>
+            <Card className="rounded-3xl shadow-sm"><CardHeader><CardTitle>Corporate accounts</CardTitle></CardHeader><CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Corporation</TableHead><TableHead>Market RNs</TableHead><TableHead>Compset RNs</TableHead><TableHead>Uma House RNs</TableHead><TableHead>Compset share</TableHead><TableHead>YOY</TableHead></TableRow></TableHeader>
+                <TableBody>{data.marketRows.map((row, i) => <TableRow key={i}>{row.map((cell, j) => <TableCell key={j}><Input value={cell} onChange={(e)=>{const rows=[...data.marketRows]; rows[i][j]=e.target.value; setData({...data, marketRows:rows});}} className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" /></TableCell>)}</TableRow>)}</TableBody>
+              </Table>
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="agencies" className="space-y-4">
+            <Card className="rounded-3xl shadow-sm"><CardHeader><CardTitle>Agency opportunities</CardTitle></CardHeader><CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Agency</TableHead><TableHead>Primary demand drivers</TableHead><TableHead>Contact path</TableHead><TableHead>Opportunity gap</TableHead><TableHead>Compset RNs</TableHead><TableHead>Market RNs</TableHead><TableHead>ADR</TableHead><TableHead>Revenue at 10%</TableHead></TableRow></TableHeader>
+                <TableBody>{data.agencyRows.map((row, i) => <TableRow key={i}>{row.map((cell, j) => <TableCell key={j}><Input value={cell} onChange={(e)=>{const rows=[...data.agencyRows]; rows[i][j]=e.target.value; setData({...data, agencyRows:rows});}} className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" /></TableCell>)}</TableRow>)}</TableBody>
+              </Table>
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-4">
+            <Card className="rounded-3xl shadow-sm"><CardHeader><CardTitle>Key contacts and outreach path</CardTitle></CardHeader><CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Account</TableHead><TableHead>Agency / Channel</TableHead><TableHead>Contact</TableHead><TableHead>Phone</TableHead><TableHead>Website</TableHead><TableHead>Recommended approach</TableHead></TableRow></TableHeader>
+                <TableBody>{data.contacts.map((r, i) => <TableRow key={i}>{Object.entries(r).map(([k, v]) => <TableCell key={k}><Input value={v} onChange={(e)=>{const arr=[...data.contacts]; arr[i][k]=e.target.value; setData({...data, contacts:arr});}} className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" /></TableCell>)}</TableRow>)}</TableBody>
+              </Table>
+            </CardContent></Card>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <HoverEditableList title="Strengths this week" colorClass="text-green-700" items={data.strengths} onChange={(next)=>setData({...data, strengths: next})} />
+              <HoverEditableList title="My follow-up and guidance" colorClass="text-amber-700" items={data.improvements} onChange={(next)=>setData({...data, improvements: next})} />
+            </div>
+
+            <Card className="rounded-3xl shadow-sm"><CardHeader><CardTitle>Account-by-account status and next step</CardTitle></CardHeader><CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Account</TableHead><TableHead>Status</TableHead><TableHead>Contact reached</TableHead><TableHead>Recommended next step</TableHead></TableRow></TableHeader>
+                <TableBody>{data.accountStatusRows.map((row, i) => <TableRow key={i}>{row.map((cell, j) => <TableCell key={j}><Input value={cell} onChange={(e)=>{const rows=[...data.accountStatusRows]; rows[i][j]=e.target.value; setData({...data, accountStatusRows:rows});}} className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" /></TableCell>)}</TableRow>)}</TableBody>
+              </Table>
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="checklist" className="space-y-4">
+            <Card className="rounded-3xl shadow-sm">
+              <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <CardTitle>Weekly checklist and initiatives</CardTitle>
+                  <p className="mt-1 text-sm text-slate-500">Use this section to track outreach, follow-ups, meetings, rate submissions, and outcomes each week.</p>
+                </div>
+                <Button onClick={addChecklistItem} className="rounded-2xl"><Plus className="mr-2 h-4 w-4" />Add activity</Button>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader><TableRow><TableHead>#</TableHead><TableHead>Action</TableHead><TableHead>Owner</TableHead><TableHead>Priority</TableHead><TableHead>Status</TableHead><TableHead>Done</TableHead><TableHead>Due</TableHead><TableHead>Notes</TableHead><TableHead></TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {data.checklist.map((item, idx) => (
+                      <TableRow key={item.id} className={item.done ? "bg-stone-50" : ""}>
+                        <TableCell>{idx + 1}</TableCell>
+                        <TableCell><Input value={item.action} onChange={(e) => updateChecklist(item.id, { action: e.target.value })} className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" /></TableCell>
+                        <TableCell>
+                          <Select value={item.owner} onValueChange={(v) => updateChecklist(item.id, { owner: v })}>
+                            <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Aymin">Aymin</SelectItem>
+                              <SelectItem value="Sales">Sales</SelectItem>
+                              <SelectItem value="Coordinator">Coordinator</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Select value={item.priority} onValueChange={(v) => updateChecklist(item.id, { priority: v })}>
+                            <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="High">High</SelectItem>
+                              <SelectItem value="Medium">Medium</SelectItem>
+                              <SelectItem value="Low">Low</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Select value={item.status} onValueChange={(v) => updateChecklist(item.id, { status: v })}>
+                            <SelectTrigger className="rounded-2xl"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Pending">Pending</SelectItem>
+                              <SelectItem value="In Progress">In Progress</SelectItem>
+                              <SelectItem value="Done">Done</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell><Checkbox checked={item.done} onCheckedChange={(v) => updateChecklist(item.id, { done: Boolean(v) })} /></TableCell>
+                        <TableCell><Input value={item.due} onChange={(e) => updateChecklist(item.id, { due: e.target.value })} className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" placeholder="Date" /></TableCell>
+                        <TableCell><Input value={item.notes} onChange={(e) => updateChecklist(item.id, { notes: e.target.value })} className="border-0 bg-transparent p-0 shadow-none focus-visible:ring-0" placeholder="Update / result" /></TableCell>
+                        <TableCell><Button variant="ghost" size="icon" onClick={() => deleteChecklistItem(item.id)}><Trash2 className="h-4 w-4" /></Button></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-3xl shadow-sm">
+              <CardHeader><CardTitle>Comments on activity and follow-up</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Add comment, question, or follow-up note" className="rounded-2xl" />
+                  <Button onClick={addComment} className="rounded-2xl"><MessageSquarePlus className="mr-2 h-4 w-4" />Add comment</Button>
+                </div>
+                <div className="space-y-3">
+                  {data.comments.map((c) => (
+                    <Card key={c.id} className="rounded-2xl bg-stone-50"><CardContent className="p-4"><div className="mb-1 flex items-center justify-between"><Badge variant="secondary">{c.person}</Badge><span className="text-xs text-slate-500">{c.date}</span></div><p className="text-sm text-slate-700">{c.text}</p></CardContent></Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="updates" className="space-y-4">
+            <Card className="rounded-3xl shadow-sm"><CardHeader><CardTitle>Team updates log</CardTitle></CardHeader><CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input value={newUpdate} onChange={(e) => setNewUpdate(e.target.value)} placeholder="Add update from advisor, GM, or sales" className="rounded-2xl" />
+                <Button onClick={addUpdate} className="rounded-2xl"><Save className="mr-2 h-4 w-4" />Save update</Button>
+              </div>
+              <div className="space-y-3">
+                {data.updates.map((u, i) => (
+                  <Card key={i} className="rounded-2xl bg-stone-50"><CardContent className="p-4"><div className="mb-1 flex items-center justify-between"><Badge variant="secondary">{u.person}</Badge><span className="text-xs text-slate-500">{u.date}</span></div><p className="text-sm text-slate-700">{u.text}</p></CardContent></Card>
+                ))}
+              </div>
+            </CardContent></Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
