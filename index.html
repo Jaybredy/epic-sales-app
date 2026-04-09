@@ -257,7 +257,7 @@ The recommendations in this report are sequenced by urgency. Every account above
 
         <div class="g2">
           <div class="card gl"><div class="ct">What is Working Well</div><div id="wwList"></div></div>
-          <div class="card al"><div class="ct">Immediate Commercial Focus</div><div id="cfList"></div></div>
+          <div class="card al"><div class="ct">Immediate Commercial Focus</div><div id="cfList"></div><button class="addbtn eo" onclick="addListItem('cfList')">+ Add item</button></div>
         </div>
         <div class="card"><div class="ct">Leadership Alignment Required</div><div id="laList"></div></div>
       </div>
@@ -502,7 +502,15 @@ function renderList(id,items){
 renderList('wwList',['Aymin is making calls consistently across NYC, Miami, and Nashville','Good first contacts at McKinsey and Royal Caribbean achieved','House of Travel site visit confirmed','Written call script in place and being used']);
 renderList('cfList',['Amazon remains highest priority — outreach must start this week','Fedrooms access path should be corrected to CWTSATO','Agency conversations should lead with a defined rate position','Early calls should confirm decision-maker and booking flow']);
 renderList('laList',['GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport','Rates: Approve corporate rate range for agency outreach','Fedrooms: Decide go/no-go and align with CWTSATO path','Positioning: Align on what is being communicated in sales calls','Constraints: Confirm no availability or rate restrictions blocking bookings']);
+function addListItem(id){
+  var el=document.getElementById(id);
+  var d=document.createElement('div');d.className='li';
+  d.innerHTML='<span class="bull">&#8250;</span><textarea rows="2"></textarea>';
+  el.appendChild(d);
+}
 
+// ADD ROWS
+function addRow(tbodyId,html){
 // ADD ROWS
 function addRow(tbodyId,html){
   var tb=document.getElementById(tbodyId);var tr=document.createElement('tr');tr.innerHTML=html;tb.appendChild(tr);
