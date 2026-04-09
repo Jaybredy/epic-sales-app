@@ -514,10 +514,12 @@ async function loadData(){
         if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded from database — '+wkLabel);return;}
         else{setStatus('err','No data saved for '+wkLabel+' yet.');return;}
       }
-    }catch(e){console.warn('Supabase load error:',e
-)}
-  try{localStorage.setItem('epic_'+week,json);setStatus('ok','Loaded locally — '+wkLabel);}
-  catch(e){setStatus('err','Load failed: '+e.message);}
+   }catch(e){console.warn('Supabase load error:',e);}
+  }
+  var raw=localStorage.getItem('epic_'+week);
+  if(!raw){setStatus('err','No saved data for '+wkLabel+'.');return;}
+  applyData(JSON.parse(raw));
+  setStatus('ok','Loaded locally — '+wkLabel);
 }
 </script>
 </body>
