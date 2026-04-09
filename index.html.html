@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EPIC Sales Advisory Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:#F4F3EF;color:#111827;font-size:15px;line-height:1.6;}
+.topbar{background:#1B2E5E;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.brand{font-size:18px;font-weight:700;letter-spacing:.02em;white-space:nowrap;color:white;}
+.brand span{color:#C9A84C;}
+.topright{display:flex;align-items:center;gap:8px;}
+.week-label{color:rgba(255,255,255,.7);font-size:12px;font-weight:600;white-space:nowrap;}
+.wkdate{background:white;color:#1B2E5E;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:6px 10px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;width:150px;}
+.vbtn{padding:6px 14px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:7px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.1);color:white;font-weight:500;transition:all .15s;}
+.vbtn:hover{background:rgba(255,255,255,0.2);}
+.vbtn.on{background:#C9A84C;color:#1B2E5E;border-color:#C9A84C;font-weight:700;}
+.sbtn{background:#C9A84C;color:#1B2E5E;border:none;border-radius:7px;padding:7px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
+.sbtn:hover{opacity:.85;}
+.lbtn{background:rgba(255,255,255,0.12);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;}
+.hero{background:linear-gradient(135deg,#1B2E5E 0%,#243D7A 100%);color:white;padding:32px 28px;}
+.hero-inner{max-width:1140px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;}
+.hbadge{display:inline-block;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:#C9A84C;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:10px;}
+.hero h1{font-size:28px;font-weight:700;margin-bottom:8px;line-height:1.3;}
+.hero-meta{color:rgba(255,255,255,.7);font-size:14px;line-height:1.9;}
+.hero-meta strong{color:white;font-weight:600;}
+.fbox .fl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;text-align:right;font-weight:600;}
+.fbox .fv{font-size:24px;color:#C9A84C;text-align:right;font-weight:700;}
+.sbar{background:white;border-bottom:1px solid #E5E5E1;padding:8px 28px;font-size:13px;color:#555;display:flex;align-items:center;gap:8px;font-weight:500;}
+.dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;flex-shrink:0;}
+.dot.ok{background:#16A34A;}.dot.busy{background:#D97706;animation:blink 1s infinite;}.dot.err{background:#DC2626;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.wrap{max-width:1140px;margin:0 auto;padding:24px;}
+.mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.mc{background:white;border:1px solid #E5E5E1;border-radius:14px;padding:18px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.mc.dark{background:#1B2E5E;border-color:#1B2E5E;}
+.ml{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6B7280;margin-bottom:8px;font-weight:600;}
+.mc.dark .ml{color:rgba(255,255,255,.5);}
+.mv{font-size:32px;color:#1B2E5E;font-weight:700;line-height:1.1;}
+.mc.dark .mv{color:#C9A84C;}
+.mv.red{color:#DC2626;}
+.ms{font-size:12px;color:#9CA3AF;margin-top:4px;font-weight:500;}
+.mc.dark .ms{color:rgba(255,255,255,.4);}
+.tabwrap{background:white;border:1px solid #E5E5E1;border-radius:14px;overflow:hidden;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.tablist{display:flex;overflow-x:auto;border-bottom:2px solid #F3F4F6;}
+.tablist::-webkit-scrollbar{display:none;}
+.tbtn{flex-shrink:0;padding:14px 20px;font-size:14px;color:#6B7280;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;margin-bottom:-2px;font-family:'Inter',sans-serif;font-weight:500;transition:all .15s;}
+.tbtn:hover{color:#1B2E5E;background:#F9FAFB;}
+.tbtn.on{color:#1B2E5E;border-bottom-color:#1B2E5E;font-weight:700;}
+.tcontent{padding:24px;}
+.panel{display:none;}
+.panel.on{display:block;}
+.card{background:white;border:1px solid #E5E5E1;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.card.bl{border-left:4px solid #2A4A8A;background:#EEF3FB;}
+.card.gl{border-left:4px solid #16A34A;background:#F0FDF4;}
+.card.al{border-left:4px solid #D97706;background:#FFFBEB;}
+.card.rl{border-left:4px solid #DC2626;background:#FEF2F2;}
+.ct{font-size:16px;color:#1B2E5E;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #E5E5E1;font-weight:700;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+textarea,input[type=text],input[type=date],input[type=number],select{width:100%;padding:10px 12px;border:1px solid #D1D5DB;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:#111827;background:white;transition:border-color .15s;}
+textarea{min-height:90px;resize:none;line-height:1.6;overflow:hidden;}
+textarea:focus,input:focus,select:focus{outline:none;border-color:#2A4A8A;box-shadow:0 0 0 3px rgba(42,74,138,0.08);}
+[contenteditable="true"]:hover{background:rgba(42,74,138,0.04);border-radius:4px;}
+[contenteditable="true"]:focus{outline:2px solid rgba(42,74,138,0.2);border-radius:4px;}
+body.ro textarea,body.ro input,body.ro select{pointer-events:none;background:transparent;border-color:transparent;resize:none;}
+body.ro [contenteditable]{pointer-events:none;}
+body.ro .eo{display:none!important;}
+.tw{overflow-x:auto;border-radius:10px;border:1px solid #E5E5E1;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{background:#F9FAFB;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:11px 13px;text-align:left;font-weight:700;border-bottom:1px solid #E5E5E1;white-space:nowrap;}
+td{padding:11px 13px;border-top:1px solid #F3F4F6;vertical-align:top;color:#111827;white-space:normal;}
+td[contenteditable="true"]{white-space:normal;}
+tr:hover td{background:#FAFAFA;}
+td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
+.bg{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.bg-r{background:#FEE2E2;color:#DC2626;}
+.bg-a{background:#FEF3C7;color:#D97706;}
+.bg-b{background:#DBEAFE;color:#2563EB;}
+.bg-g{background:#D1FAE5;color:#16A34A;}
+.addbtn{background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:8px;padding:9px 18px;font-size:14px;cursor:pointer;margin-top:10px;font-family:'Inter',sans-serif;font-weight:600;transition:all .15s;}
+.addbtn:hover{background:#2A4A8A;color:white;border-color:#2A4A8A;}
+.logbtn{background:#1B2E5E;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
+.logbtn:hover{opacity:.85;}
+.clist{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+.citem{background:white;border:1px solid #E5E5E1;border-radius:12px;padding:14px 16px;}
+.cmeta{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.cauthor{font-weight:700;font-size:14px;color:#1B2E5E;}
+.cdate{font-size:12px;color:#9CA3AF;margin-left:auto;}
+.cbody{font-size:14px;color:#374151;line-height:1.7;outline:none;}
+.cbody:focus{background:rgba(42,74,138,0.04);border-radius:4px;}
+.cform{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:12px;padding:16px;}
+.crow{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.crow input,.crow select{flex:1;min-width:140px;width:auto;}
+.csubmit{background:#1B2E5E;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;}
+.li:last-child{border-bottom:none;}
+.bull{color:#C9A84C;font-weight:700;flex-shrink:0;margin-top:3px;font-size:16px;}
+.li textarea{border:none;background:transparent;padding:0;min-height:unset;resize:none;font-size:14px;color:#374151;}
+.log-section{background:white;border:1px solid #E5E5E1;border-radius:14px;padding:20px;margin-bottom:16px;}
+.log-section-title{font-size:14px;font-weight:700;color:#1B2E5E;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.log-section-title .tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.tag-consultant{background:#DBEAFE;color:#2563EB;}
+.tag-aymin{background:#D1FAE5;color:#16A34A;}
+.tag-response{background:#FEF3C7;color:#D97706;}
+.wow-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
+.wow-field label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;display:block;margin-bottom:5px;font-weight:600;}
+.wow-field input{text-align:center;font-size:22px;font-weight:700;color:#1B2E5E;padding:10px;}
+.wow-table td.up{color:#16A34A;font-weight:700;}
+.wow-table td.down{color:#DC2626;font-weight:700;}
+.file-upload-area{border:2px dashed #D1D5DB;border-radius:8px;padding:16px;text-align:center;background:#F9FAFB;cursor:pointer;transition:border-color .15s;}
+.file-upload-area:hover{border-color:#2A4A8A;background:#EEF3FB;}
+.file-upload-label{font-size:13px;color:#6B7280;font-weight:500;}
+.file-attached{background:#F0FDF4;border:1px solid #16A34A;border-radius:8px;padding:10px 14px;font-size:13px;color:#16A34A;font-weight:600;display:flex;align-items:center;gap:8px;margin-top:8px;}
+@media(max-width:768px){
+  .mrow{grid-template-columns:1fr 1fr;}
+  .g2{grid-template-columns:1fr;}
+  .hero-inner{flex-direction:column;}
+  .fbox{text-align:left;}
+  .wow-row{grid-template-columns:1fr 1fr;}
+  .topright{gap:4px;}
+  .wkdate{width:120px;}
+  .week-label{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">EPIC <span>Sales</span> Portal</div>
+  <div class="topright">
+    <span class="week-label">Week of</span>
+    <input type="date" class="wkdate" id="weekDate">
+    <button class="vbtn on" id="vbtnEdit" onclick="setView('edit')">Consultant</button>
+    <button class="vbtn" id="vbtnRead" onclick="setView('read')">GM View</button>
+    <button class="lbtn" onclick="loadData()">Load</button>
+    <button class="sbtn eo" onclick="saveData()">Save</button>
+  </div>
+</div>
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hbadge">Sales Intelligence Brief</div>
+      <h1 id="titleText" contenteditable="true">EPIC Sales Weekly Feedback</h1>
+      <div class="hero-meta">
+        <strong id="hotelText" contenteditable="true">Uma House by Yurbban South Beach</strong><br>
+        Sales Manager: <span id="managerText" contenteditable="true">Aymin</span> &nbsp;&middot;&nbsp;
+        Source: <span id="sourceText" contenteditable="true">TravelClick Agency 360</span><br>
+        <span id="periodText" contenteditable="true">Forward-looking demand &middot; Next 90 days</span>
+      </div>
+    </div>
+    <div class="fbox">
+      <div class="fl">Action Focus</div>
+      <div class="fv" id="focusText" contenteditable="true">Next 90 days</div>
+    </div>
+  </div>
+</div>
+<div class="sbar">
+  <span class="dot" id="sdot"></span>
+  <span id="stxt">Select a date and click Load or Save</span>
+</div>
+<div class="wrap">
+  <div class="mrow">
+    <div class="mc dark"><div class="ml">Total Market RNs</div><div class="mv" id="m1" contenteditable="true">11,845</div><div class="ms">Next 90 days</div></div>
+    <div class="mc"><div class="ml">Uma House GDS</div><div class="mv red" id="m2" contenteditable="true">0</div><div class="ms">Bookings captured</div></div>
+    <div class="mc"><div class="ml">Compset GDS</div><div class="mv" id="m3" contenteditable="true">195</div><div class="ms">Room nights</div></div>
+    <div class="mc"><div class="ml">Revenue Opportunity</div><div class="mv" id="m4" contenteditable="true">$271K</div><div class="ms">At 10% capture</div></div>
+  </div>
+  <div class="tabwrap">
+    <div class="tablist">
+      <button class="tbtn on" onclick="showTab('exec',this)">Executive Summary</button>
+      <button class="tbtn" onclick="showTab('market',this)">Market Position</button>
+      <button class="tbtn" onclick="showTab('agency',this)">Agency Opportunities</button>
+      <button class="tbtn" onclick="showTab('feedback',this)">My Feedback</button>
+      <button class="tbtn" onclick="showTab('saleslog',this)">Weekly Sales Log</button>
+      <button class="tbtn" onclick="showTab('comments',this)">Comments</button>
+    </div>
+    <div class="tcontent">
+      <div id="exec" class="panel on">
+        <div class="card bl">
+          <div class="ct">For the General Manager &mdash; Overview</div>
+          <textarea id="execSummary">The April Agency 360 report covers the next 90 days of forward-looking demand and confirms the South Beach corporate market is not just healthy, it is accelerating. Uma House's competitive set is actively capturing this demand while the hotel shows zero GDS production. This is an access and visibility issue, not a demand issue. The accounts are there. We just need to get in front of them.
+
+National Airlines is the standout, with 475 market RNs in the next 90 days, up +2,400% vs last year, zero compset, zero hotel. This is essentially a brand new account that exploded into the market. They are based in Miami at (305) 576-3200 and book through CTC II. A Miami-based airline with South Beach demand is a natural fit for Uma House and nobody in the compset has touched it yet.
+
+Amazon is up +95% year over year, now at 926 RNs vs 476 last year. The urgency is even higher than originally shown. Fedrooms is up +74%, now at 2,137 RNs. Both book through agencies with direct contact paths in this report.
+
+Citigroup, 215 market RNs, up +63%, but the compset already has 49 RNs. Competitors are starting to capture this account. We need to move before it is locked in. Books through AEGBT.
+
+VISA, 202 market RNs, up +76%, zero compset, zero hotel. Books through NAVAN which is already listed in this portal, a warm path Aymin can activate quickly.
+
+Bloomberg International, 236 market RNs, more than doubled vs last year (+107%), zero compset, zero hotel. Books through BCD London.
+
+The recommendations in this report are sequenced by urgency. Every account above has a direct contact path, phone number, and recommended approach in the Agency Opportunities tab.</textarea>
+        </div>
+        <div class="card" style="border-left:4px solid #C9A84C;background:#FFFDF5;">
+          <div class="ct" contenteditable="true" style="color:#92400E;">Market Intelligence Highlights &mdash; April 2026</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
+              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">New Account, Act Now</div>
+              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">National Airlines</div>
+              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">475 RNs, +2,400% YOY, Zero compset, Miami-based</div>
+              <div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;">Brand new demand entering market, no competitor has captured this yet</div>
+            </div>
+            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
+              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">Compset Moving In</div>
+              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">Citigroup</div>
+              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">215 RNs, +63% YOY, 49 compset RNs</div>
+              <div contenteditable="true" style="font-size:12px;color:#DC2626;margin-top:4px;">Competitors already booking, window closing fast</div>
+            </div>
+            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
+              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">Growing Fast</div>
+              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">Amazon</div>
+              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">926 RNs, +95% YOY, 52 compset RNs</div>
+              <div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;">Bigger than originally shown, outreach urgency is higher</div>
+            </div>
+            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
+              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">Local Warm Path</div>
+              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">EY / Ernst &amp; Young</div>
+              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">565 RNs, +2% YOY, 5 compset RNs</div>
+              <div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;">Books through BTM Brickell Travel, Miami local agency, easy outreach</div>
+            </div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="card gl"><div class="ct">What is Working Well</div><div id="wwList"></div><button class="addbtn eo" onclick="addListItem('wwList')">+ Add item</button></div>
+          <div class="card al"><div class="ct">Immediate Commercial Focus</div><div id="cfList"></div><button class="addbtn eo" onclick="addListItem('cfList')">+ Add item</button></div>
+        </div>
+        <div class="card"><div class="ct">Leadership Alignment Required</div><div id="laList"></div></div>
+      </div>
+      <div id="market" class="panel">
+        <div class="card"><div class="ct">Market Context</div><textarea id="marketSum">The majority of this demand is corporate travel booked through agencies and travel management companies via GDS, not direct hotel relationships. The compset is capturing room nights from these accounts while Uma House is not yet participating, indicating this is an access issue rather than a demand issue. Several accounts have shown explosive year-over-year growth this month, creating a narrow window of opportunity before competitors lock in preferred status.</textarea></div>
+        <div class="card">
+          <div class="ct">Corporate Demand Breakdown</div>
+          <div class="tw"><table>
+            <thead><tr><th>Corporation</th><th>Priority</th><th>Market RNs</th><th>Compset RNs</th><th>Hotel RNs</th><th>Compset Share</th><th>YOY Growth</th><th>Trend</th></tr></thead>
+            <tbody id="mktBody">
+              <tr><td contenteditable="true">Fedrooms</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">2,137</td><td contenteditable="true">91</td><td contenteditable="true">0</td><td contenteditable="true">4.3%</td><td contenteditable="true">+912 RNs</td><td><span class="bg bg-g">+74% YOY</span></td></tr>
+              <tr><td contenteditable="true">Amazon</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">926</td><td contenteditable="true">52</td><td contenteditable="true">0</td><td contenteditable="true">5.6%</td><td contenteditable="true">+450 RNs</td><td><span class="bg bg-g">+95% YOY</span></td></tr>
+              <tr><td contenteditable="true">Royal Caribbean</td><td><span class="bg bg-a">Secondary</span></td><td contenteditable="true">813</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+106 RNs</td><td><span class="bg bg-g">+15% YOY</span></td></tr>
+              <tr><td contenteditable="true">National Airlines</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">475</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+456 RNs</td><td><span class="bg bg-g">+2,400% YOY</span></td></tr>
+              <tr><td contenteditable="true">EY / Ernst &amp; Young</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">565</td><td contenteditable="true">5</td><td contenteditable="true">0</td><td contenteditable="true">0.9%</td><td contenteditable="true">+11 RNs</td><td><span class="bg bg-b">+2% YOY</span></td></tr>
+              <tr><td contenteditable="true">Citigroup</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">215</td><td contenteditable="true">49</td><td contenteditable="true">0</td><td contenteditable="true">22.8%</td><td contenteditable="true">+83 RNs</td><td><span class="bg bg-g">+63% YOY</span></td></tr>
+              <tr><td contenteditable="true">Bloomberg International</td><td><span class="bg bg-a">Secondary</span></td><td contenteditable="true">236</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+122 RNs</td><td><span class="bg bg-g">+107% YOY</span></td></tr>
+              <tr><td contenteditable="true">VISA</td><td><span class="bg bg-a">Secondary</span></td><td contenteditable="true">202</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+87 RNs</td><td><span class="bg bg-g">+76% YOY</span></td></tr>
+              <tr><td contenteditable="true">McKinsey &amp; Co</td><td><span class="bg bg-b">Emerging</span></td><td contenteditable="true">526</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">-16 RNs</td><td><span class="bg bg-a">-3% YOY</span></td></tr>
+            </tbody>
+          </table></div>
+          <button class="addbtn eo" onclick="addRow('mktBody','<td contenteditable=true>New Corp</td><td><span class=bg bg-b>Emerging</span></td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true>0</td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td>')">+ Add corporation</button>
+        </div>
+      </div>
+      <div id="agency" class="panel">
+        <div class="card">
+          <div class="ct">Top Agency Opportunities</div>
+          <div class="tw"><table>
+            <thead><tr><th>Agency</th><th>Primary Demand Drivers</th><th>Contact Path</th><th>Opportunity Gap (RNs)</th><th>Revenue at 10%</th><th>Why Now</th></tr></thead>
+            <tbody id="agBody">
+              <tr><td contenteditable="true">CTC II</td><td contenteditable="true">National Airlines</td><td contenteditable="true">Miami office, (305) 576-3200</td><td contenteditable="true">-475</td><td contenteditable="true">~$87K</td><td contenteditable="true">+2,400% new demand, zero compset penetration, act before competitors notice</td></tr>
+              <tr><td contenteditable="true">BTM Brickell Travel</td><td contenteditable="true">EY / Ernst &amp; Young</td><td contenteditable="true">Local Miami, (305) 856-8889</td><td contenteditable="true">-565</td><td contenteditable="true">~$103K</td><td contenteditable="true">Local Miami agency, warmest outreach path in entire report</td></tr>
+              <tr><td contenteditable="true">AEGBT</td><td contenteditable="true">Citigroup, McKinsey, Bank of America</td><td contenteditable="true">Phoenix, (305) 913-7239</td><td contenteditable="true">-900+</td><td contenteditable="true">~$165K</td><td contenteditable="true">Compset already has 49 Citigroup RNs, window closing, position now</td></tr>
+              <tr><td contenteditable="true">NAVAN</td><td contenteditable="true">VISA, Tech corporate</td><td contenteditable="true">navanforhotels.com</td><td contenteditable="true">-3,511</td><td contenteditable="true">~$80K</td><td contenteditable="true">VISA up +76% YOY, growing fast with zero compset capture</td></tr>
+              <tr><td contenteditable="true">BCD 1S US</td><td contenteditable="true">Amazon, Fedrooms</td><td contenteditable="true">Atlanta office, sourcing desk</td><td contenteditable="true">-3,587</td><td contenteditable="true">~$65K</td><td contenteditable="true">Amazon up +95% YOY, urgency higher than originally estimated</td></tr>
+              <tr><td contenteditable="true">CONNEXIONS</td><td contenteditable="true">Leisure corporate mix</td><td contenteditable="true">Preferred hotel program</td><td contenteditable="true">-6,094</td><td contenteditable="true">~$126K</td><td contenteditable="true">Largest single gap in report, broad corporate and leisure mix</td></tr>
+            </tbody>
+          </table></div>
+          <button class="addbtn eo" onclick="addRow('agBody','<td contenteditable=true>Agency</td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td>')">+ Add agency</button>
+        </div>
+        <div class="card">
+          <div class="ct">Key Contacts &amp; Outreach Path</div>
+          <div class="tw"><table>
+            <thead><tr><th>Account</th><th>Agency / Channel</th><th>Contact</th><th>Phone</th><th>Website</th><th style="min-width:260px;">Recommended Approach</th></tr></thead>
+            <tbody id="ctBody">
+              <tr><td contenteditable="true">National Airlines</td><td contenteditable="true">CTC II (Corporate Travel Consultants II)</td><td contenteditable="true">Nancy Rodriguez</td><td contenteditable="true" style="white-space:nowrap">(305) 576-3200</td><td contenteditable="true">ctc2.com</td><td contenteditable="true">Miami-based agency at 2699 Collins Ave, same neighborhood. Ask for Nancy Rodriguez. Lead with crew/corporate rate and South Beach proximity.</td></tr>
+              <tr><td contenteditable="true">EY / Ernst &amp; Young</td><td contenteditable="true">Brickell Travel Management</td><td contenteditable="true">Mitch Rodriguez, CEO</td><td contenteditable="true" style="white-space:nowrap">(305) 856-8889</td><td contenteditable="true">brickelltravel.com</td><td contenteditable="true">Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8fe2e6fbece7cfedfde6ece4eae3e3fbfdeef9eae3a1ece0e2">[email&#160;protected]</a>. Local Miami agency, 66 W Flagler St, Floor 8. Warm call, reference Brickell location and EY South Florida presence.</td></tr>
+              <tr><td contenteditable="true">Citigroup</td><td contenteditable="true">Amex GBT (AEGBT)</td><td contenteditable="true">Hotel sourcing portal</td><td contenteditable="true" style="white-space:nowrap">(305) 913-7239</td><td contenteditable="true">connectprofile.amexgbt.com</td><td contenteditable="true">Register property at connectprofile.amexgbt.com first. Then call (305) 913-7239 and ask for Citigroup account or Miami market sourcing manager.</td></tr>
+              <tr><td contenteditable="true">VISA</td><td contenteditable="true">NAVAN</td><td contenteditable="true">Vendor Program (hotel partners)</td><td contenteditable="true" style="white-space:nowrap">N/A</td><td contenteditable="true">navan.com/about/partners</td><td contenteditable="true">Register as hotel vendor at navan.com/about/partners (free). Select Vendor Program. Navan contacts you to complete setup. Confirms VISA rate visibility.</td></tr>
+              <tr><td contenteditable="true">Amazon</td><td contenteditable="true">BCD Travel (Atlanta)</td><td contenteditable="true">Atlanta sourcing desk</td><td contenteditable="true" style="white-space:nowrap">(678) 579-8741</td><td contenteditable="true">bcdtravel.com</td><td contenteditable="true">Ask specifically for Amazon sourcing or travel manager. Position corporate rate before call. Amazon up 95% YOY, urgency is high.</td></tr>
+              <tr><td contenteditable="true">Fedrooms</td><td contenteditable="true">CWTSATO Travel</td><td contenteditable="true">Hotel Program, <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="640c0b10010817240713101705100b1016051201084a070b09">[email&#160;protected]</a></td><td contenteditable="true" style="white-space:nowrap">866-576-4635</td><td contenteditable="true">cwtsatotravel.com</td><td contenteditable="true">Email <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2a42455e4f46596a495d5e594b5e455e584b5c4f4604494547">[email&#160;protected]</a> directly. Confirm GSA eligibility and FEMA certification first. Rates must be at or below federal per diem to qualify.</td></tr>
+              <tr><td contenteditable="true">Bloomberg International</td><td contenteditable="true">BCD Travel (London)</td><td contenteditable="true">BCD London office</td><td contenteditable="true" style="white-space:nowrap">+44 207 343 7628</td><td contenteditable="true">bcdtravel.com</td><td contenteditable="true">Up +107% YOY. Contact BCD London and ask for Bloomberg account. Position Miami as key US market destination for Bloomberg employees.</td></tr>
+            </tbody>
+          </table></div>
+          <button class="addbtn eo" onclick="addRow('ctBody','<td contenteditable=true>Account</td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true style=white-space:nowrap></td><td contenteditable=true></td><td contenteditable=true></td>')">+ Add contact</button>
+        </div>
+      </div>
+      <div id="feedback" class="panel">
+        <div class="g2">
+          <div class="card gl">
+            <div class="ct">Strengths This Week</div>
+            <textarea id="strengthsTxt">• High call volume across NYC, Miami, and Nashville
+• Written cold-call script in use
+• First contact at McKinsey and Royal Caribbean achieved
+• House of Travel site visit confirmed</textarea>
+          </div>
+          <div class="card al">
+            <div class="ct">My Follow-Up &amp; Guidance</div>
+            <textarea id="guidanceTxt">• Amazon: Outreach has not yet been initiated despite being the highest priority demand driver
+• Fedrooms: Outreach path misaligned and should route through CWTSATO
+• Call effectiveness: Script lacks a defined closing step to secure next action
+• Royal Caribbean: Current contact sits in crew operations; need to identify corporate travel decision-maker</textarea>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">Account-by-Account Status</div>
+          <div class="tw"><table>
+            <thead><tr><th>Account</th><th>Status</th><th>Contact Reached</th><th>Recommended Next Step</th><th>CRM Report</th></tr></thead>
+            <tbody id="acBody">
+              <tr><td contenteditable="true">Amazon</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">&mdash;</td><td contenteditable="true">Call BCD Travel Atlanta and ask for Amazon sourcing manager.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
+              <tr><td contenteditable="true">Fedrooms</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option selected>Redirect Needed</option></select></td><td contenteditable="true">Current path misaligned</td><td contenteditable="true">Route through CWTSATO. Confirm GSA eligibility first.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
+              <tr><td contenteditable="true">Royal Caribbean</td><td><select><option>Not Started</option><option selected>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">Initial crew ops contact</td><td contenteditable="true">Identify corporate travel decision-maker.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
+            </tbody>
+          </table></div>
+          <button class="addbtn eo" onclick="addRow('acBody','<td contenteditable=true>Account</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable=true></td><td contenteditable=true></td><td><label style=cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;>Upload <input type=file style=display:none; onchange=handleFileUpload(this)></label><span class=file-name style=font-size:12px;color:#16A34A;margin-left:6px;></span></td>')">+ Add account</button>
+        </div>
+        <div class="card"><div class="ct">Consultant Notes</div><textarea id="notesTxt" placeholder="Private notes for this advisory session..."></textarea></div>
+      </div>
+      <div id="saleslog" class="panel">
+        <div class="log-section">
+          <div class="log-section-title">
+            <span>This Week's Focus</span>
+            <span class="tag tag-consultant">Recommended by Advisor</span>
+          </div>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">You set the 3-5 priority actions for Aymin this week. She reads these before logging her update.</p>
+          <textarea id="weekFocus" placeholder="e.g.&#10;1. Call BCD Travel Atlanta, ask for Amazon sourcing manager&#10;2. Contact CWTSATO to confirm Fedrooms / GSA eligibility&#10;3. Follow up with House of Travel on site visit confirmation&#10;4. Identify corporate travel decision-maker at Royal Caribbean"></textarea>
+        </div>
+        <div class="log-section eo">
+          <div class="log-section-title">
+            <span>Aymin's Weekly Update</span>
+            <span class="tag tag-aymin">Filled by Aymin</span>
+          </div>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Aymin, fill this out each week before your sync with the consultant. Takes 2 minutes.</p>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">What I did this week</label>
+            <textarea id="ayminDid" placeholder="Summarize your outreach, calls, meetings, and any follow-ups completed this week..."></textarea>
+          </div>
+          <div class="g2">
+            <div>
+              <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Top win or progress</label>
+              <textarea id="ayminWin" placeholder="What moved forward this week?"></textarea>
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Biggest obstacle</label>
+              <textarea id="ayminBlock" placeholder="What got in the way or is still stuck?"></textarea>
+            </div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Quick numbers (optional)</label>
+            <div class="wow-row">
+              <div class="wow-field"><label>Calls Made</label><input type="number" id="aCalls" min="0" value="0"></div>
+              <div class="wow-field"><label>Emails Sent</label><input type="number" id="aEmails" min="0" value="0"></div>
+              <div class="wow-field"><label>Site Visits</label><input type="number" id="aSites" min="0" value="0"></div>
+              <div class="wow-field"><label>New Contacts</label><input type="number" id="aContacts" min="0" value="0"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Attach CRM Report (optional)</label>
+            <div class="file-upload-area" onclick="document.getElementById('ayminFile').click()">
+              <div class="file-upload-label">Click to attach your CRM report, any file type accepted</div>
+              <input type="file" id="ayminFile" style="display:none;">
+            </div>
+            <div id="fileLabel" style="display:none;" class="file-attached"></div>
+          </div>
+          <button class="logbtn" onclick="logActivity()">Submit My Update</button>
+        </div>
+        <div class="log-section">
+          <div class="log-section-title">
+            <span>Consultant Response</span>
+            <span class="tag tag-response">Filled by Consultant</span>
+          </div>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">After reviewing Aymin's update, add your feedback and guidance for the next week here.</p>
+          <textarea id="consultResponse" placeholder="e.g. Good progress on Royal Caribbean contact..."></textarea>
+        </div>
+        <div class="card">
+          <div class="ct">Week-over-Week Activity</div>
+          <div class="tw"><table class="wow-table">
+            <thead><tr><th>Week</th><th>Calls</th><th>Emails</th><th>Site Visits</th><th>New Contacts</th><th>What I Did</th><th>Top Win</th><th>Obstacle</th></tr></thead>
+            <tbody id="wowBody"><tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet. Aymin submits her first update above.</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div id="comments" class="panel">
+        <div class="card">
+          <div class="ct">Comments &amp; Updates</div>
+          <div class="clist" id="cList">
+            <div class="citem">
+              <div class="cmeta"><span class="cauthor">Advisor</span><span class="bg bg-b" style="font-size:12px">Advisor</span><span class="cdate">Week of Apr 7, 2026</span></div>
+              <div class="cbody" contenteditable="true">Initial report delivered. Priority focus: GDS visibility and Amazon/Fedrooms outreach. Please review the Weekly Sales Log and confirm you understand this week's focus before our next sync.</div>
+            </div>
+          </div>
+          <div class="cform eo">
+            <div class="crow">
+              <input type="text" id="cAuthor" placeholder="Your name">
+              <select id="cRole"><option>Advisor</option><option>Sales Manager</option><option>General Manager</option><option>Other</option></select>
+            </div>
+            <textarea id="cText" placeholder="Add a comment, question, or update..."></textarea>
+            <br><br>
+            <button class="csubmit" onclick="postComment()">Post Comment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
+var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
+(function(){
+  var today=new Date();
+  var y=today.getFullYear();
+  var m=String(today.getMonth()+1).padStart(2,'0');
+  var d=String(today.getDate()).padStart(2,'0');
+  document.getElementById('weekDate').value=y+'-'+m+'-'+d;
+})();
+function getWeekKey(){return document.getElementById('weekDate').value;}
+function getWeekLabel(){
+  var val=document.getElementById('weekDate').value;
+  if(!val)return 'No date selected';
+  var p=val.split('-');
+  var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+  return 'Wk '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function showTab(id,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  setTimeout(function(){document.querySelectorAll('#'+id+' textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},20);
+}
+function setView(mode){
+  var eb=document.getElementById('vbtnEdit'),rb=document.getElementById('vbtnRead');
+  if(mode==='read'){document.body.classList.add('ro');rb.classList.add('on');eb.classList.remove('on');}
+  else{document.body.classList.remove('ro');eb.classList.add('on');rb.classList.remove('on');}
+}
+function setStatus(state,msg){
+  document.getElementById('sdot').className='dot '+(state==='ok'?'ok':state==='busy'?'busy':'err');
+  document.getElementById('stxt').textContent=msg;
+}
+function handleFileUpload(input){
+  var f=input.files[0];
+  if(f){var span=input.closest('td').querySelector('.file-name');if(span)span.textContent='OK '+f.name;}
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var ayminFile=document.getElementById('ayminFile');
+  if(ayminFile){
+    ayminFile.addEventListener('change',function(){
+      var f=this.files[0];
+      if(f){
+        var lbl=document.getElementById('fileLabel');
+        lbl.style.display='flex';
+        lbl.innerHTML='Attached: <strong style="margin-left:4px;">'+f.name+'</strong><span style="color:#6B7280;margin-left:6px;">('+Math.round(f.size/1024)+' KB)</span><a href="#" onclick="document.getElementById(\'ayminFile\').value=\'\';document.getElementById(\'fileLabel\').style.display=\'none\';return false;" style="color:#DC2626;margin-left:auto;font-size:12px;font-weight:600;">Remove</a>';
+      }
+    });
+  }
+});
+function renderList(id,items){
+  var el=document.getElementById(id);if(!el)return;
+  el.innerHTML='';
+  items.forEach(function(txt){
+    var d=document.createElement('div');d.className='li';
+    d.innerHTML='<span class="bull">&#8250;</span><textarea>'+txt+'</textarea>';
+    el.appendChild(d);
+  });
+  el.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});
+}
+renderList('wwList',['Aymin is making calls consistently across NYC, Miami, and Nashville','Good first contacts at McKinsey and Royal Caribbean achieved','House of Travel site visit confirmed','Written call script in place and being used']);
+renderList('cfList',['Amazon remains highest priority, outreach must start this week','Fedrooms access path should be corrected to CWTSATO','Agency conversations should lead with a defined rate position','Early calls should confirm decision-maker and booking flow']);
+renderList('laList',['GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport','Rates: Approve corporate rate range for agency outreach','Fedrooms: Decide go/no-go and align with CWTSATO path','Positioning: Align on what is being communicated in sales calls','Constraints: Confirm no availability or rate restrictions blocking bookings']);
+function addListItem(id){
+  var el=document.getElementById(id);
+  var d=document.createElement('div');d.className='li';
+  d.innerHTML='<span class="bull">&#8250;</span><textarea></textarea>';
+  el.appendChild(d);
+  var ta=d.querySelector('textarea');
+  ta.focus();
+  ta.addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
+}
+function addRow(tbodyId,html){
+  var tb=document.getElementById(tbodyId);var tr=document.createElement('tr');tr.innerHTML=html;tb.appendChild(tr);
+}
+var activityLog=[];
+function logActivity(){
+  var week=getWeekKey(),wkLabel=getWeekLabel();
+  var fileInput=document.getElementById('ayminFile');
+  var fileName=fileInput&&fileInput.files[0]?fileInput.files[0].name:'';
+  var entry={week:week,label:wkLabel,did:document.getElementById('ayminDid').value,win:document.getElementById('ayminWin').value,block:document.getElementById('ayminBlock').value,calls:parseInt(document.getElementById('aCalls').value)||0,emails:parseInt(document.getElementById('aEmails').value)||0,sites:parseInt(document.getElementById('aSites').value)||0,contacts:parseInt(document.getElementById('aContacts').value)||0,crmFile:fileName};
+  var idx=activityLog.findIndex(function(e){return e.week===week;});
+  if(idx>=0)activityLog[idx]=entry;else activityLog.unshift(entry);
+  renderWOW();
+  setStatus('ok','Update submitted for '+wkLabel+', click Save.');
+  document.getElementById('ayminDid').value='';
+  document.getElementById('ayminWin').value='';
+  document.getElementById('ayminBlock').value='';
+  ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){document.getElementById(id).value=0;});
+  if(fileInput)fileInput.value='';
+  var fl=document.getElementById('fileLabel');if(fl)fl.style.display='none';
+}
+function renderWOW(){
+  var tb=document.getElementById('wowBody');
+  if(activityLog.length===0){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';return;}
+  tb.innerHTML='';
+  activityLog.forEach(function(e,i){
+    var prev=activityLog[i+1];
+    function cell(val,key){if(!prev)return '<td>'+val+'</td>';var cls=val>prev[key]?'up':val<prev[key]?'down':'';var arrow=val>prev[key]?' &#8593;':val<prev[key]?' &#8595;':'';return '<td class="'+cls+'">'+val+arrow+'</td>';}
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td style="white-space:nowrap;font-weight:600">'+e.label+'</td>'+cell(e.calls,'calls')+cell(e.emails,'emails')+cell(e.sites,'sites')+cell(e.contacts,'contacts')+'<td style="font-size:13px;max-width:200px;white-space:normal;">'+e.did+'</td><td style="font-size:13px;color:#16A34A;white-space:normal;">'+e.win+'</td><td style="font-size:13px;color:#D97706;white-space:normal;">'+e.block+'</td>';
+    tb.appendChild(tr);
+  });
+}
+function postComment(){
+  var author=document.getElementById('cAuthor').value.trim()||'Advisor';
+  var role=document.getElementById('cRole').value;
+  var body=document.getElementById('cText').value.trim();
+  if(!body)return;
+  var now=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  var cls=role==='Advisor'?'bg-b':role==='General Manager'?'bg-g':'bg-a';
+  var d=document.createElement('div');d.className='citem';
+  d.innerHTML='<div class="cmeta"><span class="cauthor">'+author+'</span><span class="bg '+cls+'" style="font-size:12px">'+role+'</span><span class="cdate">'+now+'</span></div><div class="cbody" contenteditable="true">'+body+'</div>';
+  document.getElementById('cList').appendChild(d);
+  document.getElementById('cText').value='';
+}
+function collectData(){
+  return{week:getWeekKey(),titleText:document.getElementById('titleText').textContent,hotelText:document.getElementById('hotelText').textContent,managerText:document.getElementById('managerText').textContent,sourceText:document.getElementById('sourceText').textContent,periodText:document.getElementById('periodText').textContent,focusText:document.getElementById('focusText').textContent,m1:document.getElementById('m1').textContent,m2:document.getElementById('m2').textContent,m3:document.getElementById('m3').textContent,m4:document.getElementById('m4').textContent,execSummary:document.getElementById('execSummary').value,marketSum:document.getElementById('marketSum').value,strengthsTxt:document.getElementById('strengthsTxt').value,guidanceTxt:document.getElementById('guidanceTxt').value,notesTxt:document.getElementById('notesTxt').value,weekFocus:document.getElementById('weekFocus').value,consultResponse:document.getElementById('consultResponse').value,wwList:Array.from(document.querySelectorAll('#wwList textarea')).map(function(t){return t.value;}),cfList:Array.from(document.querySelectorAll('#cfList textarea')).map(function(t){return t.value;}),laList:Array.from(document.querySelectorAll('#laList textarea')).map(function(t){return t.value;}),activityLog:activityLog};
+}
+function applyData(d){
+  if(!d)return;
+  ['titleText','hotelText','managerText','sourceText','periodText','focusText','m1','m2','m3','m4'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.textContent=d[id];});
+  ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.value=d[id];});
+  if(d.wwList)renderList('wwList',d.wwList);
+  if(d.cfList)renderList('cfList',d.cfList);
+  if(d.laList)renderList('laList',d.laList);
+  if(d.activityLog){activityLog=d.activityLog;renderWOW();}
+  setTimeout(function(){document.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},50);
+}
+function clearData(){
+  ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  renderList('wwList',[]);renderList('cfList',[]);renderList('laList',[]);
+  activityLog=[];renderWOW();
+}
+async function saveData(){
+  var week=getWeekKey();
+  if(!week){setStatus('err','Please select a date first.');return;}
+  setStatus('busy','Saving...');
+  var wkLabel=getWeekLabel();
+  var json=JSON.stringify(collectData());
+  try{
+    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({week_key:week,data:json,updated_at:new Date().toISOString()})});
+    if(res.ok){setStatus('ok','Saved, '+wkLabel);return;}
+    else{console.warn('Supabase error:',await res.text());}
+  }catch(e){console.warn('Supabase error:',e);}
+  try{localStorage.setItem('epic_'+week,json);setStatus('ok','Saved locally, '+wkLabel);}
+  catch(e){setStatus('err','Save failed: '+e.message);}
+}
+async function loadData(){
+  var week=getWeekKey();
+  if(!week){setStatus('err','Please select a date first.');return;}
+  setStatus('busy','Loading...');
+  var wkLabel=getWeekLabel();
+  try{
+    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+week+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    if(res.ok){
+      var rows=await res.json();
+      if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded, '+wkLabel);return;}
+      else{clearData();setStatus('err','No data saved for '+wkLabel+' yet, form cleared.');}
+      return;
+    }
+  }catch(e){console.warn('Load error:
