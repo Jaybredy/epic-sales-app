@@ -256,7 +256,7 @@ The recommendations in this report are sequenced by urgency. Every account above
         </div>
 
         <div class="g2">
-          <div class="card gl"><div class="ct">What is Working Well</div><div id="wwList"></div></div>
+         <div class="card gl"><div class="ct">What is Working Well</div><div id="wwList"></div><button class="addbtn eo" onclick="addListItem('wwList')">+ Add item</button></div>
           <div class="card al"><div class="ct">Immediate Commercial Focus</div><div id="cfList"></div><button class="addbtn eo" onclick="addListItem('cfList')">+ Add item</button></div>
         </div>
         <div class="card"><div class="ct">Leadership Alignment Required</div><div id="laList"></div></div>
@@ -509,8 +509,6 @@ function addListItem(id){
   el.appendChild(d);
 }
 
-// ADD ROWS
-function addRow(tbodyId,html){
 // ADD ROWS
 function addRow(tbodyId,html){
   var tb=document.getElementById(tbodyId);var tr=document.createElement('tr');tr.innerHTML=html;tb.appendChild(tr);
