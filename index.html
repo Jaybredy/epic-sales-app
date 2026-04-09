@@ -515,3 +515,10 @@ async function loadData(){
         else{setStatus('err','No data saved for '+wkLabel+' yet.');return;}
       }
     }catch(e){console.warn('Supabase load error:',e
+)}
+  try{localStorage.setItem('epic_'+week,json);setStatus('ok','Loaded locally — '+wkLabel);}
+  catch(e){setStatus('err','Load failed: '+e.message);}
+}
+</script>
+</body>
+</html>
