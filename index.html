@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,7 +74,8 @@ body.sm .mrow{display:none!important;}
 body.sm .hero{display:none!important;}
 body.sm #exec,body.sm #market,body.sm #agency,body.sm #feedback,body.sm #comments{display:none!important;}
 body.sm #saleslog{display:block!important;}
-body.sm .log-section.eo{display:block!important;}
+body.sm .sm-only{display:block!important;}
+body.sm .aymin-read-section{display:none!important;}
 body.sm .sbar{display:none!important;}
 .tw{overflow-x:auto;border-radius:10px;border:1px solid #E5E5E1;margin-bottom:12px;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
@@ -107,6 +109,7 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
 .bull{color:#C9A84C;font-weight:700;flex-shrink:0;margin-top:3px;font-size:16px;}
 .li textarea{border:none;background:transparent;padding:0;min-height:unset;resize:none;font-size:14px;color:#374151;}
 .log-section{background:white;border:1px solid #E5E5E1;border-radius:14px;padding:20px;margin-bottom:16px;}
+.log-section.sm-only{display:none;}
 .log-section-title{font-size:14px;font-weight:700;color:#1B2E5E;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 .log-section-title .tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
 .tag-consultant{background:#DBEAFE;color:#2563EB;}
@@ -121,12 +124,22 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
 .file-upload-area:hover{border-color:#2A4A8A;background:#EEF3FB;}
 .file-upload-label{font-size:13px;color:#6B7280;font-weight:500;}
 .file-attached{background:#F0FDF4;border:1px solid #16A34A;border-radius:8px;padding:10px 14px;font-size:13px;color:#16A34A;font-weight:600;display:flex;align-items:center;gap:8px;margin-top:8px;}
+/* Aymin read-only cards */
+.ayr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.ayr-stat{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:10px;padding:12px;text-align:center;}
+.ayr-stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:4px;font-weight:600;}
+.ayr-stat-value{font-size:28px;font-weight:700;color:#1B2E5E;}
+.ayr-field{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:10px;padding:14px;margin-bottom:10px;}
+.ayr-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:6px;}
+.ayr-value{font-size:14px;color:#111827;line-height:1.7;}
+.no-update-msg{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px;font-size:14px;color:#92400E;font-weight:500;}
 @media(max-width:768px){
   .mrow{grid-template-columns:1fr 1fr;}
   .g2{grid-template-columns:1fr;}
   .hero-inner{flex-direction:column;}
   .fbox{text-align:left;}
   .wow-row{grid-template-columns:1fr 1fr;}
+  .ayr-stats{grid-template-columns:1fr 1fr;}
   .topright{gap:4px;}
   .wkdate{width:120px;}
   .week-label{display:none;}
@@ -322,7 +335,11 @@ The recommendations in this report are sequenced by urgency. Every account above
         </div>
         <div class="card"><div class="ct">Consultant Notes</div><textarea id="notesTxt" placeholder="Private notes for this advisory session..."></textarea></div>
       </div>
+
+      <!-- WEEKLY SALES LOG TAB -->
       <div id="saleslog" class="panel">
+
+        <!-- Consultant sets focus — always visible -->
         <div class="log-section">
           <div class="log-section-title">
             <span>This Week's Focus</span>
@@ -331,12 +348,14 @@ The recommendations in this report are sequenced by urgency. Every account above
           <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">You set the 3-5 priority actions for Aymin this week. She reads these before logging her update.</p>
           <textarea id="weekFocus" placeholder="e.g.&#10;1. Call BCD Travel Atlanta, ask for Amazon sourcing manager&#10;2. Contact CWTSATO to confirm Fedrooms / GSA eligibility&#10;3. Follow up with House of Travel on site visit confirmation&#10;4. Identify corporate travel decision-maker at Royal Caribbean"></textarea>
         </div>
-        <div class="log-section eo">
+
+        <!-- INPUT FORM — Sales Manager mode only -->
+        <div class="log-section sm-only" id="ayminInputSection">
           <div class="log-section-title">
-            <span>Aymin's Weekly Update</span>
+            <span>My Weekly Update</span>
             <span class="tag tag-aymin">Filled by Aymin</span>
           </div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Aymin, fill this out each week before your sync with the consultant. Takes 2 minutes.</p>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Fill this out each week before your sync with the consultant. Takes 2 minutes. Hit Submit, then Save.</p>
           <div style="margin-bottom:14px;">
             <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">What I did this week</label>
             <textarea id="ayminDid" placeholder="Summarize your outreach, calls, meetings, and any follow-ups completed this week..."></textarea>
@@ -370,6 +389,19 @@ The recommendations in this report are sequenced by urgency. Every account above
           </div>
           <button class="logbtn" onclick="logActivity()">Submit My Update</button>
         </div>
+
+        <!-- READ-ONLY VIEW — Consultant and GM see this -->
+        <div class="log-section aymin-read-section">
+          <div class="log-section-title">
+            <span>Aymin's Weekly Update</span>
+            <span class="tag tag-aymin">Submitted by Aymin</span>
+          </div>
+          <div id="ayminReadContent">
+            <div class="no-update-msg">No update submitted by Aymin for this week yet. Ask her to open the portal in Sales Manager view, fill in her update, and hit Save.</div>
+          </div>
+        </div>
+
+        <!-- Consultant response — always visible -->
         <div class="log-section">
           <div class="log-section-title">
             <span>Consultant Response</span>
@@ -378,14 +410,17 @@ The recommendations in this report are sequenced by urgency. Every account above
           <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">After reviewing Aymin's update, add your feedback and guidance for the next week here.</p>
           <textarea id="consultResponse" placeholder="e.g. Good progress on Royal Caribbean contact..."></textarea>
         </div>
+
+        <!-- WOW table — always visible -->
         <div class="card">
           <div class="ct">Week-over-Week Activity</div>
           <div class="tw"><table class="wow-table">
             <thead><tr><th>Week</th><th>Calls</th><th>Emails</th><th>Site Visits</th><th>New Contacts</th><th>What I Did</th><th>Top Win</th><th>Obstacle</th></tr></thead>
-            <tbody id="wowBody"><tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet. Aymin submits her first update above.</td></tr></tbody>
+            <tbody id="wowBody"><tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr></tbody>
           </table></div>
         </div>
       </div>
+
       <div id="comments" class="panel">
         <div class="card">
           <div class="ct">Comments &amp; Updates</div>
@@ -412,6 +447,7 @@ The recommendations in this report are sequenced by urgency. Every account above
 <script>
 var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
 var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
+
 (function(){
   var today=new Date();
   var y=today.getFullYear();
@@ -419,6 +455,7 @@ var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
   var d=String(today.getDate()).padStart(2,'0');
   document.getElementById('weekDate').value=y+'-'+m+'-'+d;
 })();
+
 function getWeekKey(){return document.getElementById('weekDate').value;}
 function getWeekLabel(){
   var val=document.getElementById('weekDate').value;
@@ -476,6 +513,7 @@ function renderList(id,items){
 renderList('wwList',['Aymin is making calls consistently across NYC, Miami, and Nashville','Good first contacts at McKinsey and Royal Caribbean achieved','House of Travel site visit confirmed','Written call script in place and being used']);
 renderList('cfList',['Amazon remains highest priority, outreach must start this week','Fedrooms access path should be corrected to CWTSATO','Agency conversations should lead with a defined rate position','Early calls should confirm decision-maker and booking flow']);
 renderList('laList',['GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport','Rates: Approve corporate rate range for agency outreach','Fedrooms: Decide go/no-go and align with CWTSATO path','Positioning: Align on what is being communicated in sales calls','Constraints: Confirm no availability or rate restrictions blocking bookings']);
+
 function addListItem(id){
   var el=document.getElementById(id);
   var d=document.createElement('div');d.className='li';
@@ -488,7 +526,34 @@ function addListItem(id){
 function addRow(tbodyId,html){
   var tb=document.getElementById(tbodyId);var tr=document.createElement('tr');tr.innerHTML=html;tb.appendChild(tr);
 }
+
 var activityLog=[];
+
+function renderAyminReadView(){
+  var el=document.getElementById('ayminReadContent');
+  if(!el)return;
+  if(!activityLog||activityLog.length===0){
+    el.innerHTML='<div class="no-update-msg">No update submitted by Aymin for this week yet. Ask her to open the portal in Sales Manager view, fill in her update, and hit Save.</div>';
+    return;
+  }
+  var e=activityLog[0];
+  var html='';
+  html+='<div class="ayr-stats">';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">Calls Made</div><div class="ayr-stat-value">'+e.calls+'</div></div>';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">Emails Sent</div><div class="ayr-stat-value">'+e.emails+'</div></div>';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">Site Visits</div><div class="ayr-stat-value">'+e.sites+'</div></div>';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">New Contacts</div><div class="ayr-stat-value">'+e.contacts+'</div></div>';
+  html+='</div>';
+  html+='<div class="ayr-field"><div class="ayr-label">What I did this week</div><div class="ayr-value">'+(e.did||'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
+  html+='<div class="g2">';
+  html+='<div class="ayr-field" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="ayr-label" style="color:#16A34A;">Top win or progress</div><div class="ayr-value">'+(e.win||'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
+  html+='<div class="ayr-field" style="background:#FFFBEB;border-color:#FDE68A;"><div class="ayr-label" style="color:#D97706;">Biggest obstacle</div><div class="ayr-value">'+(e.block||'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
+  html+='</div>';
+  if(e.crmFile){html+='<div class="ayr-field"><div class="ayr-label">CRM File Attached</div><div class="ayr-value" style="color:#16A34A;">'+e.crmFile+'</div></div>';}
+  html+='<p style="font-size:12px;color:#9CA3AF;margin-top:10px;">Submitted for: '+e.label+'</p>';
+  el.innerHTML=html;
+}
+
 function logActivity(){
   var week=getWeekKey(),wkLabel=getWeekLabel();
   var fileInput=document.getElementById('ayminFile');
@@ -497,7 +562,8 @@ function logActivity(){
   var idx=activityLog.findIndex(function(e){return e.week===week;});
   if(idx>=0)activityLog[idx]=entry;else activityLog.unshift(entry);
   renderWOW();
-  setStatus('ok','Update submitted for '+wkLabel+', click Save.');
+  renderAyminReadView();
+  setStatus('ok','Update submitted for '+wkLabel+' — now hit Save so the consultant can see it.');
   document.getElementById('ayminDid').value='';
   document.getElementById('ayminWin').value='';
   document.getElementById('ayminBlock').value='';
@@ -505,9 +571,10 @@ function logActivity(){
   if(fileInput)fileInput.value='';
   var fl=document.getElementById('fileLabel');if(fl)fl.style.display='none';
 }
+
 function renderWOW(){
   var tb=document.getElementById('wowBody');
-  if(activityLog.length===0){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';return;}
+  if(!activityLog||activityLog.length===0){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';return;}
   tb.innerHTML='';
   activityLog.forEach(function(e,i){
     var prev=activityLog[i+1];
@@ -517,6 +584,7 @@ function renderWOW(){
     tb.appendChild(tr);
   });
 }
+
 function postComment(){
   var author=document.getElementById('cAuthor').value.trim()||'Advisor';
   var role=document.getElementById('cRole').value;
@@ -529,9 +597,11 @@ function postComment(){
   document.getElementById('cList').appendChild(d);
   document.getElementById('cText').value='';
 }
+
 function collectData(){
   return{week:getWeekKey(),titleText:document.getElementById('titleText').textContent,hotelText:document.getElementById('hotelText').textContent,managerText:document.getElementById('managerText').textContent,sourceText:document.getElementById('sourceText').textContent,periodText:document.getElementById('periodText').textContent,focusText:document.getElementById('focusText').textContent,m1:document.getElementById('m1').textContent,m2:document.getElementById('m2').textContent,m3:document.getElementById('m3').textContent,m4:document.getElementById('m4').textContent,execSummary:document.getElementById('execSummary').value,marketSum:document.getElementById('marketSum').value,strengthsTxt:document.getElementById('strengthsTxt').value,guidanceTxt:document.getElementById('guidanceTxt').value,notesTxt:document.getElementById('notesTxt').value,weekFocus:document.getElementById('weekFocus').value,consultResponse:document.getElementById('consultResponse').value,wwList:Array.from(document.querySelectorAll('#wwList textarea')).map(function(t){return t.value;}),cfList:Array.from(document.querySelectorAll('#cfList textarea')).map(function(t){return t.value;}),laList:Array.from(document.querySelectorAll('#laList textarea')).map(function(t){return t.value;}),activityLog:activityLog};
 }
+
 function applyData(d){
   if(!d)return;
   ['titleText','hotelText','managerText','sourceText','periodText','focusText','m1','m2','m3','m4'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.textContent=d[id];});
@@ -539,14 +609,18 @@ function applyData(d){
   if(d.wwList)renderList('wwList',d.wwList);
   if(d.cfList)renderList('cfList',d.cfList);
   if(d.laList)renderList('laList',d.laList);
-  if(d.activityLog){activityLog=d.activityLog;renderWOW();}
+  if(d.activityLog){activityLog=d.activityLog;}else{activityLog=[];}
+  renderWOW();
+  renderAyminReadView();
   setTimeout(function(){document.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},50);
 }
+
 function clearData(){
   ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   renderList('wwList',[]);renderList('cfList',[]);renderList('laList',[]);
-  activityLog=[];renderWOW();
+  activityLog=[];renderWOW();renderAyminReadView();
 }
+
 async function saveData(){
   var week=getWeekKey();
   if(!week){setStatus('err','Please select a date first.');return;}
@@ -555,12 +629,13 @@ async function saveData(){
   var json=JSON.stringify(collectData());
   try{
     var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({week_key:week,data:json,updated_at:new Date().toISOString()})});
-    if(res.ok){setStatus('ok','Saved, '+wkLabel);return;}
+    if(res.ok){setStatus('ok','Saved — '+wkLabel);return;}
     else{console.warn('Supabase error:',await res.text());}
   }catch(e){console.warn('Supabase error:',e);}
-  try{localStorage.setItem('epic_'+week,json);setStatus('ok','Saved locally, '+wkLabel);}
+  try{localStorage.setItem('epic_'+week,json);setStatus('ok','Saved locally — '+wkLabel);}
   catch(e){setStatus('err','Save failed: '+e.message);}
 }
+
 async function loadData(){
   var week=getWeekKey();
   if(!week){setStatus('err','Please select a date first.');return;}
@@ -570,15 +645,21 @@ async function loadData(){
     var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+week+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
     if(res.ok){
       var rows=await res.json();
-      if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded, '+wkLabel);return;}
-      else{clearData();setStatus('err','No data saved for '+wkLabel+' yet, form cleared.');}
+      if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded — '+wkLabel);return;}
+      else{clearData();setStatus('err','No data saved for '+wkLabel+' yet.');}
       return;
     }
   }catch(e){console.warn('Load error:',e);}
   var raw=localStorage.getItem('epic_'+week);
-  if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally, '+wkLabel);}
-  else{clearData();setStatus('err','No saved data for '+wkLabel+', form cleared.');}
+  if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally — '+wkLabel);}
+  else{clearData();setStatus('err','No saved data for '+wkLabel+'.');}
 }
+
+// Auto-load when date changes
+document.getElementById('weekDate').addEventListener('change',function(){
+  loadData();
+});
+
 document.querySelectorAll('textarea').forEach(function(ta){
   ta.addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
   ta.style.height='auto';
