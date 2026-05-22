@@ -797,13 +797,8 @@ async function logActivity(){
   setStatus('busy','Submitting and saving to portal...');
   var saved=await saveData(true);
   if(saved){
-    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it.');
-    document.getElementById('ayminDid').value='';
-    document.getElementById('ayminWin').value='';
-    document.getElementById('ayminBlock').value='';
-    ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){document.getElementById(id).value=0;});
-    if(fileInput)fileInput.value='';
-    var fl=document.getElementById('fileLabel');if(fl)fl.style.display='none';
+    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it. You can edit above and resubmit anytime.');
+    // Form fields stay populated so Aymin can verify and edit her submission
   }else{
     setStatus('err','Your update could not be saved to the portal. Please screenshot what you typed and contact Judith.');
   }
@@ -910,6 +905,18 @@ function applyData(d){
   if(d.commentsHTML!==undefined){var cl=document.getElementById('cList');if(cl)cl.innerHTML=d.commentsHTML;}
   activityLog=d.activityLog||[];
   taskRequests=d.taskRequests||[];
+  // Pre-fill Aymin's input form with the current week's saved entry so she can see and edit what she submitted
+  var currentWeek=getWeekKey();
+  var existingEntry=activityLog.find(function(e){return e.week===currentWeek;});
+  if(existingEntry){
+    var didEl=document.getElementById('ayminDid');if(didEl)didEl.value=existingEntry.did||'';
+    var winEl=document.getElementById('ayminWin');if(winEl)winEl.value=existingEntry.win||'';
+    var blkEl=document.getElementById('ayminBlock');if(blkEl)blkEl.value=existingEntry.block||'';
+    var cEl=document.getElementById('aCalls');if(cEl)cEl.value=existingEntry.calls||0;
+    var eEl=document.getElementById('aEmails');if(eEl)eEl.value=existingEntry.emails||0;
+    var sEl=document.getElementById('aSites');if(sEl)sEl.value=existingEntry.sites||0;
+    var nEl=document.getElementById('aContacts');if(nEl)nEl.value=existingEntry.contacts||0;
+  }
   renderWOW();
   renderAyminReadView();
   renderTaskRequests();
