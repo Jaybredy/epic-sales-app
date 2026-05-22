@@ -74,9 +74,14 @@ body.sm .mrow{display:none!important;}
 body.sm .hero{display:none!important;}
 body.sm #exec,body.sm #market,body.sm #agency,body.sm #feedback,body.sm #comments{display:none!important;}
 body.sm #saleslog{display:block!important;}
+body.sm #tasks{display:block!important;margin-top:24px;border-top:2px solid #E5E5E1;padding-top:24px;}
 body.sm .sm-only{display:block!important;}
 body.sm .aymin-read-section{display:none!important;}
 body.sm .sbar{display:none!important;}
+/* Task request row read-only / edit toggling */
+.task-pill,.task-note-ro{display:none;}
+body.ro .task-pill,body.sm .task-pill{display:inline-block;}
+body.ro .task-note-ro,body.sm .task-note-ro{display:block;font-size:13px;color:#374151;line-height:1.6;}
 .tw{overflow-x:auto;border-radius:10px;border:1px solid #E5E5E1;margin-bottom:12px;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
 th{background:#F9FAFB;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:11px 13px;text-align:left;font-weight:700;border-bottom:1px solid #E5E5E1;white-space:nowrap;}
@@ -150,6 +155,8 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
 <div class="topbar">
   <div class="brand">EPIC <span>Sales</span> Portal</div>
   <div class="topright">
+    <select class="wkdate" id="hotelSelect" onchange="onHotelChange()" style="width:auto;min-width:170px;"></select>
+    <button class="vbtn eo" onclick="addNewHotel()" title="Add a new hotel" style="padding:6px 8px;">+ Hotel</button>
     <span class="week-label">Week of</span>
     <input type="date" class="wkdate" id="weekDate">
     <button class="vbtn on" id="vbtnEdit" onclick="setView('edit')">Consultant</button>
@@ -195,6 +202,7 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
       <button class="tbtn" onclick="showTab('agency',this)">Agency Opportunities</button>
       <button class="tbtn" onclick="showTab('feedback',this)">My Feedback</button>
       <button class="tbtn" onclick="showTab('saleslog',this)">Weekly Sales Log</button>
+      <button class="tbtn" onclick="showTab('tasks',this)">Task Requests</button>
       <button class="tbtn" onclick="showTab('comments',this)">Comments</button>
     </div>
     <div class="tcontent">
@@ -421,6 +429,42 @@ The recommendations in this report are sequenced by urgency. Every account above
         </div>
       </div>
 
+      <!-- TASK REQUESTS TAB -->
+      <div id="tasks" class="panel">
+        <div class="card bl">
+          <div class="ct">Request a Task from EPIC</div>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Hotel team: use this to request work from your EPIC consultant — outreach support, rate analysis, GDS audit, anything else. Status updates appear below as the work moves forward.</p>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Task title</label>
+            <input type="text" id="taskNewTitle" placeholder="e.g. Audit our Sabre rates for Q3">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Description / context</label>
+            <textarea id="taskNewDesc" placeholder="What do you need? Any deadlines, accounts, or context the consultant should know."></textarea>
+          </div>
+          <div class="crow">
+            <div style="flex:1;min-width:140px;">
+              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Priority</label>
+              <select id="taskNewPriority"><option>Low</option><option selected>Medium</option><option>High</option></select>
+            </div>
+            <div style="flex:1;min-width:140px;">
+              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Requested by</label>
+              <input type="text" id="taskNewBy" placeholder="Your name">
+            </div>
+          </div>
+          <br>
+          <button class="logbtn" onclick="submitTaskRequest()">Submit Request</button>
+        </div>
+        <div class="card">
+          <div class="ct">Open Requests</div>
+          <div class="tw"><table>
+            <thead><tr><th>Title</th><th>Description</th><th>Requested By</th><th>Priority</th><th>Status</th><th>Submitted</th><th>EPIC Notes</th><th></th></tr></thead>
+            <tbody id="taskBody"></tbody>
+          </table></div>
+          <div id="taskEmpty" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;display:none;">No task requests yet. Submit one above.</div>
+        </div>
+      </div>
+
       <div id="comments" class="panel">
         <div class="card">
           <div class="ct">Comments &amp; Updates</div>
@@ -448,15 +492,84 @@ The recommendations in this report are sequenced by urgency. Every account above
 var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
 var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
 
+// Hotel registry — add new hotels here to populate the dropdown.
+// Each hotel has a stable key (used in DB), display name, and default manager/source.
+var HOTELS=[
+  {key:'uma',name:'Uma House by Yurbban South Beach',manager:'Aymin',source:'TravelClick Agency 360'}
+];
+// Try to load any user-added hotels from localStorage
+try{
+  var stored=JSON.parse(localStorage.getItem('portvisory_hotels')||'[]');
+  stored.forEach(function(h){if(h&&h.key&&!HOTELS.find(function(x){return x.key===h.key;}))HOTELS.push(h);});
+}catch(e){}
+
+var taskRequests=[];
+var comments=[];
+
 (function(){
   var today=new Date();
   var y=today.getFullYear();
   var m=String(today.getMonth()+1).padStart(2,'0');
   var d=String(today.getDate()).padStart(2,'0');
-  document.getElementById('weekDate').value=y+'-'+m+'-'+d;
+  var dateEl=document.getElementById('weekDate');
+  if(dateEl)dateEl.value=y+'-'+m+'-'+d;
 })();
 
 function getWeekKey(){return document.getElementById('weekDate').value;}
+function getHotelKey(){
+  var sel=document.getElementById('hotelSelect');
+  return sel?sel.value:'uma';
+}
+function getHotelDisplayName(){
+  var k=getHotelKey();
+  var h=HOTELS.find(function(x){return x.key===k;});
+  return h?h.name:k;
+}
+function populateHotelDropdown(){
+  var sel=document.getElementById('hotelSelect');
+  if(!sel)return;
+  var prev=sel.value||'uma';
+  sel.innerHTML='';
+  HOTELS.forEach(function(h){
+    var o=document.createElement('option');
+    o.value=h.key;o.textContent=h.name;
+    sel.appendChild(o);
+  });
+  // Restore previous selection if still present, else default to first
+  if(HOTELS.find(function(x){return x.key===prev;})){sel.value=prev;}
+  else if(HOTELS.length){sel.value=HOTELS[0].key;}
+}
+function onHotelChange(){
+  // Update the hotelText/managerText to match selected hotel defaults (only if blank)
+  var h=HOTELS.find(function(x){return x.key===getHotelKey();});
+  if(h){
+    var htEl=document.getElementById('hotelText');
+    var mgrEl=document.getElementById('managerText');
+    var srcEl=document.getElementById('sourceText');
+    if(htEl)htEl.textContent=h.name;
+    if(mgrEl)mgrEl.textContent=h.manager||'';
+    if(srcEl)srcEl.textContent=h.source||'';
+  }
+  loadData();
+}
+function addNewHotel(){
+  var name=prompt('Hotel display name (e.g. "Marriott Aventura"):');
+  if(!name||!name.trim())return;
+  var key=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);
+  if(!key){alert('Could not derive a hotel key from that name. Try a simpler name.');return;}
+  if(HOTELS.find(function(x){return x.key===key;})){alert('A hotel with that key already exists.');return;}
+  var manager=prompt('Sales manager name (optional):')||'';
+  var source=prompt('Primary data source (default: TravelClick Agency 360):')||'TravelClick Agency 360';
+  HOTELS.push({key:key,name:name.trim(),manager:manager.trim(),source:source.trim()});
+  try{
+    var stored=JSON.parse(localStorage.getItem('portvisory_hotels')||'[]');
+    stored.push({key:key,name:name.trim(),manager:manager.trim(),source:source.trim()});
+    localStorage.setItem('portvisory_hotels',JSON.stringify(stored));
+  }catch(e){}
+  populateHotelDropdown();
+  document.getElementById('hotelSelect').value=key;
+  onHotelChange();
+}
 function getWeekLabel(){
   var val=document.getElementById('weekDate').value;
   if(!val)return 'No date selected';
@@ -529,58 +642,167 @@ function addRow(tbodyId,html){
 
 var activityLog=[];
 
+// ============ TASK REQUESTS ============
+function renderTaskRequests(){
+  var tb=document.getElementById('taskBody');
+  var empty=document.getElementById('taskEmpty');
+  if(!tb)return;
+  if(!taskRequests||taskRequests.length===0){
+    tb.innerHTML='';
+    if(empty)empty.style.display='block';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  tb.innerHTML='';
+  // Sort: Open first, In Progress next, Done last; within group by submitted desc
+  var ordered=taskRequests.slice().sort(function(a,b){
+    var so={Open:0,'In Progress':1,Done:2,Cancelled:3};
+    if(so[a.status]!==so[b.status])return so[a.status]-so[b.status];
+    return (b.submittedAt||'').localeCompare(a.submittedAt||'');
+  });
+  ordered.forEach(function(t){
+    var tr=document.createElement('tr');
+    var prioCls=t.priority==='High'?'bg-r':t.priority==='Low'?'bg-b':'bg-a';
+    var statusCls=t.status==='Done'?'bg-g':t.status==='In Progress'?'bg-a':t.status==='Cancelled'?'bg-b':'bg-r';
+    var d=t.submittedAt?new Date(t.submittedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+    tr.innerHTML=
+      '<td style="font-weight:600;color:#1B2E5E;">'+escapeHTML(t.title||'')+'</td>'+
+      '<td style="max-width:280px;white-space:normal;font-size:13px;">'+escapeHTML(t.description||'')+'</td>'+
+      '<td style="white-space:nowrap;font-size:13px;">'+escapeHTML(t.requestedBy||'—')+'</td>'+
+      '<td><span class="bg '+prioCls+'">'+escapeHTML(t.priority||'Medium')+'</span></td>'+
+      '<td>'+
+        '<select class="eo" onchange="updateTaskStatus(\''+t.id+'\',this.value)">'+
+          ['Open','In Progress','Done','Cancelled'].map(function(s){return '<option'+(s===t.status?' selected':'')+'>'+s+'</option>';}).join('')+
+        '</select>'+
+        '<span class="bg '+statusCls+' task-pill">'+escapeHTML(t.status||'Open')+'</span>'+
+      '</td>'+
+      '<td style="white-space:nowrap;font-size:12px;color:#6B7280;">'+d+'</td>'+
+      '<td style="max-width:220px;white-space:normal;">'+
+        '<textarea class="eo" style="min-height:50px;font-size:13px;" placeholder="EPIC notes / status update" onblur="updateTaskNote(\''+t.id+'\',this.value)">'+escapeHTML(t.note||'')+'</textarea>'+
+        '<div class="task-note-ro">'+escapeHTML(t.note||'—')+'</div>'+
+      '</td>'+
+      '<td><button class="eo" onclick="deleteTask(\''+t.id+'\')" title="Delete task" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:20px;line-height:1;">×</button></td>';
+    tb.appendChild(tr);
+  });
+  // Auto-resize task note textareas
+  setTimeout(function(){
+    document.querySelectorAll('#taskBody textarea').forEach(function(ta){
+      ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';
+    });
+  },20);
+}
+function escapeHTML(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function submitTaskRequest(){
+  var title=(document.getElementById('taskNewTitle').value||'').trim();
+  var desc=(document.getElementById('taskNewDesc').value||'').trim();
+  var prio=document.getElementById('taskNewPriority').value;
+  var by=(document.getElementById('taskNewBy').value||'').trim();
+  if(!title){setStatus('err','Please enter a task title.');return;}
+  var t={
+    id:'t_'+Date.now()+'_'+Math.floor(Math.random()*1000),
+    title:title,description:desc,priority:prio,requestedBy:by,
+    status:'Open',note:'',
+    submittedAt:new Date().toISOString()
+  };
+  taskRequests.unshift(t);
+  document.getElementById('taskNewTitle').value='';
+  document.getElementById('taskNewDesc').value='';
+  document.getElementById('taskNewBy').value='';
+  document.getElementById('taskNewPriority').value='Medium';
+  renderTaskRequests();
+  setStatus('busy','Submitting task request...');
+  var ok=await saveData(true);
+  if(ok)setStatus('ok','Task request submitted. EPIC will see it.');
+  else setStatus('err','Saved locally — portal sync failed.');
+}
+function updateTaskStatus(id,status){
+  var t=taskRequests.find(function(x){return x.id===id;});
+  if(!t)return;
+  t.status=status;
+  renderTaskRequests();
+  saveData(true);
+}
+function updateTaskNote(id,note){
+  var t=taskRequests.find(function(x){return x.id===id;});
+  if(!t)return;
+  if(t.note===note)return;
+  t.note=note;
+  saveData(true);
+}
+function deleteTask(id){
+  if(!confirm('Delete this task request?'))return;
+  taskRequests=taskRequests.filter(function(x){return x.id!==id;});
+  renderTaskRequests();
+  saveData(true);
+}
+
+// ============ AYMIN READ VIEW ============
 function renderAyminReadView(){
   var el=document.getElementById('ayminReadContent');
   if(!el)return;
   if(!activityLog||activityLog.length===0){
-    el.innerHTML='<div class="no-update-msg">No update submitted by Aymin for this week yet. Ask her to open the portal in Sales Manager view, fill in her update, and hit Save.</div>';
+    el.innerHTML='<div class="no-update-msg">No update submitted by Aymin for this week yet. Ask her to open the portal in Sales Manager view, fill in her update, and hit Submit My Update.</div>';
     return;
   }
   var e=activityLog[0];
   var html='';
   html+='<div class="ayr-stats">';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">Calls Made</div><div class="ayr-stat-value">'+e.calls+'</div></div>';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">Emails Sent</div><div class="ayr-stat-value">'+e.emails+'</div></div>';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">Site Visits</div><div class="ayr-stat-value">'+e.sites+'</div></div>';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">New Contacts</div><div class="ayr-stat-value">'+e.contacts+'</div></div>';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">Calls Made</div><div class="ayr-stat-value">'+(e.calls||0)+'</div></div>';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">Emails Sent</div><div class="ayr-stat-value">'+(e.emails||0)+'</div></div>';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">Site Visits</div><div class="ayr-stat-value">'+(e.sites||0)+'</div></div>';
+  html+='<div class="ayr-stat"><div class="ayr-stat-label">New Contacts</div><div class="ayr-stat-value">'+(e.contacts||0)+'</div></div>';
   html+='</div>';
-  html+='<div class="ayr-field"><div class="ayr-label">What I did this week</div><div class="ayr-value">'+(e.did||'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
+  html+='<div class="ayr-field"><div class="ayr-label">What I did this week</div><div class="ayr-value">'+(e.did?escapeHTML(e.did):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
   html+='<div class="g2">';
-  html+='<div class="ayr-field" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="ayr-label" style="color:#16A34A;">Top win or progress</div><div class="ayr-value">'+(e.win||'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
-  html+='<div class="ayr-field" style="background:#FFFBEB;border-color:#FDE68A;"><div class="ayr-label" style="color:#D97706;">Biggest obstacle</div><div class="ayr-value">'+(e.block||'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
+  html+='<div class="ayr-field" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="ayr-label" style="color:#16A34A;">Top win or progress</div><div class="ayr-value">'+(e.win?escapeHTML(e.win):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
+  html+='<div class="ayr-field" style="background:#FFFBEB;border-color:#FDE68A;"><div class="ayr-label" style="color:#D97706;">Biggest obstacle</div><div class="ayr-value">'+(e.block?escapeHTML(e.block):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
   html+='</div>';
-  if(e.crmFile){html+='<div class="ayr-field"><div class="ayr-label">CRM File Attached</div><div class="ayr-value" style="color:#16A34A;">'+e.crmFile+'</div></div>';}
-  html+='<p style="font-size:12px;color:#9CA3AF;margin-top:10px;">Submitted for: '+e.label+'</p>';
+  if(e.crmFile){html+='<div class="ayr-field"><div class="ayr-label">CRM File Attached</div><div class="ayr-value" style="color:#16A34A;">'+escapeHTML(e.crmFile)+'</div></div>';}
+  html+='<p style="font-size:12px;color:#9CA3AF;margin-top:10px;">Submitted for: '+escapeHTML(e.label||'')+(e.submittedAt?(' at '+new Date(e.submittedAt).toLocaleString()):'')+'</p>';
   el.innerHTML=html;
 }
 
-function logActivity(){
-  var week=getWeekKey(),wkLabel=getWeekLabel();
+// ============ AYMIN LOG SUBMISSION (auto-saves) ============
+async function logActivity(){
+  var week=getWeekKey();
+  if(!week){setStatus('err','Please select a date first.');return;}
+  var wkLabel=getWeekLabel();
   var fileInput=document.getElementById('ayminFile');
   var fileName=fileInput&&fileInput.files[0]?fileInput.files[0].name:'';
-  var entry={week:week,label:wkLabel,did:document.getElementById('ayminDid').value,win:document.getElementById('ayminWin').value,block:document.getElementById('ayminBlock').value,calls:parseInt(document.getElementById('aCalls').value)||0,emails:parseInt(document.getElementById('aEmails').value)||0,sites:parseInt(document.getElementById('aSites').value)||0,contacts:parseInt(document.getElementById('aContacts').value)||0,crmFile:fileName};
+  var didVal=document.getElementById('ayminDid').value.trim();
+  var winVal=document.getElementById('ayminWin').value.trim();
+  var blockVal=document.getElementById('ayminBlock').value.trim();
+  if(!didVal&&!winVal&&!blockVal){setStatus('err','Please fill in at least one field before submitting.');return;}
+  var entry={week:week,label:wkLabel,did:didVal,win:winVal,block:blockVal,calls:parseInt(document.getElementById('aCalls').value)||0,emails:parseInt(document.getElementById('aEmails').value)||0,sites:parseInt(document.getElementById('aSites').value)||0,contacts:parseInt(document.getElementById('aContacts').value)||0,crmFile:fileName,submittedAt:new Date().toISOString()};
   var idx=activityLog.findIndex(function(e){return e.week===week;});
   if(idx>=0)activityLog[idx]=entry;else activityLog.unshift(entry);
   renderWOW();
   renderAyminReadView();
-  setStatus('ok','Update submitted for '+wkLabel+' — now hit Save so the consultant can see it.');
-  document.getElementById('ayminDid').value='';
-  document.getElementById('ayminWin').value='';
-  document.getElementById('ayminBlock').value='';
-  ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){document.getElementById(id).value=0;});
-  if(fileInput)fileInput.value='';
-  var fl=document.getElementById('fileLabel');if(fl)fl.style.display='none';
+  setStatus('busy','Submitting and saving to portal...');
+  var saved=await saveData(true);
+  if(saved){
+    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it.');
+    document.getElementById('ayminDid').value='';
+    document.getElementById('ayminWin').value='';
+    document.getElementById('ayminBlock').value='';
+    ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){document.getElementById(id).value=0;});
+    if(fileInput)fileInput.value='';
+    var fl=document.getElementById('fileLabel');if(fl)fl.style.display='none';
+  }else{
+    setStatus('err','Your update could not be saved to the portal. Please screenshot what you typed and contact Judith.');
+  }
 }
 
 function renderWOW(){
   var tb=document.getElementById('wowBody');
+  if(!tb)return;
   if(!activityLog||activityLog.length===0){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';return;}
   tb.innerHTML='';
   activityLog.forEach(function(e,i){
     var prev=activityLog[i+1];
-    function cell(val,key){if(!prev)return '<td>'+val+'</td>';var cls=val>prev[key]?'up':val<prev[key]?'down':'';var arrow=val>prev[key]?' &#8593;':val<prev[key]?' &#8595;':'';return '<td class="'+cls+'">'+val+arrow+'</td>';}
+    function cell(val,key){if(!prev)return '<td>'+val+'</td>';var cls=val>prev[key]?'up':val<prev[key]?'down':'';var arrow=val>prev[key]?' ↑':val<prev[key]?' ↓':'';return '<td class="'+cls+'">'+val+arrow+'</td>';}
     var tr=document.createElement('tr');
-    tr.innerHTML='<td style="white-space:nowrap;font-weight:600">'+e.label+'</td>'+cell(e.calls,'calls')+cell(e.emails,'emails')+cell(e.sites,'sites')+cell(e.contacts,'contacts')+'<td style="font-size:13px;max-width:200px;white-space:normal;">'+e.did+'</td><td style="font-size:13px;color:#16A34A;white-space:normal;">'+e.win+'</td><td style="font-size:13px;color:#D97706;white-space:normal;">'+e.block+'</td>';
+    tr.innerHTML='<td style="white-space:nowrap;font-weight:600">'+escapeHTML(e.label||'')+'</td>'+cell(e.calls||0,'calls')+cell(e.emails||0,'emails')+cell(e.sites||0,'sites')+cell(e.contacts||0,'contacts')+'<td style="font-size:13px;max-width:200px;white-space:normal;">'+escapeHTML(e.did||'')+'</td><td style="font-size:13px;color:#16A34A;white-space:normal;">'+escapeHTML(e.win||'')+'</td><td style="font-size:13px;color:#D97706;white-space:normal;">'+escapeHTML(e.block||'')+'</td>';
     tb.appendChild(tr);
   });
 }
@@ -593,13 +815,52 @@ function postComment(){
   var now=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   var cls=role==='Advisor'?'bg-b':role==='General Manager'?'bg-g':'bg-a';
   var d=document.createElement('div');d.className='citem';
-  d.innerHTML='<div class="cmeta"><span class="cauthor">'+author+'</span><span class="bg '+cls+'" style="font-size:12px">'+role+'</span><span class="cdate">'+now+'</span></div><div class="cbody" contenteditable="true">'+body+'</div>';
-  document.getElementById('cList').appendChild(d);
+  d.innerHTML='<div class="cmeta"><span class="cauthor">'+escapeHTML(author)+'</span><span class="bg '+cls+'" style="font-size:12px">'+escapeHTML(role)+'</span><span class="cdate">'+now+'</span></div><div class="cbody" contenteditable="true">'+escapeHTML(body)+'</div>';
+  var list=document.getElementById('cList');
+  // Remove empty placeholder if present
+  if(list.children.length===1&&list.children[0].textContent&&list.children[0].textContent.indexOf('No comments')>=0)list.innerHTML='';
+  list.appendChild(d);
   document.getElementById('cText').value='';
+  saveData(true);
 }
 
+// ============ DATA COLLECT / APPLY / CLEAR ============
+function getTableHTML(id){var el=document.getElementById(id);return el?el.innerHTML:'';}
+function getCommentsHTML(){var el=document.getElementById('cList');return el?el.innerHTML:'';}
+
 function collectData(){
-  return{week:getWeekKey(),titleText:document.getElementById('titleText').textContent,hotelText:document.getElementById('hotelText').textContent,managerText:document.getElementById('managerText').textContent,sourceText:document.getElementById('sourceText').textContent,periodText:document.getElementById('periodText').textContent,focusText:document.getElementById('focusText').textContent,m1:document.getElementById('m1').textContent,m2:document.getElementById('m2').textContent,m3:document.getElementById('m3').textContent,m4:document.getElementById('m4').textContent,execSummary:document.getElementById('execSummary').value,marketSum:document.getElementById('marketSum').value,strengthsTxt:document.getElementById('strengthsTxt').value,guidanceTxt:document.getElementById('guidanceTxt').value,notesTxt:document.getElementById('notesTxt').value,weekFocus:document.getElementById('weekFocus').value,consultResponse:document.getElementById('consultResponse').value,wwList:Array.from(document.querySelectorAll('#wwList textarea')).map(function(t){return t.value;}),cfList:Array.from(document.querySelectorAll('#cfList textarea')).map(function(t){return t.value;}),laList:Array.from(document.querySelectorAll('#laList textarea')).map(function(t){return t.value;}),activityLog:activityLog};
+  return{
+    week:getWeekKey(),
+    hotel:getHotelKey(),
+    titleText:document.getElementById('titleText').textContent,
+    hotelText:document.getElementById('hotelText').textContent,
+    managerText:document.getElementById('managerText').textContent,
+    sourceText:document.getElementById('sourceText').textContent,
+    periodText:document.getElementById('periodText').textContent,
+    focusText:document.getElementById('focusText').textContent,
+    m1:document.getElementById('m1').textContent,
+    m2:document.getElementById('m2').textContent,
+    m3:document.getElementById('m3').textContent,
+    m4:document.getElementById('m4').textContent,
+    execSummary:document.getElementById('execSummary').value,
+    marketSum:document.getElementById('marketSum').value,
+    strengthsTxt:document.getElementById('strengthsTxt').value,
+    guidanceTxt:document.getElementById('guidanceTxt').value,
+    notesTxt:document.getElementById('notesTxt').value,
+    weekFocus:document.getElementById('weekFocus').value,
+    consultResponse:document.getElementById('consultResponse').value,
+    wwList:Array.from(document.querySelectorAll('#wwList textarea')).map(function(t){return t.value;}),
+    cfList:Array.from(document.querySelectorAll('#cfList textarea')).map(function(t){return t.value;}),
+    laList:Array.from(document.querySelectorAll('#laList textarea')).map(function(t){return t.value;}),
+    mktBodyHTML:getTableHTML('mktBody'),
+    agBodyHTML:getTableHTML('agBody'),
+    ctBodyHTML:getTableHTML('ctBody'),
+    acBodyHTML:getTableHTML('acBody'),
+    commentsHTML:getCommentsHTML(),
+    activityLog:activityLog,
+    taskRequests:taskRequests,
+    schemaVersion:2
+  };
 }
 
 function applyData(d){
@@ -609,31 +870,64 @@ function applyData(d){
   if(d.wwList)renderList('wwList',d.wwList);
   if(d.cfList)renderList('cfList',d.cfList);
   if(d.laList)renderList('laList',d.laList);
-  if(d.activityLog){activityLog=d.activityLog;}else{activityLog=[];}
+  if(d.mktBodyHTML!==undefined){var el1=document.getElementById('mktBody');if(el1)el1.innerHTML=d.mktBodyHTML;}
+  if(d.agBodyHTML!==undefined){var el2=document.getElementById('agBody');if(el2)el2.innerHTML=d.agBodyHTML;}
+  if(d.ctBodyHTML!==undefined){var el3=document.getElementById('ctBody');if(el3)el3.innerHTML=d.ctBodyHTML;}
+  if(d.acBodyHTML!==undefined){var el4=document.getElementById('acBody');if(el4)el4.innerHTML=d.acBodyHTML;}
+  if(d.commentsHTML!==undefined){var cl=document.getElementById('cList');if(cl)cl.innerHTML=d.commentsHTML;}
+  activityLog=d.activityLog||[];
+  taskRequests=d.taskRequests||[];
   renderWOW();
   renderAyminReadView();
+  renderTaskRequests();
   setTimeout(function(){document.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},50);
 }
 
 function clearData(){
-  ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['titleText','sourceText','periodText','focusText'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
+  ['m1','m2','m3','m4'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
+  ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse','ayminDid','ayminWin','ayminBlock','taskNewTitle','taskNewDesc'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=0;});
   renderList('wwList',[]);renderList('cfList',[]);renderList('laList',[]);
-  activityLog=[];renderWOW();renderAyminReadView();
+  ['mktBody','agBody','ctBody','acBody'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='';});
+  var wow=document.getElementById('wowBody');
+  if(wow)wow.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';
+  var cList=document.getElementById('cList');
+  if(cList)cList.innerHTML='<div style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No comments for this week yet.</div>';
+  activityLog=[];
+  taskRequests=[];
+  comments=[];
+  renderWOW();
+  renderAyminReadView();
+  renderTaskRequests();
+  setTimeout(function(){document.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},50);
 }
 
-async function saveData(){
+// ============ SAVE / LOAD ============
+async function saveData(silent){
   var week=getWeekKey();
-  if(!week){setStatus('err','Please select a date first.');return;}
-  setStatus('busy','Saving...');
+  if(!week){setStatus('err','Please select a date first.');return false;}
+  if(!silent)setStatus('busy','Saving...');
   var wkLabel=getWeekLabel();
+  var hotel=getHotelKey();
+  var weekKey=hotel+'|'+week;
   var json=JSON.stringify(collectData());
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({week_key:week,data:json,updated_at:new Date().toISOString()})});
-    if(res.ok){setStatus('ok','Saved — '+wkLabel);return;}
-    else{console.warn('Supabase error:',await res.text());}
-  }catch(e){console.warn('Supabase error:',e);}
-  try{localStorage.setItem('epic_'+week,json);setStatus('ok','Saved locally — '+wkLabel);}
-  catch(e){setStatus('err','Save failed: '+e.message);}
+    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({week_key:weekKey,data:json,updated_at:new Date().toISOString()})});
+    if(res.ok){
+      try{localStorage.setItem('epic_'+weekKey,json);}catch(e){}
+      if(!silent)setStatus('ok','Saved to portal — '+wkLabel);
+      return true;
+    }else{
+      var errTxt=await res.text();
+      console.warn('Supabase save error:',res.status,errTxt);
+    }
+  }catch(e){console.warn('Supabase save exception:',e);}
+  try{
+    localStorage.setItem('epic_'+weekKey,json);
+    setStatus('err','Saved locally only — '+wkLabel+' (portal sync failed, data is on this device)');
+    return true;
+  }catch(e){setStatus('err','Save failed: '+e.message);return false;}
 }
 
 async function loadData(){
@@ -641,30 +935,40 @@ async function loadData(){
   if(!week){setStatus('err','Please select a date first.');return;}
   setStatus('busy','Loading...');
   var wkLabel=getWeekLabel();
+  var hotel=getHotelKey();
+  var weekKey=hotel+'|'+week;
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+week+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+encodeURIComponent(weekKey)+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
     if(res.ok){
       var rows=await res.json();
       if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded — '+wkLabel);return;}
-      else{clearData();setStatus('err','No data saved for '+wkLabel+' yet.');}
-      return;
     }
-  }catch(e){console.warn('Load error:',e);}
-  var raw=localStorage.getItem('epic_'+week);
-  if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally — '+wkLabel);}
-  else{clearData();setStatus('err','No saved data for '+wkLabel+'.');}
+  }catch(e){console.warn('Load error (namespaced):',e);}
+  if(hotel==='uma'){
+    try{
+      var res2=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+week+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+      if(res2.ok){
+        var rows2=await res2.json();
+        if(rows2&&rows2.length>0){applyData(JSON.parse(rows2[0].data));setStatus('ok','Loaded — '+wkLabel);return;}
+      }
+    }catch(e){console.warn('Load error (legacy):',e);}
+  }
+  var raw=localStorage.getItem('epic_'+weekKey)||(hotel==='uma'?localStorage.getItem('epic_'+week):null);
+  if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally — '+wkLabel);return;}
+  clearData();
+  setStatus('err','No data saved for '+wkLabel+' yet. Fill in fields and save, or pick a past date with data.');
 }
 
-// Auto-load when date changes
-document.getElementById('weekDate').addEventListener('change',function(){
-  loadData();
-});
-
+// ============ INIT ============
+document.getElementById('weekDate').addEventListener('change',function(){loadData();});
 document.querySelectorAll('textarea').forEach(function(ta){
   ta.addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
   ta.style.height='auto';
   ta.style.height=ta.scrollHeight+'px';
 });
+populateHotelDropdown();
+renderTaskRequests();
+setTimeout(function(){loadData();},200);
 </script>
 </body>
 </html>
