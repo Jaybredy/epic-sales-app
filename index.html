@@ -136,7 +136,8 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
 .ayr-stat-value{font-size:28px;font-weight:700;color:#1B2E5E;}
 .ayr-field{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:10px;padding:14px;margin-bottom:10px;}
 .ayr-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:6px;}
-.ayr-value{font-size:14px;color:#111827;line-height:1.7;}
+.ayr-value{font-size:14px;color:#111827;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;}
+.wow-text-cell{white-space:pre-wrap!important;word-wrap:break-word;font-size:13px;max-width:240px;line-height:1.55;}
 .no-update-msg{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px;font-size:14px;color:#92400E;font-weight:500;}
 @media(max-width:768px){
   .mrow{grid-template-columns:1fr 1fr;}
@@ -802,7 +803,7 @@ function renderWOW(){
     var prev=activityLog[i+1];
     function cell(val,key){if(!prev)return '<td>'+val+'</td>';var cls=val>prev[key]?'up':val<prev[key]?'down':'';var arrow=val>prev[key]?' ↑':val<prev[key]?' ↓':'';return '<td class="'+cls+'">'+val+arrow+'</td>';}
     var tr=document.createElement('tr');
-    tr.innerHTML='<td style="white-space:nowrap;font-weight:600">'+escapeHTML(e.label||'')+'</td>'+cell(e.calls||0,'calls')+cell(e.emails||0,'emails')+cell(e.sites||0,'sites')+cell(e.contacts||0,'contacts')+'<td style="font-size:13px;max-width:200px;white-space:normal;">'+escapeHTML(e.did||'')+'</td><td style="font-size:13px;color:#16A34A;white-space:normal;">'+escapeHTML(e.win||'')+'</td><td style="font-size:13px;color:#D97706;white-space:normal;">'+escapeHTML(e.block||'')+'</td>';
+    tr.innerHTML='<td style="white-space:nowrap;font-weight:600;vertical-align:top;">'+escapeHTML(e.label||'')+'</td>'+cell(e.calls||0,'calls')+cell(e.emails||0,'emails')+cell(e.sites||0,'sites')+cell(e.contacts||0,'contacts')+'<td class="wow-text-cell" style="vertical-align:top;">'+escapeHTML(e.did||'')+'</td><td class="wow-text-cell" style="color:#16A34A;vertical-align:top;">'+escapeHTML(e.win||'')+'</td><td class="wow-text-cell" style="color:#D97706;vertical-align:top;">'+escapeHTML(e.block||'')+'</td>';
     tb.appendChild(tr);
   });
 }
