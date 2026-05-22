@@ -61,7 +61,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F4F3EF;color:#111827;f
 .ct{font-size:16px;color:#1B2E5E;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #E5E5E1;font-weight:700;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 textarea,input[type=text],input[type=date],input[type=number],select{width:100%;padding:10px 12px;border:1px solid #D1D5DB;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:#111827;background:white;transition:border-color .15s;}
-textarea{min-height:90px;resize:none;line-height:1.6;overflow:hidden;}
+textarea{min-height:90px;resize:none;line-height:1.6;overflow:auto;max-height:600px;}
 textarea:focus,input:focus,select:focus{outline:none;border-color:#2A4A8A;box-shadow:0 0 0 3px rgba(42,74,138,0.08);}
 [contenteditable="true"]:hover{background:rgba(42,74,138,0.04);border-radius:4px;}
 [contenteditable="true"]:focus{outline:2px solid rgba(42,74,138,0.2);border-radius:4px;}
@@ -600,7 +600,27 @@ function setView(mode){
   if(mode==='read'){document.body.classList.add('ro');rb.classList.add('on');}
   else if(mode==='sales'){document.body.classList.add('sm');sb.classList.add('on');}
   else{eb.classList.add('on');}
+  // Newly-visible textareas need a resize pass — their scrollHeight was 0 while hidden
+  autoSizeAllTextareas();
 }
+
+// ============ TEXTAREA AUTO-GROW (portal-wide) ============
+function autoSizeTextarea(ta){
+  if(!ta||ta.tagName!=='TEXTAREA')return;
+  ta.style.height='auto';
+  ta.style.height=ta.scrollHeight+'px';
+}
+function autoSizeAllTextareas(){
+  setTimeout(function(){
+    document.querySelectorAll('textarea').forEach(autoSizeTextarea);
+  },30);
+}
+// Delegate input event so EVERY textarea grows as user types — no need to wire each one individually
+document.addEventListener('input',function(e){
+  if(e.target&&e.target.tagName==='TEXTAREA')autoSizeTextarea(e.target);
+});
+// Initial sweep once DOM is parsed
+document.addEventListener('DOMContentLoaded',autoSizeAllTextareas);
 function setStatus(state,msg){
   document.getElementById('sdot').className='dot '+(state==='ok'?'ok':state==='busy'?'busy':'err');
   document.getElementById('stxt').textContent=msg;
@@ -920,7 +940,7 @@ function applyData(d){
   renderWOW();
   renderAyminReadView();
   renderTaskRequests();
-  setTimeout(function(){document.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},50);
+  autoSizeAllTextareas();
 }
 
 function clearData(){
@@ -951,7 +971,7 @@ function clearData(){
   renderWOW();
   renderAyminReadView();
   renderTaskRequests();
-  setTimeout(function(){document.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},50);
+  autoSizeAllTextareas();
 }
 
 // ============ SAVE / LOAD ============
