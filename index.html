@@ -137,7 +137,14 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
 .ayr-field{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:10px;padding:14px;margin-bottom:10px;}
 .ayr-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:6px;}
 .ayr-value{font-size:14px;color:#111827;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;}
-.wow-text-cell{white-space:pre-wrap!important;word-wrap:break-word;font-size:13px;max-width:240px;line-height:1.55;}
+/* Aymin read-view: side-by-side cards should size to their own content, not stretch */
+#ayminReadContent .g2{align-items:start;}
+/* WOW table narrative row — 3 horizontal cards instead of cramped vertical columns */
+.wow-nar-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;align-items:start;}
+.wow-nar-card{background:#FFFFFF;border:1px solid #E5E5E1;border-radius:8px;padding:10px 12px;}
+.wow-nar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:6px;}
+.wow-nar-text{font-size:13px;color:#111827;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;}
+.wow-narrative-row td{border-top:none!important;}
 .no-update-msg{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px;font-size:14px;color:#92400E;font-weight:500;}
 @media(max-width:768px){
   .mrow{grid-template-columns:1fr 1fr;}
@@ -145,6 +152,7 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
   .hero-inner{flex-direction:column;}
   .fbox{text-align:left;}
   .wow-row{grid-template-columns:1fr 1fr;}
+  .wow-nar-grid{grid-template-columns:1fr;}
   .ayr-stats{grid-template-columns:1fr 1fr;}
   .topright{gap:4px;}
   .wkdate{width:120px;}
@@ -364,7 +372,7 @@ The recommendations in this report are sequenced by urgency. Every account above
             <span>My Weekly Update</span>
             <span class="tag tag-aymin">Filled by Aymin</span>
           </div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Fill this out each week before your sync with the consultant. Hit Submit to save automatically. Your last submission stays visible so you can edit and resubmit anytime.</p>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Fill this out each week before your sync with the consultant. Takes 2 minutes. Hit Submit, then Save.</p>
           <div style="margin-bottom:14px;">
             <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">What I did this week</label>
             <textarea id="ayminDid" placeholder="Summarize your outreach, calls, meetings, and any follow-ups completed this week..."></textarea>
@@ -424,8 +432,8 @@ The recommendations in this report are sequenced by urgency. Every account above
         <div class="card">
           <div class="ct">Week-over-Week Activity</div>
           <div class="tw"><table class="wow-table">
-            <thead><tr><th>Week</th><th>Calls</th><th>Emails</th><th>Site Visits</th><th>New Contacts</th><th>What I Did</th><th>Top Win</th><th>Obstacle</th></tr></thead>
-            <tbody id="wowBody"><tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr></tbody>
+            <thead><tr><th>Week</th><th>Calls</th><th>Emails</th><th>Site Visits</th><th>New Contacts</th></tr></thead>
+            <tbody id="wowBody"><tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr></tbody>
           </table></div>
         </div>
       </div>
@@ -782,8 +790,13 @@ async function logActivity(){
   setStatus('busy','Submitting and saving to portal...');
   var saved=await saveData(true);
   if(saved){
-    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it. You can edit above and resubmit anytime.');
-    // Form fields stay populated so Aymin can verify her submission and edit it. Old behavior cleared them, which made her think the save failed.
+    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it.');
+    document.getElementById('ayminDid').value='';
+    document.getElementById('ayminWin').value='';
+    document.getElementById('ayminBlock').value='';
+    ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){document.getElementById(id).value=0;});
+    if(fileInput)fileInput.value='';
+    var fl=document.getElementById('fileLabel');if(fl)fl.style.display='none';
   }else{
     setStatus('err','Your update could not be saved to the portal. Please screenshot what you typed and contact Judith.');
   }
@@ -792,14 +805,24 @@ async function logActivity(){
 function renderWOW(){
   var tb=document.getElementById('wowBody');
   if(!tb)return;
-  if(!activityLog||activityLog.length===0){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';return;}
+  if(!activityLog||activityLog.length===0){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';return;}
   tb.innerHTML='';
   activityLog.forEach(function(e,i){
     var prev=activityLog[i+1];
     function cell(val,key){if(!prev)return '<td>'+val+'</td>';var cls=val>prev[key]?'up':val<prev[key]?'down':'';var arrow=val>prev[key]?' ↑':val<prev[key]?' ↓':'';return '<td class="'+cls+'">'+val+arrow+'</td>';}
     var tr=document.createElement('tr');
-    tr.innerHTML='<td style="white-space:nowrap;font-weight:600;vertical-align:top;">'+escapeHTML(e.label||'')+'</td>'+cell(e.calls||0,'calls')+cell(e.emails||0,'emails')+cell(e.sites||0,'sites')+cell(e.contacts||0,'contacts')+'<td class="wow-text-cell" style="vertical-align:top;">'+escapeHTML(e.did||'')+'</td><td class="wow-text-cell" style="color:#16A34A;vertical-align:top;">'+escapeHTML(e.win||'')+'</td><td class="wow-text-cell" style="color:#D97706;vertical-align:top;">'+escapeHTML(e.block||'')+'</td>';
+    tr.innerHTML='<td style="white-space:nowrap;font-weight:600">'+escapeHTML(e.label||'')+'</td>'+cell(e.calls||0,'calls')+cell(e.emails||0,'emails')+cell(e.sites||0,'sites')+cell(e.contacts||0,'contacts');
     tb.appendChild(tr);
+    var hasNarrative=(e.did&&e.did.trim())||(e.win&&e.win.trim())||(e.block&&e.block.trim());
+    if(hasNarrative){
+      var tr2=document.createElement('tr');
+      tr2.className='wow-narrative-row';
+      var didCell='<div class="wow-nar-card"><div class="wow-nar-label">What I Did</div><div class="wow-nar-text">'+(e.did?escapeHTML(e.did):'<em style="color:#9CA3AF">—</em>')+'</div></div>';
+      var winCell='<div class="wow-nar-card" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="wow-nar-label" style="color:#16A34A;">Top Win</div><div class="wow-nar-text">'+(e.win?escapeHTML(e.win):'<em style="color:#9CA3AF">—</em>')+'</div></div>';
+      var blkCell='<div class="wow-nar-card" style="background:#FFFBEB;border-color:#FDE68A;"><div class="wow-nar-label" style="color:#D97706;">Obstacle</div><div class="wow-nar-text">'+(e.block?escapeHTML(e.block):'<em style="color:#9CA3AF">—</em>')+'</div></div>';
+      tr2.innerHTML='<td colspan="5" style="padding:0 8px 14px 8px;background:#FAFAF7;"><div class="wow-nar-grid">'+didCell+winCell+blkCell+'</div></td>';
+      tb.appendChild(tr2);
+    }
   });
 }
 
@@ -873,22 +896,6 @@ function applyData(d){
   if(d.commentsHTML!==undefined){var cl=document.getElementById('cList');if(cl)cl.innerHTML=d.commentsHTML;}
   activityLog=d.activityLog||[];
   taskRequests=d.taskRequests||[];
-  // Pre-fill Aymin's input form with any existing entry for this week so she can see and edit her submission
-  var currentWeek=getWeekKey();
-  var existingEntry=activityLog.find(function(e){return e.week===currentWeek;});
-  if(existingEntry){
-    var didEl=document.getElementById('ayminDid');if(didEl)didEl.value=existingEntry.did||'';
-    var winEl=document.getElementById('ayminWin');if(winEl)winEl.value=existingEntry.win||'';
-    var blkEl=document.getElementById('ayminBlock');if(blkEl)blkEl.value=existingEntry.block||'';
-    var ca=document.getElementById('aCalls');if(ca)ca.value=existingEntry.calls||0;
-    var em=document.getElementById('aEmails');if(em)em.value=existingEntry.emails||0;
-    var si=document.getElementById('aSites');if(si)si.value=existingEntry.sites||0;
-    var co=document.getElementById('aContacts');if(co)co.value=existingEntry.contacts||0;
-  }else{
-    // Clear input fields if no entry exists for this week
-    ['ayminDid','ayminWin','ayminBlock'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-    ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=0;});
-  }
   renderWOW();
   renderAyminReadView();
   renderTaskRequests();
