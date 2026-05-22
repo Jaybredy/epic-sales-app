@@ -233,8 +233,8 @@ Bloomberg International, 236 market RNs, more than doubled vs last year (+107%),
 The recommendations in this report are sequenced by urgency. Every account above has a direct contact path, phone number, and recommended approach in the Agency Opportunities tab.</textarea>
         </div>
         <div class="card" style="border-left:4px solid #C9A84C;background:#FFFDF5;">
-          <div class="ct" contenteditable="true" style="color:#92400E;">Market Intelligence Highlights &mdash; April 2026</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="ct" id="marketIntelTitle" contenteditable="true" style="color:#92400E;">Market Intelligence Highlights &mdash; April 2026</div>
+          <div id="marketIntelBody" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
               <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">New Account, Act Now</div>
               <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">National Airlines</div>
@@ -622,6 +622,13 @@ document.addEventListener('DOMContentLoaded',function(){
     });
   }
 });
+// Snapshot the default Market Intel section at load so legacy saves (without marketIntelBodyHTML) still display it
+var DEFAULT_MARKET_INTEL_TITLE='';
+var DEFAULT_MARKET_INTEL_HTML='';
+(function(){
+  var mit=document.getElementById('marketIntelTitle');if(mit)DEFAULT_MARKET_INTEL_TITLE=mit.innerHTML;
+  var mib=document.getElementById('marketIntelBody');if(mib)DEFAULT_MARKET_INTEL_HTML=mib.innerHTML;
+})();
 function renderList(id,items){
   var el=document.getElementById(id);if(!el)return;
   el.innerHTML='';
@@ -871,6 +878,8 @@ function collectData(){
     wwList:Array.from(document.querySelectorAll('#wwList textarea')).map(function(t){return t.value;}),
     cfList:Array.from(document.querySelectorAll('#cfList textarea')).map(function(t){return t.value;}),
     laList:Array.from(document.querySelectorAll('#laList textarea')).map(function(t){return t.value;}),
+    marketIntelTitle:(document.getElementById('marketIntelTitle')?document.getElementById('marketIntelTitle').innerHTML:''),
+    marketIntelBodyHTML:getTableHTML('marketIntelBody'),
     mktBodyHTML:getTableHTML('mktBody'),
     agBodyHTML:getTableHTML('agBody'),
     ctBodyHTML:getTableHTML('ctBody'),
@@ -889,6 +898,11 @@ function applyData(d){
   if(d.wwList)renderList('wwList',d.wwList);
   if(d.cfList)renderList('cfList',d.cfList);
   if(d.laList)renderList('laList',d.laList);
+  // Legacy saves before this field existed get the original April defaults; new saves restore exactly what was saved
+  if(d.marketIntelTitle!==undefined){var mit=document.getElementById('marketIntelTitle');if(mit)mit.innerHTML=d.marketIntelTitle;}
+  else{var mit2=document.getElementById('marketIntelTitle');if(mit2&&DEFAULT_MARKET_INTEL_TITLE)mit2.innerHTML=DEFAULT_MARKET_INTEL_TITLE;}
+  if(d.marketIntelBodyHTML!==undefined){var mib=document.getElementById('marketIntelBody');if(mib)mib.innerHTML=d.marketIntelBodyHTML;}
+  else{var mib2=document.getElementById('marketIntelBody');if(mib2&&DEFAULT_MARKET_INTEL_HTML)mib2.innerHTML=DEFAULT_MARKET_INTEL_HTML;}
   if(d.mktBodyHTML!==undefined){var el1=document.getElementById('mktBody');if(el1)el1.innerHTML=d.mktBodyHTML;}
   if(d.agBodyHTML!==undefined){var el2=document.getElementById('agBody');if(el2)el2.innerHTML=d.agBodyHTML;}
   if(d.ctBodyHTML!==undefined){var el3=document.getElementById('ctBody');if(el3)el3.innerHTML=d.ctBodyHTML;}
@@ -909,8 +923,19 @@ function clearData(){
   ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=0;});
   renderList('wwList',[]);renderList('cfList',[]);renderList('laList',[]);
   ['mktBody','agBody','ctBody','acBody'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='';});
+  var mit=document.getElementById('marketIntelTitle');if(mit)mit.innerHTML='Market Intelligence Highlights';
+  var mib=document.getElementById('marketIntelBody');
+  if(mib){
+    var blankCard=function(label){return '<div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">'+
+      '<div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">'+label+'</div>'+
+      '<div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">&mdash;</div>'+
+      '<div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">No data for this week. Upload an Agency 360 report or enter manually.</div>'+
+      '<div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;"></div>'+
+    '</div>';};
+    mib.innerHTML=blankCard('New Account, Act Now')+blankCard('Compset Moving In')+blankCard('Growing Fast')+blankCard('Local Warm Path');
+  }
   var wow=document.getElementById('wowBody');
-  if(wow)wow.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';
+  if(wow)wow.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';
   var cList=document.getElementById('cList');
   if(cList)cList.innerHTML='<div style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No comments for this week yet.</div>';
   activityLog=[];
