@@ -364,7 +364,7 @@ The recommendations in this report are sequenced by urgency. Every account above
             <span>My Weekly Update</span>
             <span class="tag tag-aymin">Filled by Aymin</span>
           </div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Fill this out each week before your sync with the consultant. Takes 2 minutes. Hit Submit, then Save.</p>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Fill this out each week before your sync with the consultant. Hit Submit to save automatically. Your last submission stays visible so you can edit and resubmit anytime.</p>
           <div style="margin-bottom:14px;">
             <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">What I did this week</label>
             <textarea id="ayminDid" placeholder="Summarize your outreach, calls, meetings, and any follow-ups completed this week..."></textarea>
@@ -782,13 +782,8 @@ async function logActivity(){
   setStatus('busy','Submitting and saving to portal...');
   var saved=await saveData(true);
   if(saved){
-    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it.');
-    document.getElementById('ayminDid').value='';
-    document.getElementById('ayminWin').value='';
-    document.getElementById('ayminBlock').value='';
-    ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){document.getElementById(id).value=0;});
-    if(fileInput)fileInput.value='';
-    var fl=document.getElementById('fileLabel');if(fl)fl.style.display='none';
+    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it. You can edit above and resubmit anytime.');
+    // Form fields stay populated so Aymin can verify her submission and edit it. Old behavior cleared them, which made her think the save failed.
   }else{
     setStatus('err','Your update could not be saved to the portal. Please screenshot what you typed and contact Judith.');
   }
@@ -878,6 +873,22 @@ function applyData(d){
   if(d.commentsHTML!==undefined){var cl=document.getElementById('cList');if(cl)cl.innerHTML=d.commentsHTML;}
   activityLog=d.activityLog||[];
   taskRequests=d.taskRequests||[];
+  // Pre-fill Aymin's input form with any existing entry for this week so she can see and edit her submission
+  var currentWeek=getWeekKey();
+  var existingEntry=activityLog.find(function(e){return e.week===currentWeek;});
+  if(existingEntry){
+    var didEl=document.getElementById('ayminDid');if(didEl)didEl.value=existingEntry.did||'';
+    var winEl=document.getElementById('ayminWin');if(winEl)winEl.value=existingEntry.win||'';
+    var blkEl=document.getElementById('ayminBlock');if(blkEl)blkEl.value=existingEntry.block||'';
+    var ca=document.getElementById('aCalls');if(ca)ca.value=existingEntry.calls||0;
+    var em=document.getElementById('aEmails');if(em)em.value=existingEntry.emails||0;
+    var si=document.getElementById('aSites');if(si)si.value=existingEntry.sites||0;
+    var co=document.getElementById('aContacts');if(co)co.value=existingEntry.contacts||0;
+  }else{
+    // Clear input fields if no entry exists for this week
+    ['ayminDid','ayminWin','ayminBlock'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+    ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=0;});
+  }
   renderWOW();
   renderAyminReadView();
   renderTaskRequests();
