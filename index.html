@@ -217,7 +217,7 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
     <div class="tcontent">
       <div id="exec" class="panel on">
         <div class="card bl">
-          <div class="ct">For the General Manager &mdash; Overview</div>
+          <div class="ct">For the General Manager: Overview</div>
           <textarea id="execSummary">The April Agency 360 report covers the next 90 days of forward-looking demand and confirms the South Beach corporate market is not just healthy, it is accelerating. Uma House's competitive set is actively capturing this demand while the hotel shows zero GDS production. This is an access and visibility issue, not a demand issue. The accounts are there. We just need to get in front of them.
 
 National Airlines is the standout, with 475 market RNs in the next 90 days, up +2,400% vs last year, zero compset, zero hotel. This is essentially a brand new account that exploded into the market. They are based in Miami at (305) 576-3200 and book through CTC II. A Miami-based airline with South Beach demand is a natural fit for Uma House and nobody in the compset has touched it yet.
@@ -233,7 +233,7 @@ Bloomberg International, 236 market RNs, more than doubled vs last year (+107%),
 The recommendations in this report are sequenced by urgency. Every account above has a direct contact path, phone number, and recommended approach in the Agency Opportunities tab.</textarea>
         </div>
         <div class="card" style="border-left:4px solid #C9A84C;background:#FFFDF5;">
-          <div class="ct" id="marketIntelTitle" contenteditable="true" style="color:#92400E;">Market Intelligence Highlights &mdash; April 2026</div>
+          <div class="ct" id="marketIntelTitle" contenteditable="true" style="color:#92400E;">Market Intelligence Highlights, April 2026</div>
           <div id="marketIntelBody" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
               <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">New Account, Act Now</div>
@@ -343,7 +343,7 @@ The recommendations in this report are sequenced by urgency. Every account above
           <div class="tw"><table>
             <thead><tr><th>Account</th><th>Status</th><th>Contact Reached</th><th>Recommended Next Step</th><th>CRM Report</th></tr></thead>
             <tbody id="acBody">
-              <tr><td contenteditable="true">Amazon</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">&mdash;</td><td contenteditable="true">Call BCD Travel Atlanta and ask for Amazon sourcing manager.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
+              <tr><td contenteditable="true">Amazon</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">-</td><td contenteditable="true">Call BCD Travel Atlanta and ask for Amazon sourcing manager.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
               <tr><td contenteditable="true">Fedrooms</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option selected>Redirect Needed</option></select></td><td contenteditable="true">Current path misaligned</td><td contenteditable="true">Route through CWTSATO. Confirm GSA eligibility first.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
               <tr><td contenteditable="true">Royal Caribbean</td><td><select><option>Not Started</option><option selected>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">Initial crew ops contact</td><td contenteditable="true">Identify corporate travel decision-maker.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
             </tbody>
@@ -442,7 +442,7 @@ The recommendations in this report are sequenced by urgency. Every account above
       <div id="tasks" class="panel">
         <div class="card bl">
           <div class="ct">Request a Task from EPIC</div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Hotel team: use this to request work from your EPIC consultant — outreach support, rate analysis, GDS audit, anything else. Status updates appear below as the work moves forward.</p>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Hotel team: use this to request work from your EPIC consultant, including outreach support, rate analysis, GDS audit, or anything else. Status updates appear below as the work moves forward.</p>
           <div style="margin-bottom:12px;">
             <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Task title</label>
             <input type="text" id="taskNewTitle" placeholder="e.g. Audit our Sabre rates for Q3">
@@ -704,7 +704,7 @@ function renderTaskRequests(){
     tr.innerHTML=
       '<td style="font-weight:600;color:#1B2E5E;">'+escapeHTML(t.title||'')+'</td>'+
       '<td style="max-width:280px;white-space:normal;font-size:13px;">'+escapeHTML(t.description||'')+'</td>'+
-      '<td style="white-space:nowrap;font-size:13px;">'+escapeHTML(t.requestedBy||'—')+'</td>'+
+      '<td style="white-space:nowrap;font-size:13px;">'+escapeHTML(t.requestedBy||'-')+'</td>'+
       '<td><span class="bg '+prioCls+'">'+escapeHTML(t.priority||'Medium')+'</span></td>'+
       '<td>'+
         '<select class="eo" onchange="updateTaskStatus(\''+t.id+'\',this.value)">'+
@@ -715,7 +715,7 @@ function renderTaskRequests(){
       '<td style="white-space:nowrap;font-size:12px;color:#6B7280;">'+d+'</td>'+
       '<td style="max-width:220px;white-space:normal;">'+
         '<textarea class="eo" style="min-height:50px;font-size:13px;" placeholder="EPIC notes / status update" onblur="updateTaskNote(\''+t.id+'\',this.value)">'+escapeHTML(t.note||'')+'</textarea>'+
-        '<div class="task-note-ro">'+escapeHTML(t.note||'—')+'</div>'+
+        '<div class="task-note-ro">'+escapeHTML(t.note||'-')+'</div>'+
       '</td>'+
       '<td><button class="eo" onclick="deleteTask(\''+t.id+'\')" title="Delete task" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:20px;line-height:1;">×</button></td>';
     tb.appendChild(tr);
@@ -749,7 +749,7 @@ async function submitTaskRequest(){
   setStatus('busy','Submitting task request...');
   var ok=await saveData(true);
   if(ok)setStatus('ok','Task request submitted. EPIC will see it.');
-  else setStatus('err','Saved locally — portal sync failed.');
+  else setStatus('err','Saved locally, portal sync failed.');
 }
 function updateTaskStatus(id,status){
   var t=taskRequests.find(function(x){return x.id===id;});
@@ -839,9 +839,9 @@ function renderWOW(){
     if(hasNarrative){
       var tr2=document.createElement('tr');
       tr2.className='wow-narrative-row';
-      var didCell='<div class="wow-nar-card"><div class="wow-nar-label">What I Did</div><div class="wow-nar-text">'+(e.did?escapeHTML(e.did):'<em style="color:#9CA3AF">—</em>')+'</div></div>';
-      var winCell='<div class="wow-nar-card" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="wow-nar-label" style="color:#16A34A;">Top Win</div><div class="wow-nar-text">'+(e.win?escapeHTML(e.win):'<em style="color:#9CA3AF">—</em>')+'</div></div>';
-      var blkCell='<div class="wow-nar-card" style="background:#FFFBEB;border-color:#FDE68A;"><div class="wow-nar-label" style="color:#D97706;">Obstacle</div><div class="wow-nar-text">'+(e.block?escapeHTML(e.block):'<em style="color:#9CA3AF">—</em>')+'</div></div>';
+      var didCell='<div class="wow-nar-card"><div class="wow-nar-label">What I Did</div><div class="wow-nar-text">'+(e.did?escapeHTML(e.did):'<em style="color:#9CA3AF">-</em>')+'</div></div>';
+      var winCell='<div class="wow-nar-card" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="wow-nar-label" style="color:#16A34A;">Top Win</div><div class="wow-nar-text">'+(e.win?escapeHTML(e.win):'<em style="color:#9CA3AF">-</em>')+'</div></div>';
+      var blkCell='<div class="wow-nar-card" style="background:#FFFBEB;border-color:#FDE68A;"><div class="wow-nar-label" style="color:#D97706;">Obstacle</div><div class="wow-nar-text">'+(e.block?escapeHTML(e.block):'<em style="color:#9CA3AF">-</em>')+'</div></div>';
       tr2.innerHTML='<td colspan="5" style="padding:0 8px 14px 8px;background:#FAFAF7;"><div class="wow-nar-grid">'+didCell+winCell+blkCell+'</div></td>';
       tb.appendChild(tr2);
     }
@@ -955,7 +955,7 @@ function clearData(){
   if(mib){
     var blankCard=function(label){return '<div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">'+
       '<div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">'+label+'</div>'+
-      '<div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">&mdash;</div>'+
+      '<div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">-</div>'+
       '<div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">No data for this week. Upload an Agency 360 report or enter manually.</div>'+
       '<div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;"></div>'+
     '</div>';};
@@ -987,7 +987,7 @@ async function saveData(silent){
     var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({week_key:weekKey,data:json,updated_at:new Date().toISOString()})});
     if(res.ok){
       try{localStorage.setItem('epic_'+weekKey,json);}catch(e){}
-      if(!silent)setStatus('ok','Saved to portal — '+wkLabel);
+      if(!silent)setStatus('ok','Saved to portal, '+wkLabel);
       return true;
     }else{
       var errTxt=await res.text();
@@ -996,7 +996,7 @@ async function saveData(silent){
   }catch(e){console.warn('Supabase save exception:',e);}
   try{
     localStorage.setItem('epic_'+weekKey,json);
-    setStatus('err','Saved locally only — '+wkLabel+' (portal sync failed, data is on this device)');
+    setStatus('err','Saved locally only for '+wkLabel+' (portal sync failed, data is on this device)');
     return true;
   }catch(e){setStatus('err','Save failed: '+e.message);return false;}
 }
@@ -1012,7 +1012,7 @@ async function loadData(){
     var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+encodeURIComponent(weekKey)+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
     if(res.ok){
       var rows=await res.json();
-      if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded — '+wkLabel);return;}
+      if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded '+wkLabel);return;}
     }
   }catch(e){console.warn('Load error (namespaced):',e);}
   if(hotel==='uma'){
@@ -1020,12 +1020,12 @@ async function loadData(){
       var res2=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+week+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
       if(res2.ok){
         var rows2=await res2.json();
-        if(rows2&&rows2.length>0){applyData(JSON.parse(rows2[0].data));setStatus('ok','Loaded — '+wkLabel);return;}
+        if(rows2&&rows2.length>0){applyData(JSON.parse(rows2[0].data));setStatus('ok','Loaded '+wkLabel);return;}
       }
     }catch(e){console.warn('Load error (legacy):',e);}
   }
   var raw=localStorage.getItem('epic_'+weekKey)||(hotel==='uma'?localStorage.getItem('epic_'+week):null);
-  if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally — '+wkLabel);return;}
+  if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally for '+wkLabel);return;}
   clearData();
   setStatus('err','No data saved for '+wkLabel+' yet. Fill in fields and save, or pick a past date with data.');
 }
