@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>EPIC Sales Advisory Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',system-ui,sans-serif;background:#F4F3EF;color:#111827;font-size:15px;line-height:1.6;}
@@ -158,6 +159,33 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
   .wkdate{width:120px;}
   .week-label{display:none;}
 }
+/* ============ LOGIN & ACCESS (Phase 2) ============ */
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1B2E5E 0%,#243D7A 100%);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:white;border-radius:18px;padding:40px 36px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;}
+.login-brand{font-size:24px;font-weight:700;color:#1B2E5E;margin-bottom:6px;}
+.login-brand span{color:#C9A84C;}
+.login-sub{font-size:14px;color:#6B7280;margin-bottom:24px;line-height:1.6;}
+.login-card input{margin-bottom:12px;text-align:center;font-size:15px;}
+.login-btn{width:100%;background:#1B2E5E;color:white;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
+.login-btn:hover{opacity:.88;}
+.login-msg{margin-top:14px;font-size:13px;line-height:1.6;color:#374151;min-height:20px;}
+.login-msg.ok{color:#16A34A;font-weight:600;}
+.login-msg.err{color:#DC2626;font-weight:600;}
+/* admin-only elements hidden unless body.is-admin */
+.adm{display:none!important;}
+body.is-admin .adm{display:inline-block!important;}
+/* view-toggle buttons hidden for hotel users (role is locked) */
+body.locked .vt{display:none!important;}
+/* members modal */
+#membersModal{position:fixed;inset:0;background:rgba(17,24,39,.55);z-index:2500;display:none;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto;}
+#membersModal.open{display:flex;}
+.mm-card{background:white;border-radius:16px;padding:26px;max-width:640px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.mm-title{font-size:18px;font-weight:700;color:#1B2E5E;margin-bottom:4px;}
+.mm-sub{font-size:13px;color:#6B7280;margin-bottom:16px;line-height:1.6;}
+.mm-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.mm-row input,.mm-row select{flex:1;min-width:150px;width:auto;}
+.mm-close{background:none;border:none;font-size:24px;color:#9CA3AF;cursor:pointer;float:right;line-height:1;}
+.crm-link{color:#2A4A8A;font-weight:600;cursor:pointer;text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -165,14 +193,16 @@ td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
   <div class="brand">EPIC <span>Sales</span> Portal</div>
   <div class="topright">
     <select class="wkdate" id="hotelSelect" onchange="onHotelChange()" style="width:auto;min-width:170px;"></select>
-    <button class="vbtn eo" onclick="addNewHotel()" title="Add a new hotel" style="padding:6px 8px;">+ Hotel</button>
+    <button class="vbtn adm" onclick="addNewHotel()" title="Add a new hotel" style="padding:6px 8px;">+ Hotel</button>
+    <button class="vbtn adm" onclick="openMembers()" title="Manage who can access each hotel">Members</button>
     <span class="week-label">Week of</span>
     <input type="date" class="wkdate" id="weekDate">
-    <button class="vbtn on" id="vbtnEdit" onclick="setView('edit')">Consultant</button>
-    <button class="vbtn" id="vbtnRead" onclick="setView('read')">GM View</button>
-    <button class="vbtn" id="vbtnSales" onclick="setView('sales')">Sales Manager</button>
+    <button class="vbtn on vt" id="vbtnEdit" onclick="setView('edit')">Consultant</button>
+    <button class="vbtn vt" id="vbtnRead" onclick="setView('read')">GM View</button>
+    <button class="vbtn vt" id="vbtnSales" onclick="setView('sales')">Sales Manager</button>
     <button class="lbtn" onclick="loadData()">Load</button>
     <button class="sbtn eo" onclick="saveData()">Save</button>
+    <button class="lbtn" onclick="signOut()" title="Sign out" style="padding:7px 10px;">&#x21E5;</button>
   </div>
 </div>
 <div class="hero">
@@ -497,20 +527,108 @@ The recommendations in this report are sequenced by urgency. Every account above
     </div>
   </div>
 </div>
+
+<!-- LOGIN SCREEN (shown until signed in) -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="login-brand">EPIC <span>Sales</span> Portal</div>
+    <div class="login-sub">Enter your email and we'll send you a one-click sign-in link. No password needed.</div>
+    <input type="text" id="loginEmail" placeholder="you@yourhotel.com" onkeydown="if(event.key==='Enter')sendLoginLink()">
+    <button class="login-btn" onclick="sendLoginLink()">Send sign-in link</button>
+    <div class="login-msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- MEMBERS PANEL (admin only) -->
+<div id="membersModal">
+  <div class="mm-card">
+    <button class="mm-close" onclick="closeMembers()">&times;</button>
+    <div class="mm-title">Portal Access</div>
+    <div class="mm-sub">Give a hotel team member access: add their email, pick their hotel and role. They then go to the portal, enter that email, and click the link in their inbox. Remove access anytime with the &times; next to their name.</div>
+    <div class="mm-row">
+      <input type="text" id="mmEmail" placeholder="person@hotel.com">
+      <select id="mmHotel"></select>
+      <select id="mmRole">
+        <option value="gm">GM (read only)</option>
+        <option value="sales_manager">Sales Manager</option>
+        <option value="consultant">Consultant (full edit)</option>
+      </select>
+      <button class="csubmit" onclick="addMember()">Add</button>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>Email</th><th>Hotel</th><th>Role</th><th></th></tr></thead>
+      <tbody id="mmBody"></tbody>
+    </table></div>
+    <div class="login-msg" id="mmMsg"></div>
+  </div>
+</div>
+
 <script>
 var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
 var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
 
-// Hotel registry — add new hotels here to populate the dropdown.
-// Each hotel has a stable key (used in DB), display name, and default manager/source.
-var HOTELS=[
-  {key:'uma',name:'Uma House by Yurbban South Beach',manager:'Aymin',source:'TravelClick Agency 360'}
-];
-// Try to load any user-added hotels from localStorage
-try{
-  var stored=JSON.parse(localStorage.getItem('portvisory_hotels')||'[]');
-  stored.forEach(function(h){if(h&&h.key&&!HOTELS.find(function(x){return x.key===h.key;}))HOTELS.push(h);});
-}catch(e){}
+// ============ AUTH & ACCESS (Phase 2) ============
+// Hotels now live in the database. Who sees what is controlled by
+// sign-in + database rules, not by anything in this file.
+var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+var SESSION=null,USER_EMAIL='',IS_ADMIN=false,MEMBERSHIPS=[],HOTELS=[];
+
+function authHeaders(extra){
+  var h={'apikey':SUPA_KEY,'Authorization':'Bearer '+(SESSION?SESSION.access_token:SUPA_KEY)};
+  if(extra)for(var k in extra)h[k]=extra[k];
+  return h;
+}
+async function sendLoginLink(){
+  var email=(document.getElementById('loginEmail').value||'').trim().toLowerCase();
+  var msg=document.getElementById('loginMsg');
+  if(!email||email.indexOf('@')<0){msg.className='login-msg err';msg.textContent='Please enter a valid email address.';return;}
+  msg.className='login-msg';msg.textContent='Sending...';
+  try{
+    var timeout=new Promise(function(_,rej){setTimeout(function(){rej(new Error('Request timed out. Check your internet connection and try again.'));},15000);});
+    var call=sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:window.location.origin+window.location.pathname}});
+    var r=await Promise.race([call,timeout]);
+    if(r&&r.error){msg.className='login-msg err';msg.textContent='Could not send link: '+r.error.message;}
+    else{msg.className='login-msg ok';msg.textContent='Link sent. Check your inbox (and spam folder), then click the link to sign in.';}
+  }catch(e){
+    msg.className='login-msg err';
+    msg.textContent='Could not send link: '+(e&&e.message?e.message:'unknown error');
+  }
+}
+async function signOut(){await sb.auth.signOut();window.location.reload();}
+function showLogin(){document.getElementById('loginOverlay').style.display='flex';}
+function hideLogin(){document.getElementById('loginOverlay').style.display='none';}
+
+async function onSignedIn(){
+  USER_EMAIL=(SESSION.user&&SESSION.user.email||'').toLowerCase();
+  hideLogin();
+  try{
+    var r1=await fetch(SUPA_URL+'/rest/v1/admins?select=email',{headers:authHeaders()});
+    IS_ADMIN=r1.ok&&(await r1.json()).length>0;
+    var r2=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=hotel_slug,role&email=eq.'+encodeURIComponent(USER_EMAIL),{headers:authHeaders()});
+    MEMBERSHIPS=r2.ok?await r2.json():[];
+    var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source&order=name',{headers:authHeaders()});
+    var hotels=r3.ok?await r3.json():[];
+    HOTELS=hotels.map(function(h){return{key:h.slug,name:h.name,manager:h.manager,source:h.source};});
+  }catch(e){console.warn('Access load error:',e);}
+  document.body.classList.toggle('is-admin',IS_ADMIN);
+  if(HOTELS.length===0){
+    setStatus('err','Your email ('+USER_EMAIL+') has no hotel assigned yet. Contact your EPIC consultant.');
+    return;
+  }
+  populateHotelDropdown();
+  onHotelChange();
+}
+function roleForHotel(slug){
+  if(IS_ADMIN)return 'consultant';
+  var m=MEMBERSHIPS.find(function(x){return x.hotel_slug===slug;});
+  return m?m.role:'gm';
+}
+function applyRole(){
+  var role=roleForHotel(getHotelKey());
+  if(role==='consultant'){document.body.classList.remove('locked');setView('edit');}
+  else if(role==='sales_manager'){document.body.classList.add('locked');setView('sales');}
+  else{document.body.classList.add('locked');setView('read');}
+}
 
 var taskRequests=[];
 var comments=[];
@@ -559,25 +677,69 @@ function onHotelChange(){
     if(mgrEl)mgrEl.textContent=h.manager||'';
     if(srcEl)srcEl.textContent=h.source||'';
   }
+  applyRole();
   loadData();
 }
-function addNewHotel(){
+async function addNewHotel(){
   var name=prompt('Hotel display name (e.g. "Marriott Aventura"):');
   if(!name||!name.trim())return;
   var key=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);
   if(!key){alert('Could not derive a hotel key from that name. Try a simpler name.');return;}
   if(HOTELS.find(function(x){return x.key===key;})){alert('A hotel with that key already exists.');return;}
-  var manager=prompt('Sales manager name (optional):')||'';
-  var source=prompt('Primary data source (default: TravelClick Agency 360):')||'TravelClick Agency 360';
-  HOTELS.push({key:key,name:name.trim(),manager:manager.trim(),source:source.trim()});
-  try{
-    var stored=JSON.parse(localStorage.getItem('portvisory_hotels')||'[]');
-    stored.push({key:key,name:name.trim(),manager:manager.trim(),source:source.trim()});
-    localStorage.setItem('portvisory_hotels',JSON.stringify(stored));
-  }catch(e){}
+  var manager=(prompt('Sales manager name (optional):')||'').trim();
+  var source=(prompt('Primary data source (default: TravelClick Agency 360):')||'TravelClick Agency 360').trim();
+  setStatus('busy','Adding hotel...');
+  var res=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({slug:key,name:name.trim(),manager:manager,source:source})});
+  if(!res.ok){setStatus('err','Could not add hotel: '+(await res.text()));return;}
+  HOTELS.push({key:key,name:name.trim(),manager:manager,source:source});
   populateHotelDropdown();
   document.getElementById('hotelSelect').value=key;
   onHotelChange();
+  setStatus('ok','Hotel added. Now open Members to give their team access.');
+}
+
+// ============ MEMBERS PANEL (admin) ============
+async function openMembers(){
+  var sel=document.getElementById('mmHotel');
+  sel.innerHTML='';
+  HOTELS.forEach(function(h){var o=document.createElement('option');o.value=h.key;o.textContent=h.name;sel.appendChild(o);});
+  sel.value=getHotelKey();
+  document.getElementById('membersModal').classList.add('open');
+  await refreshMembers();
+}
+function closeMembers(){document.getElementById('membersModal').classList.remove('open');}
+async function refreshMembers(){
+  var tb=document.getElementById('mmBody');
+  tb.innerHTML='<tr><td colspan="4" style="color:#9CA3AF;">Loading...</td></tr>';
+  var res=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=email,hotel_slug,role&order=hotel_slug,email',{headers:authHeaders()});
+  var rows=res.ok?await res.json():[];
+  tb.innerHTML='';
+  if(rows.length===0){tb.innerHTML='<tr><td colspan="4" style="color:#9CA3AF;">No members yet. Add the first one above.</td></tr>';return;}
+  rows.forEach(function(m){
+    var h=HOTELS.find(function(x){return x.key===m.hotel_slug;});
+    var roleLabel=m.role==='gm'?'GM (read only)':m.role==='sales_manager'?'Sales Manager':'Consultant';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+escapeHTML(m.email)+'</td><td>'+escapeHTML(h?h.name:m.hotel_slug)+'</td><td>'+roleLabel+'</td>'+
+      '<td><button onclick="removeMember(\''+m.email+'\',\''+m.hotel_slug+'\')" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:18px;">&times;</button></td>';
+    tb.appendChild(tr);
+  });
+}
+async function addMember(){
+  var email=(document.getElementById('mmEmail').value||'').trim().toLowerCase();
+  var hotel=document.getElementById('mmHotel').value;
+  var role=document.getElementById('mmRole').value;
+  var msg=document.getElementById('mmMsg');
+  if(!email||email.indexOf('@')<0){msg.className='login-msg err';msg.textContent='Enter a valid email.';return;}
+  var res=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:hotel,role:role})});
+  if(!res.ok){msg.className='login-msg err';msg.textContent='Could not add: '+(await res.text());return;}
+  msg.className='login-msg ok';msg.textContent=email+' added. Tell them to visit the portal and sign in with that email.';
+  document.getElementById('mmEmail').value='';
+  refreshMembers();
+}
+async function removeMember(email,hotel){
+  if(!confirm('Remove '+email+' from this hotel?'))return;
+  await fetch(SUPA_URL+'/rest/v1/hotel_members?email=eq.'+encodeURIComponent(email)+'&hotel_slug=eq.'+encodeURIComponent(hotel),{method:'DELETE',headers:authHeaders()});
+  refreshMembers();
 }
 function getWeekLabel(){
   var val=document.getElementById('weekDate').value;
@@ -625,9 +787,29 @@ function setStatus(state,msg){
   document.getElementById('sdot').className='dot '+(state==='ok'?'ok':state==='busy'?'busy':'err');
   document.getElementById('stxt').textContent=msg;
 }
-function handleFileUpload(input){
+// ============ REAL FILE UPLOADS (Phase 2) ============
+// Files now actually upload to secure storage instead of only showing a name.
+async function uploadCrmFile(file){
+  var path=getHotelKey()+'/'+getWeekKey()+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  var r=await sb.storage.from('crm-uploads').upload(path,file);
+  return r.error?null:path;
+}
+async function downloadCrm(path){
+  var r=await sb.storage.from('crm-uploads').createSignedUrl(path,3600);
+  if(r.data&&r.data.signedUrl)window.open(r.data.signedUrl,'_blank');
+  else alert('Could not open file. It may have been removed.');
+}
+async function handleFileUpload(input){
   var f=input.files[0];
-  if(f){var span=input.closest('td').querySelector('.file-name');if(span)span.textContent='OK '+f.name;}
+  if(!f)return;
+  var span=input.closest('td').querySelector('.file-name');
+  if(span)span.textContent='Uploading...';
+  var path=await uploadCrmFile(f);
+  if(span){
+    if(path)span.innerHTML='<span class="crm-link" onclick="downloadCrm(\''+path+'\')">'+escapeHTML(f.name)+'</span>';
+    else span.textContent='Upload failed, try again';
+  }
+  if(path)saveData(true);
 }
 document.addEventListener('DOMContentLoaded',function(){
   var ayminFile=document.getElementById('ayminFile');
@@ -793,7 +975,10 @@ function renderAyminReadView(){
   html+='<div class="ayr-field" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="ayr-label" style="color:#16A34A;">Top win or progress</div><div class="ayr-value">'+(e.win?escapeHTML(e.win):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
   html+='<div class="ayr-field" style="background:#FFFBEB;border-color:#FDE68A;"><div class="ayr-label" style="color:#D97706;">Biggest obstacle</div><div class="ayr-value">'+(e.block?escapeHTML(e.block):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
   html+='</div>';
-  if(e.crmFile){html+='<div class="ayr-field"><div class="ayr-label">CRM File Attached</div><div class="ayr-value" style="color:#16A34A;">'+escapeHTML(e.crmFile)+'</div></div>';}
+  if(e.crmFile){
+    var fileHtml=e.crmPath?'<span class="crm-link" onclick="downloadCrm(\''+e.crmPath+'\')">'+escapeHTML(e.crmFile)+'</span> <span style="font-size:12px;color:#6B7280;">(click to open)</span>':escapeHTML(e.crmFile);
+    html+='<div class="ayr-field"><div class="ayr-label">CRM File Attached</div><div class="ayr-value" style="color:#16A34A;">'+fileHtml+'</div></div>';
+  }
   html+='<p style="font-size:12px;color:#9CA3AF;margin-top:10px;">Submitted for: '+escapeHTML(e.label||'')+(e.submittedAt?(' at '+new Date(e.submittedAt).toLocaleString()):'')+'</p>';
   el.innerHTML=html;
 }
@@ -804,12 +989,18 @@ async function logActivity(){
   if(!week){setStatus('err','Please select a date first.');return;}
   var wkLabel=getWeekLabel();
   var fileInput=document.getElementById('ayminFile');
-  var fileName=fileInput&&fileInput.files[0]?fileInput.files[0].name:'';
+  var theFile=fileInput&&fileInput.files[0]?fileInput.files[0]:null;
   var didVal=document.getElementById('ayminDid').value.trim();
   var winVal=document.getElementById('ayminWin').value.trim();
   var blockVal=document.getElementById('ayminBlock').value.trim();
   if(!didVal&&!winVal&&!blockVal){setStatus('err','Please fill in at least one field before submitting.');return;}
-  var entry={week:week,label:wkLabel,did:didVal,win:winVal,block:blockVal,calls:parseInt(document.getElementById('aCalls').value)||0,emails:parseInt(document.getElementById('aEmails').value)||0,sites:parseInt(document.getElementById('aSites').value)||0,contacts:parseInt(document.getElementById('aContacts').value)||0,crmFile:fileName,submittedAt:new Date().toISOString()};
+  var crmPath='';
+  if(theFile){
+    setStatus('busy','Uploading your file...');
+    crmPath=await uploadCrmFile(theFile)||'';
+    if(!crmPath)setStatus('err','File upload failed; submitting your update without it.');
+  }
+  var entry={week:week,label:wkLabel,did:didVal,win:winVal,block:blockVal,calls:parseInt(document.getElementById('aCalls').value)||0,emails:parseInt(document.getElementById('aEmails').value)||0,sites:parseInt(document.getElementById('aSites').value)||0,contacts:parseInt(document.getElementById('aContacts').value)||0,crmFile:theFile?theFile.name:'',crmPath:crmPath,submittedAt:new Date().toISOString()};
   var idx=activityLog.findIndex(function(e){return e.week===week;});
   if(idx>=0)activityLog[idx]=entry;else activityLog.unshift(entry);
   renderWOW();
@@ -978,13 +1169,14 @@ function clearData(){
 async function saveData(silent){
   var week=getWeekKey();
   if(!week){setStatus('err','Please select a date first.');return false;}
+  if(!SESSION){setStatus('err','You are signed out. Refresh the page and sign in again.');return false;}
   if(!silent)setStatus('busy','Saving...');
   var wkLabel=getWeekLabel();
   var hotel=getHotelKey();
   var weekKey=hotel+'|'+week;
   var json=JSON.stringify(collectData());
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({week_key:weekKey,data:json,updated_at:new Date().toISOString()})});
+    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({week_key:weekKey,data:json,updated_at:new Date().toISOString()})});
     if(res.ok){
       try{localStorage.setItem('epic_'+weekKey,json);}catch(e){}
       if(!silent)setStatus('ok','Saved to portal, '+wkLabel);
@@ -994,11 +1186,10 @@ async function saveData(silent){
       console.warn('Supabase save error:',res.status,errTxt);
     }
   }catch(e){console.warn('Supabase save exception:',e);}
-  try{
-    localStorage.setItem('epic_'+weekKey,json);
-    setStatus('err','Saved locally only for '+wkLabel+' (portal sync failed, data is on this device)');
-    return true;
-  }catch(e){setStatus('err','Save failed: '+e.message);return false;}
+  // Portal save failed — keep a local copy so nothing typed is lost, but report failure
+  try{localStorage.setItem('epic_'+weekKey,json);}catch(e){}
+  setStatus('err','Not saved to portal for '+wkLabel+'. A copy is kept on this device; check your connection and hit Save again.');
+  return false;
 }
 
 async function loadData(){
@@ -1009,21 +1200,12 @@ async function loadData(){
   var hotel=getHotelKey();
   var weekKey=hotel+'|'+week;
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+encodeURIComponent(weekKey)+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+encodeURIComponent(weekKey)+'&select=data',{headers:authHeaders()});
     if(res.ok){
       var rows=await res.json();
       if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded '+wkLabel);return;}
     }
-  }catch(e){console.warn('Load error (namespaced):',e);}
-  if(hotel==='uma'){
-    try{
-      var res2=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+week+'&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
-      if(res2.ok){
-        var rows2=await res2.json();
-        if(rows2&&rows2.length>0){applyData(JSON.parse(rows2[0].data));setStatus('ok','Loaded '+wkLabel);return;}
-      }
-    }catch(e){console.warn('Load error (legacy):',e);}
-  }
+  }catch(e){console.warn('Load error:',e);}
   var raw=localStorage.getItem('epic_'+weekKey)||(hotel==='uma'?localStorage.getItem('epic_'+week):null);
   if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally for '+wkLabel);return;}
   clearData();
@@ -1037,9 +1219,21 @@ document.querySelectorAll('textarea').forEach(function(ta){
   ta.style.height='auto';
   ta.style.height=ta.scrollHeight+'px';
 });
-populateHotelDropdown();
 renderTaskRequests();
-setTimeout(function(){loadData();},200);
+
+// Sign-in gate: nothing loads until a valid session exists.
+(async function(){
+  var got=await sb.auth.getSession();
+  SESSION=got.data?got.data.session:null;
+  sb.auth.onAuthStateChange(function(event,s){
+    var hadSession=!!SESSION;
+    SESSION=s;
+    if(s&&!hadSession)onSignedIn();
+    if(!s&&event==='SIGNED_OUT')showLogin();
+  });
+  if(SESSION)onSignedIn();
+  else showLogin();
+})();
 </script>
 </body>
 </html>
