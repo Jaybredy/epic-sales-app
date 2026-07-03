@@ -359,11 +359,24 @@ async function onHotelChange(){
 }
 
 function showView(v){
+  if(!el('view-'+v))return;
   document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
   document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
   el('view-'+v).classList.add('on');
   el('nav-'+v).classList.add('on');
+  if(location.hash!=='#'+v)history.pushState(null,'','#'+v);
+  growAll();
 }
+window.addEventListener('popstate',function(){
+  var v=(location.hash||'#overview').slice(1);
+  if(el('view-'+v)&&!el('view-'+v).classList.contains('on')){
+    document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
+    document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
+    el('view-'+v).classList.add('on');el('nav-'+v).classList.add('on');growAll();
+  }
+});
+function grow(ta){if(ta&&ta.tagName==='TEXTAREA'){ta.style.height='auto';ta.style.height=(ta.scrollHeight+4)+'px';}}
+function growAll(){setTimeout(function(){document.querySelectorAll('.view.on textarea').forEach(grow);},30);}
 
 function mondayOf(d){var x=new Date(d);var day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return x.toISOString().slice(0,10);}
 function weekLabel(iso){var d=new Date(iso+'T12:00:00');return 'Week of '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
@@ -410,7 +423,7 @@ function applyBlob(){
   el('agBody').innerHTML=BLOB.agBodyV3||legacyRows(BLOB.agBodyHTML,4)||legacyRows(BLOB.ctBodyHTML,4)||'';
   var log=BLOB.activityLog||[];var e0=log.find(function(x){return x.week===WEEK;});
   if(e0){el('ayminDid').value=e0.did||'';el('ayminWin').value=e0.win||'';el('ayminBlock').value=e0.block||'';el('aCalls').value=e0.calls||0;el('aEmails').value=e0.emails||0;el('aSites').value=e0.sites||0;el('aContacts').value=e0.contacts||0;}
-  renderWOW();renderComments();renderOverview();
+  renderWOW();renderComments();renderOverview();growAll();
 }
 function legacyRows(html,cols){
   if(!html)return '';
@@ -449,7 +462,7 @@ async function doSave(){
   }catch(e){}
   DIRTY=true;setSave('err','Not saved — check connection');
 }
-document.addEventListener('input',function(e){if(e.target.closest('.main'))markDirty();});
+document.addEventListener('input',function(e){if(e.target.closest('.main'))markDirty();if(e.target.tagName==='TEXTAREA')grow(e.target);});
 
 function renderWOW(){
   var log=(BLOB.activityLog||[]).slice(0,10);var tb=el('wowBody');
@@ -601,6 +614,8 @@ window.addEventListener('beforeunload',function(){flushSave();});
   var got=await sb.auth.getSession();SESSION=got.data?got.data.session:null;
   sb.auth.onAuthStateChange(function(ev,s){var had=!!SESSION;SESSION=s;if(s&&!had)onSignedIn();if(!s&&ev==='SIGNED_OUT')el('loginOverlay').style.display='flex';});
   if(SESSION)onSignedIn();else el('loginOverlay').style.display='flex';
+  var h0=(location.hash||'').slice(1);
+  if(h0&&el('view-'+h0))showView(h0);
 })();
 </script>
 </body>
