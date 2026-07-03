@@ -350,8 +350,12 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <p class="hint">Add a person's email, pick their role. They sign in at portvisory.com with that email.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <input type="text" id="mmEmail" placeholder="person@hotel.com" style="flex:2;min-width:180px;">
-          <select id="mmRole" style="flex:1;min-width:190px;"><option value="gm">Hotel GM (read only, this hotel)</option><option value="sales_manager">Hotel sales manager (this hotel)</option><option value="consultant">EPIC consultant (edit, this hotel)</option><option value="epic_admin">EPIC admin (all hotels)</option></select>
+          <select id="mmRole" style="flex:1;min-width:190px;" onchange="mmRoleChanged()"><option value="gm">Hotel GM (this hotel)</option><option value="sales_manager">Hotel sales manager (this hotel)</option><option value="consultant">EPIC consultant (choose hotels)</option><option value="epic_admin">EPIC admin (all hotels)</option></select>
           <button class="primary" onclick="addMember()">Add</button>
+        </div>
+        <div id="mmHotels" style="display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;">
+          <p class="hint" style="margin-bottom:6px;">Hotels this consultant can access:</p>
+          <div id="mmHotelChecks" style="display:flex;gap:14px;flex-wrap:wrap;"></div>
         </div>
         <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Email</th><th>Role</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
         <span class="msg" id="mmMsg"></span>
@@ -726,6 +730,17 @@ async function loadMembers(){
   }).join('');
   tb.innerHTML=html||'<tr><td colspan="4" style="color:var(--soft);">No members yet.</td></tr>';
 }
+function mmRoleChanged(){
+  var isC=el('mmRole').value==='consultant';
+  el('mmHotels').style.display=isC?'block':'none';
+  if(isC)renderHotelChecks();
+}
+function renderHotelChecks(){
+  var cur=curHotel().slug;
+  el('mmHotelChecks').innerHTML=HOTELS.map(function(h){
+    return '<label style="font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;"><input type="checkbox" class="mmHck" value="'+h.slug+'"'+(h.slug===cur?' checked':'')+'> '+esc(h.name)+'</label>';
+  }).join('');
+}
 async function addMember(){
   var email=(el('mmEmail').value||'').trim().toLowerCase();var m=el('mmMsg');
   if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email.';return;}
@@ -734,6 +749,18 @@ async function addMember(){
     var ra=await fetch(SUPA_URL+'/rest/v1/admins',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email})});
     if(ra.ok){m.className='msg ok';m.textContent=email+' added as EPIC admin with access to every hotel.';el('mmEmail').value='';loadMembers();}
     else{m.className='msg err';m.textContent='Could not add admin. Has the admin policy script been run?';}
+    return;
+  }
+  if(role==='consultant'){
+    var slugs=Array.prototype.slice.call(document.querySelectorAll('.mmHck:checked')).map(function(c){return c.value;});
+    if(!slugs.length){m.className='msg err';m.textContent='Check at least one hotel for this consultant.';return;}
+    var fails=0;
+    for(var i=0;i<slugs.length;i++){
+      var rc=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:slugs[i],role:'consultant'})});
+      if(!rc.ok)fails++;
+    }
+    if(!fails){m.className='msg ok';m.textContent=email+' added as EPIC consultant for '+slugs.length+' hotel'+(slugs.length>1?'s':'')+'.';el('mmEmail').value='';loadMembers();}
+    else{m.className='msg err';m.textContent='Could not add '+fails+' of the hotels. Try again.';}
     return;
   }
   var r=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:curHotel().slug,role:role})});
