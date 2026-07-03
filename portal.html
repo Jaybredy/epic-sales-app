@@ -8,13 +8,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--navy:#1B2E5E;--navy2:#243D7A;--gold:#C9A84C;--bg:#F4F3EF;--card:#FFFFFF;--line:#E5E5E1;--txt:#111827;--mut:#6B7280;--soft:#9CA3AF;--blue:#2A4A8A;--bluebg:#EEF3FB;--green:#16A34A;--greenbg:#F0FDF4;--amber:#D97706;--amberbg:#FFFBEB;--red:#DC2626;--redbg:#FEF2F2;}
+:root{--navy:#1B2E5E;--navy2:#243D7A;--gold:#C9A84C;--bg:#F4F3EF;--card:#FFFFFF;--line:#E5E5E1;--txt:#111827;--mut:#6B7280;--soft:#9CA3AF;--blue:#2A4A8A;--bluebg:#EEF3FB;--green:#16A34A;--greenbg:#F0FDF4;--amber:#D97706;--amberbg:#FFFBEB;--red:#DC2626;--redbg:#FEF2F2;--thead:#F9FAFB;--rowline:#F3F4F6;}
+body.dark{--navy:#C9D6F2;--navy2:#243D7A;--bg:#0F1522;--card:#1A2233;--line:#2C3850;--txt:#E5E7EB;--mut:#9CA3AF;--soft:#6B7280;--blue:#9DB8E8;--bluebg:#22304D;--green:#4ADE80;--greenbg:#16301F;--amber:#FBBF24;--amberbg:#372B10;--red:#F87171;--redbg:#3A1B1B;--thead:#151D2E;--rowline:#232E45;}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.6;}
 button{font-family:'Inter',sans-serif;cursor:pointer;}
-input,select,textarea{font-family:'Inter',sans-serif;font-size:14px;color:var(--txt);border:1px solid #D1D5DB;border-radius:8px;padding:9px 12px;background:white;width:100%;}
+input,select,textarea{font-family:'Inter',sans-serif;font-size:14px;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--card);width:100%;}
 textarea{min-height:80px;resize:vertical;line-height:1.6;}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(42,74,138,.08);}
-.topbar{background:white;border-bottom:1px solid var(--line);height:58px;display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;z-index:100;}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);height:58px;display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;z-index:100;}
 .brand{font-size:16px;font-weight:700;color:var(--navy);white-space:nowrap;}
 .brand span{color:var(--gold);}
 #hotelSelect{width:auto;min-width:200px;padding:7px 10px;font-weight:600;}
@@ -26,10 +27,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);bo
 .avatar{width:32px;height:32px;border-radius:50%;background:var(--bluebg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
 .uname{font-size:13px;font-weight:600;line-height:1.2;}
 .urole{font-size:11px;color:var(--soft);line-height:1.2;}
-.logoutbtn{border:1px solid var(--line);background:white;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--txt);}
+.logoutbtn{border:1px solid var(--line);background:var(--card);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--txt);}
 .logoutbtn:hover{background:var(--bg);}
 .layout{display:grid;grid-template-columns:190px minmax(0,1fr);min-height:calc(100vh - 58px);}
-.sidebar{border-right:1px solid var(--line);background:white;padding:12px 8px;display:flex;flex-direction:column;gap:2px;}
+.sidebar{border-right:1px solid var(--line);background:var(--card);padding:12px 8px;display:flex;flex-direction:column;gap:2px;}
 .nav{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--mut);border:none;background:none;text-align:left;width:100%;}
 .nav:hover{background:var(--bg);color:var(--txt);}
 .nav.on{background:var(--bluebg);color:var(--blue);font-weight:700;}
@@ -45,23 +46,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);bo
 .pill.red{background:var(--redbg);color:var(--red);}
 .hsub{font-size:12px;color:var(--soft);margin-bottom:14px;}
 .weekbar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
-.wkbtn{border:1px solid var(--line);background:white;border-radius:7px;padding:5px 10px;font-size:13px;font-weight:600;}
+.wkbtn{border:1px solid var(--line);background:var(--card);border-radius:7px;padding:5px 10px;font-size:13px;font-weight:600;color:var(--txt);}
 .wkbtn:hover{background:var(--bg);}
 .wklabel{font-size:14px;font-weight:700;min-width:200px;text-align:center;}
 .view{display:none;}
 .view.on{display:block;}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
-.kpi{background:white;border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
 .kpi .kl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:600;min-height:16px;}
 .kpi .kv{font-size:24px;font-weight:700;color:var(--navy);margin-top:2px;min-height:32px;}
 .kpi .ks{font-size:11px;color:var(--soft);min-height:15px;}
-.card{background:white;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
 .card h3{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
 .hint{font-size:12px;color:var(--mut);margin-bottom:8px;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-th{background:#F9FAFB;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:9px 10px;text-align:left;font-weight:700;border-bottom:1px solid var(--line);}
-td{padding:9px 10px;border-top:1px solid #F3F4F6;vertical-align:top;}
+th{background:var(--thead);color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:9px 10px;text-align:left;font-weight:700;border-bottom:1px solid var(--line);}
+td{padding:9px 10px;border-top:1px solid var(--rowline);vertical-align:top;}
 .tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
 .rowbtn{background:none;border:none;color:var(--red);font-size:17px;line-height:1;}
 .addbtn{background:var(--bluebg);color:var(--blue);border:1px solid #DBEAFE;border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;margin-top:10px;}
@@ -119,6 +120,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
   <select id="hotelSelect" onchange="onHotelChange()"></select>
   <button class="logoutbtn adm-only" onclick="addNewHotel()">+ Hotel</button>
   <span class="savechip"><span class="savedot" id="saveDot"></span><span id="saveTxt">Loading…</span></span>
+  <button class="logoutbtn" id="themeBtn" onclick="toggleTheme()" title="Switch light/dark mode">Dark mode</button>
   <div class="userchip">
     <div class="avatar" id="avatar">–</div>
     <div><div class="uname" id="uName">…</div><div class="urole" id="uRole">…</div></div>
@@ -161,10 +163,10 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Metric 4</div><div class="kv" id="m4" contenteditable="true">–</div><div class="ks" id="ms4" contenteditable="true"></div></div>
       </div>
       <div class="grid2">
-        <div class="card"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:#374151;white-space:pre-wrap;">–</div></div>
-        <div class="card"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:#374151;white-space:pre-wrap;">–</div></div>
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;">–</div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync →</p></div>
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;">–</div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync →</p></div>
       </div>
-      <div class="card"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:#374151;">–</div></div>
+      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:var(--mut);">–</div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Requests →</p></div>
     </div>
 
     <div class="view" id="view-sync">
@@ -193,7 +195,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <p class="hint">Sales efforts handled by EPIC this week. The hotel reads this.</p>
         <textarea id="epicReport" placeholder="Outreach, calls, agency contacts, GDS work done for this hotel this week…"></textarea>
       </div>
-      <div class="card">
+      <div class="card inhouse-only">
         <h3>Consultant response <span class="pill amber">Feedback</span></h3>
         <textarea id="consultResponse" placeholder="Review of the week and guidance for next week…"></textarea>
       </div>
@@ -585,6 +587,14 @@ async function addNewHotel(){
   el('hotelSelect').value=slug;onHotelChange();showView('members');
   setSave('ok','Hotel added — set its options in Members');
 }
+
+function toggleTheme(){
+  var dark=!document.body.classList.contains('dark');
+  document.body.classList.toggle('dark',dark);
+  el('themeBtn').textContent=dark?'Light mode':'Dark mode';
+  try{localStorage.setItem('pv_theme',dark?'dark':'light');}catch(e){}
+}
+(function(){try{if(localStorage.getItem('pv_theme')==='dark'){document.body.classList.add('dark');el('themeBtn').textContent='Light mode';}}catch(e){}})();
 
 window.addEventListener('beforeunload',function(){flushSave();});
 (async function(){
