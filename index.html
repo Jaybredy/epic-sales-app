@@ -186,6 +186,8 @@ body.locked .vt{display:none!important;}
 .mm-row input,.mm-row select{flex:1;min-width:150px;width:auto;}
 .mm-close{background:none;border:none;font-size:24px;color:#9CA3AF;cursor:pointer;float:right;line-height:1;}
 .crm-link{color:#2A4A8A;font-weight:600;cursor:pointer;text-decoration:underline;}
+/* Hotels without the Agency 360 report: hide the market-intelligence tabs */
+body.no-a360 .a360tab{display:none!important;}
 </style>
 </head>
 <body>
@@ -208,7 +210,7 @@ body.locked .vt{display:none!important;}
 <div class="hero">
   <div class="hero-inner">
     <div>
-      <div class="hbadge">Sales Intelligence Brief</div>
+      <div class="hbadge" id="badgeText" contenteditable="true">Sales Advisory Brief</div>
       <h1 id="titleText" contenteditable="true">EPIC Sales Weekly Feedback</h1>
       <div class="hero-meta">
         <strong id="hotelText" contenteditable="true">Uma House by Yurbban South Beach</strong><br>
@@ -229,20 +231,20 @@ body.locked .vt{display:none!important;}
 </div>
 <div class="wrap">
   <div class="mrow">
-    <div class="mc dark"><div class="ml">Total Market RNs</div><div class="mv" id="m1" contenteditable="true">11,845</div><div class="ms">Next 90 days</div></div>
-    <div class="mc"><div class="ml">Uma House GDS</div><div class="mv red" id="m2" contenteditable="true">0</div><div class="ms">Bookings captured</div></div>
-    <div class="mc"><div class="ml">Compset GDS</div><div class="mv" id="m3" contenteditable="true">195</div><div class="ms">Room nights</div></div>
-    <div class="mc"><div class="ml">Revenue Opportunity</div><div class="mv" id="m4" contenteditable="true">$271K</div><div class="ms">At 10% capture</div></div>
+    <div class="mc dark"><div class="ml" id="ml1" contenteditable="true">Total Market RNs</div><div class="mv" id="m1" contenteditable="true">11,845</div><div class="ms" id="ms1" contenteditable="true">Next 90 days</div></div>
+    <div class="mc"><div class="ml" id="ml2" contenteditable="true">Hotel GDS</div><div class="mv red" id="m2" contenteditable="true">0</div><div class="ms" id="ms2" contenteditable="true">Bookings captured</div></div>
+    <div class="mc"><div class="ml" id="ml3" contenteditable="true">Compset GDS</div><div class="mv" id="m3" contenteditable="true">195</div><div class="ms" id="ms3" contenteditable="true">Room nights</div></div>
+    <div class="mc"><div class="ml" id="ml4" contenteditable="true">Revenue Opportunity</div><div class="mv" id="m4" contenteditable="true">$271K</div><div class="ms" id="ms4" contenteditable="true">At 10% capture</div></div>
   </div>
   <div class="tabwrap">
     <div class="tablist">
-      <button class="tbtn on" onclick="showTab('exec',this)">Executive Summary</button>
-      <button class="tbtn" onclick="showTab('market',this)">Market Position</button>
-      <button class="tbtn" onclick="showTab('agency',this)">Agency Opportunities</button>
-      <button class="tbtn" onclick="showTab('feedback',this)">My Feedback</button>
-      <button class="tbtn" onclick="showTab('saleslog',this)">Weekly Sales Log</button>
-      <button class="tbtn" onclick="showTab('tasks',this)">Task Requests</button>
-      <button class="tbtn" onclick="showTab('comments',this)">Comments</button>
+      <button class="tbtn on a360tab" id="tab-exec" onclick="showTab('exec',this)">Executive Summary</button>
+      <button class="tbtn a360tab" id="tab-market" onclick="showTab('market',this)">Market Position</button>
+      <button class="tbtn a360tab" id="tab-agency" onclick="showTab('agency',this)">Agency Opportunities</button>
+      <button class="tbtn" id="tab-feedback" onclick="showTab('feedback',this)">Action Plan</button>
+      <button class="tbtn" id="tab-saleslog" onclick="showTab('saleslog',this)">Weekly Sales Log</button>
+      <button class="tbtn" id="tab-tasks" onclick="showTab('tasks',this)">Task Requests</button>
+      <button class="tbtn" id="tab-comments" onclick="showTab('comments',this)">Comments</button>
     </div>
     <div class="tcontent">
       <div id="exec" class="panel on">
@@ -392,7 +394,7 @@ The recommendations in this report are sequenced by urgency. Every account above
             <span>This Week's Focus</span>
             <span class="tag tag-consultant">Recommended by Advisor</span>
           </div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">You set the 3-5 priority actions for Aymin this week. She reads these before logging her update.</p>
+          <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">You set the 3-5 priority actions for <span class="mgrname">the sales manager</span> this week, to be read before logging the weekly update.</p>
           <textarea id="weekFocus" placeholder="e.g.&#10;1. Call BCD Travel Atlanta, ask for Amazon sourcing manager&#10;2. Contact CWTSATO to confirm Fedrooms / GSA eligibility&#10;3. Follow up with House of Travel on site visit confirmation&#10;4. Identify corporate travel decision-maker at Royal Caribbean"></textarea>
         </div>
 
@@ -400,7 +402,7 @@ The recommendations in this report are sequenced by urgency. Every account above
         <div class="log-section sm-only" id="ayminInputSection">
           <div class="log-section-title">
             <span>My Weekly Update</span>
-            <span class="tag tag-aymin">Filled by Aymin</span>
+            <span class="tag tag-aymin">Filled by <span class="mgrname">Sales Manager</span></span>
           </div>
           <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Fill this out each week before your sync with the consultant. Takes 2 minutes. Hit Submit, then Save.</p>
           <div style="margin-bottom:14px;">
@@ -440,11 +442,11 @@ The recommendations in this report are sequenced by urgency. Every account above
         <!-- READ-ONLY VIEW — Consultant and GM see this -->
         <div class="log-section aymin-read-section">
           <div class="log-section-title">
-            <span>Aymin's Weekly Update</span>
-            <span class="tag tag-aymin">Submitted by Aymin</span>
+            <span><span class="mgrname">Sales Manager</span>'s Weekly Update</span>
+            <span class="tag tag-aymin">Submitted by <span class="mgrname">Sales Manager</span></span>
           </div>
           <div id="ayminReadContent">
-            <div class="no-update-msg">No update submitted by Aymin for this week yet. Ask her to open the portal in Sales Manager view, fill in her update, and hit Save.</div>
+            <div class="no-update-msg">No update submitted for this week yet. Ask your sales manager to sign in, fill in the weekly update, and hit Submit.</div>
           </div>
         </div>
 
@@ -606,9 +608,9 @@ async function onSignedIn(){
     IS_ADMIN=r1.ok&&(await r1.json()).length>0;
     var r2=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=hotel_slug,role&email=eq.'+encodeURIComponent(USER_EMAIL),{headers:authHeaders()});
     MEMBERSHIPS=r2.ok?await r2.json():[];
-    var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source&order=name',{headers:authHeaders()});
+    var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source,has_agency360&order=name',{headers:authHeaders()});
     var hotels=r3.ok?await r3.json():[];
-    HOTELS=hotels.map(function(h){return{key:h.slug,name:h.name,manager:h.manager,source:h.source};});
+    HOTELS=hotels.map(function(h){return{key:h.slug,name:h.name,manager:h.manager,source:h.source,has_agency360:h.has_agency360!==false};});
   }catch(e){console.warn('Access load error:',e);}
   document.body.classList.toggle('is-admin',IS_ADMIN);
   if(HOTELS.length===0){
@@ -628,6 +630,27 @@ function applyRole(){
   if(role==='consultant'){document.body.classList.remove('locked');setView('edit');}
   else if(role==='sales_manager'){document.body.classList.add('locked');setView('sales');}
   else{document.body.classList.add('locked');setView('read');}
+}
+
+// ============ PER-HOTEL MODULES & LABELS ============
+function currentHotel(){return HOTELS.find(function(x){return x.key===getHotelKey();});}
+function mgrFirst(){
+  var h=currentHotel();
+  var m=(h&&h.manager||'').trim();
+  return m?m.split(' ')[0]:'Sales Manager';
+}
+function updateManagerLabels(){
+  document.querySelectorAll('.mgrname').forEach(function(el){el.textContent=mgrFirst();});
+}
+function applyModules(){
+  var h=currentHotel();
+  var noA360=!!(h&&h.has_agency360===false);
+  document.body.classList.toggle('no-a360',noA360);
+  // If the active tab just got hidden, jump to the Weekly Sales Log
+  var active=document.querySelector('.tbtn.on');
+  if(noA360&&active&&active.classList.contains('a360tab')){
+    showTab('saleslog',document.getElementById('tab-saleslog'));
+  }
 }
 
 var taskRequests=[];
@@ -678,6 +701,8 @@ function onHotelChange(){
     if(srcEl)srcEl.textContent=h.source||'';
   }
   applyRole();
+  applyModules();
+  updateManagerLabels();
   loadData();
 }
 async function addNewHotel(){
@@ -687,11 +712,12 @@ async function addNewHotel(){
   if(!key){alert('Could not derive a hotel key from that name. Try a simpler name.');return;}
   if(HOTELS.find(function(x){return x.key===key;})){alert('A hotel with that key already exists.');return;}
   var manager=(prompt('Sales manager name (optional):')||'').trim();
-  var source=(prompt('Primary data source (default: TravelClick Agency 360):')||'TravelClick Agency 360').trim();
+  var a360=confirm('Does this hotel receive the TravelClick Agency 360 (or similar GDS market) report?\n\nOK = Yes, show the market intelligence tabs\nCancel = No, communication portal only');
+  var source=(prompt('Primary data source:',a360?'TravelClick Agency 360':'Sales Advisory')||(a360?'TravelClick Agency 360':'Sales Advisory')).trim();
   setStatus('busy','Adding hotel...');
-  var res=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({slug:key,name:name.trim(),manager:manager,source:source})});
+  var res=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({slug:key,name:name.trim(),manager:manager,source:source,has_agency360:a360})});
   if(!res.ok){setStatus('err','Could not add hotel: '+(await res.text()));return;}
-  HOTELS.push({key:key,name:name.trim(),manager:manager,source:source});
+  HOTELS.push({key:key,name:name.trim(),manager:manager,source:source,has_agency360:a360});
   populateHotelDropdown();
   document.getElementById('hotelSelect').value=key;
   onHotelChange();
@@ -959,7 +985,7 @@ function renderAyminReadView(){
   var el=document.getElementById('ayminReadContent');
   if(!el)return;
   if(!activityLog||activityLog.length===0){
-    el.innerHTML='<div class="no-update-msg">No update submitted by Aymin for this week yet. Ask her to open the portal in Sales Manager view, fill in her update, and hit Submit My Update.</div>';
+    el.innerHTML='<div class="no-update-msg">No update submitted for this week yet. Ask '+escapeHTML(mgrFirst())+' to sign in, fill in the weekly update, and hit Submit My Update.</div>';
     return;
   }
   var e=activityLog[0];
@@ -1064,6 +1090,15 @@ function collectData(){
   return{
     week:getWeekKey(),
     hotel:getHotelKey(),
+    badgeText:document.getElementById('badgeText').textContent,
+    ml1:document.getElementById('ml1').textContent,
+    ml2:document.getElementById('ml2').textContent,
+    ml3:document.getElementById('ml3').textContent,
+    ml4:document.getElementById('ml4').textContent,
+    ms1:document.getElementById('ms1').textContent,
+    ms2:document.getElementById('ms2').textContent,
+    ms3:document.getElementById('ms3').textContent,
+    ms4:document.getElementById('ms4').textContent,
     titleText:document.getElementById('titleText').textContent,
     hotelText:document.getElementById('hotelText').textContent,
     managerText:document.getElementById('managerText').textContent,
@@ -1099,7 +1134,9 @@ function collectData(){
 
 function applyData(d){
   if(!d)return;
-  ['titleText','hotelText','managerText','sourceText','periodText','focusText','m1','m2','m3','m4'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.textContent=d[id];});
+  ['titleText','hotelText','managerText','sourceText','periodText','focusText','badgeText','m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.textContent=d[id];});
+  // Older saves have no KPI labels — reset them to this hotel's defaults so labels from another hotel never linger
+  if(d.ml1===undefined)resetKpiLabels();
   ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.value=d[id];});
   if(d.wwList)renderList('wwList',d.wwList);
   if(d.cfList)renderList('cfList',d.cfList);
@@ -1134,9 +1171,19 @@ function applyData(d){
   autoSizeAllTextareas();
 }
 
+function resetKpiLabels(){
+  // Market defaults for Agency 360 hotels, generic editable labels for others
+  var noA=document.body.classList.contains('no-a360');
+  var mls=noA?['Key Metric 1','Key Metric 2','Key Metric 3','Key Metric 4']:['Total Market RNs','Hotel GDS','Compset GDS','Revenue Opportunity'];
+  var mss=noA?['','','','']:['Next 90 days','Bookings captured','Room nights','At 10% capture'];
+  ['ml1','ml2','ml3','ml4'].forEach(function(id,i){var el=document.getElementById(id);if(el)el.textContent=mls[i];});
+  ['ms1','ms2','ms3','ms4'].forEach(function(id,i){var el=document.getElementById(id);if(el)el.textContent=mss[i];});
+}
 function clearData(){
   ['titleText','sourceText','periodText','focusText'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
   ['m1','m2','m3','m4'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
+  resetKpiLabels();
+  var bt=document.getElementById('badgeText');if(bt)bt.textContent='Sales Advisory Brief';
   ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse','ayminDid','ayminWin','ayminBlock','taskNewTitle','taskNewDesc'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=0;});
   renderList('wwList',[]);renderList('cfList',[]);renderList('laList',[]);
