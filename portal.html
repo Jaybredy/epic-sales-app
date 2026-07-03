@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EPIC Sales Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#1B2E5E;--navy2:#243D7A;--gold:#C9A84C;--bg:#F4F3EF;--card:#FFFFFF;--line:#E5E5E1;--txt:#111827;--mut:#6B7280;--soft:#9CA3AF;--blue:#2A4A8A;--bluebg:#EEF3FB;--green:#16A34A;--greenbg:#F0FDF4;--amber:#D97706;--amberbg:#FFFBEB;--red:#DC2626;--redbg:#FEF2F2;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.6;}
+button{font-family:'Inter',sans-serif;cursor:pointer;}
+input,select,textarea{font-family:'Inter',sans-serif;font-size:14px;color:var(--txt);border:1px solid #D1D5DB;border-radius:8px;padding:9px 12px;background:white;width:100%;}
+textarea{min-height:80px;resize:vertical;line-height:1.6;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(42,74,138,.08);}
+.topbar{background:white;border-bottom:1px solid var(--line);height:58px;display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;z-index:100;}
+.brand{font-size:16px;font-weight:700;color:var(--navy);white-space:nowrap;}
+.brand span{color:var(--gold);}
+#hotelSelect{width:auto;min-width:200px;padding:7px 10px;font-weight:600;}
+.savechip{margin-left:auto;font-size:12px;color:var(--mut);display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.savedot{width:8px;height:8px;border-radius:50%;background:#ccc;}
+.savedot.ok{background:var(--green);}.savedot.busy{background:var(--amber);animation:blink 1s infinite;}.savedot.err{background:var(--red);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.userchip{display:flex;align-items:center;gap:9px;border-left:1px solid var(--line);padding-left:14px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--bluebg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.uname{font-size:13px;font-weight:600;line-height:1.2;}
+.urole{font-size:11px;color:var(--soft);line-height:1.2;}
+.logoutbtn{border:1px solid var(--line);background:white;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--txt);}
+.logoutbtn:hover{background:var(--bg);}
+.layout{display:grid;grid-template-columns:190px minmax(0,1fr);min-height:calc(100vh - 58px);}
+.sidebar{border-right:1px solid var(--line);background:white;padding:12px 8px;display:flex;flex-direction:column;gap:2px;}
+.nav{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--mut);border:none;background:none;text-align:left;width:100%;}
+.nav:hover{background:var(--bg);color:var(--txt);}
+.nav.on{background:var(--bluebg);color:var(--blue);font-weight:700;}
+.nav .badge{margin-left:auto;font-size:11px;background:var(--amberbg);color:var(--amber);border-radius:9px;padding:1px 7px;font-weight:700;}
+.main{padding:20px 24px;max-width:1050px;}
+.htitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+.htitle h1{font-size:20px;font-weight:700;color:var(--navy);}
+.pill{font-size:11px;border-radius:11px;padding:3px 10px;font-weight:600;white-space:nowrap;}
+.pill.blue{background:var(--bluebg);color:var(--blue);}
+.pill.green{background:var(--greenbg);color:var(--green);}
+.pill.amber{background:var(--amberbg);color:var(--amber);}
+.pill.gray{background:var(--bg);color:var(--mut);border:1px solid var(--line);}
+.pill.red{background:var(--redbg);color:var(--red);}
+.hsub{font-size:12px;color:var(--soft);margin-bottom:14px;}
+.weekbar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.wkbtn{border:1px solid var(--line);background:white;border-radius:7px;padding:5px 10px;font-size:13px;font-weight:600;}
+.wkbtn:hover{background:var(--bg);}
+.wklabel{font-size:14px;font-weight:700;min-width:200px;text-align:center;}
+.view{display:none;}
+.view.on{display:block;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+.kpi{background:white;border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+.kpi .kl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:600;min-height:16px;}
+.kpi .kv{font-size:24px;font-weight:700;color:var(--navy);margin-top:2px;min-height:32px;}
+.kpi .ks{font-size:11px;color:var(--soft);min-height:15px;}
+.card{background:white;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+.card h3{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+.hint{font-size:12px;color:var(--mut);margin-bottom:8px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#F9FAFB;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:9px 10px;text-align:left;font-weight:700;border-bottom:1px solid var(--line);}
+td{padding:9px 10px;border-top:1px solid #F3F4F6;vertical-align:top;}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
+.rowbtn{background:none;border:none;color:var(--red);font-size:17px;line-height:1;}
+.addbtn{background:var(--bluebg);color:var(--blue);border:1px solid #DBEAFE;border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;margin-top:10px;}
+.addbtn:hover{background:var(--blue);color:white;}
+.primary{background:var(--navy);color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;}
+.primary:hover{opacity:.88;}
+.citem{border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:9px;}
+.cmeta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--soft);margin-bottom:5px;flex-wrap:wrap;}
+.cauthor{font-weight:700;color:var(--navy);font-size:13px;}
+.overdue{color:var(--red);font-weight:700;}
+.filerow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:13px;}
+.filerow:last-child{border-bottom:none;}
+.flink{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:underline;}
+[contenteditable="true"]:hover{background:rgba(42,74,138,.05);border-radius:3px;}
+[contenteditable="true"]:focus{outline:2px solid rgba(42,74,138,.25);border-radius:3px;}
+body.role-view [contenteditable]{pointer-events:none;}
+body.role-view textarea:not(.always-edit),body.role-view input:not(.always-edit),body.role-view select:not(.always-edit){pointer-events:none;background:var(--bg);border-color:var(--line);}
+body.role-view .edit-only{display:none!important;}
+body.role-sm [contenteditable]{pointer-events:none;}
+body.role-sm textarea:not(.sm-edit):not(.always-edit),body.role-sm input:not(.sm-edit):not(.always-edit){pointer-events:none;background:var(--bg);border-color:var(--line);}
+body.role-sm .edit-only{display:none!important;}
+body:not(.is-admin) .adm-only{display:none!important;}
+body.no-a360 .a360-only{display:none!important;}
+body.cov-epic .inhouse-only{display:none!important;}
+body:not(.cov-epic) .epic-only{display:none!important;}
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy),var(--navy2));z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.logincard{background:white;border-radius:18px;padding:38px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.msg{margin-top:12px;font-size:13px;min-height:18px;color:#374151;}
+.msg.ok{color:var(--green);font-weight:600;}.msg.err{color:var(--red);font-weight:600;}
+@media(max-width:760px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);}
+  .nav{white-space:nowrap;width:auto;}
+  .topbar{flex-wrap:wrap;height:auto;padding:10px 12px;gap:8px;}
+  .savechip{margin-left:0;}
+  .uname,.urole{display:none;}
+  #hotelSelect{min-width:150px;}
+}
+</style>
+</head>
+<body>
+
+<div id="loginOverlay">
+  <div class="logincard">
+    <div class="brand" style="font-size:22px;margin-bottom:6px;">EPIC <span>Sales</span> Portal</div>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:20px;">Enter your email for a one-click sign-in link. No password needed.</p>
+    <input type="text" id="loginEmail" placeholder="you@yourhotel.com" style="text-align:center;margin-bottom:10px;" onkeydown="if(event.key==='Enter')sendLoginLink()">
+    <button class="primary" style="width:100%;" onclick="sendLoginLink()">Send sign-in link</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <span class="brand">EPIC <span>Sales</span> Portal</span>
+  <select id="hotelSelect" onchange="onHotelChange()"></select>
+  <button class="logoutbtn adm-only" onclick="addNewHotel()">+ Hotel</button>
+  <span class="savechip"><span class="savedot" id="saveDot"></span><span id="saveTxt">Loading…</span></span>
+  <div class="userchip">
+    <div class="avatar" id="avatar">–</div>
+    <div><div class="uname" id="uName">…</div><div class="urole" id="uRole">…</div></div>
+    <button class="logoutbtn" onclick="signOut()">Log out</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <button class="nav on" id="nav-overview" onclick="showView('overview')">Overview</button>
+    <button class="nav" id="nav-sync" onclick="showView('sync')">Weekly sync</button>
+    <button class="nav a360-only" id="nav-market" onclick="showView('market')">Market intel</button>
+    <button class="nav" id="nav-requests" onclick="showView('requests')">Requests <span class="badge" id="reqBadge" style="display:none;">0</span></button>
+    <button class="nav" id="nav-comments" onclick="showView('comments')">Comments</button>
+    <button class="nav" id="nav-files" onclick="showView('files')">Files</button>
+    <button class="nav adm-only" id="nav-members" onclick="showView('members')">Members</button>
+  </div>
+
+  <div class="main">
+    <div class="htitle">
+      <h1 id="hotelTitle">…</h1>
+      <span class="pill blue epic-only">Sales by EPIC</span>
+      <span class="pill green inhouse-only" id="covMgrPill">In-house sales</span>
+      <span class="pill gray a360-only">Agency 360</span>
+    </div>
+    <p class="hsub" id="hotelSub"></p>
+
+    <div class="weekbar">
+      <button class="wkbtn" onclick="stepWeek(-1)">‹</button>
+      <span class="wklabel" id="weekLabel">…</span>
+      <button class="wkbtn" onclick="stepWeek(1)">›</button>
+      <button class="wkbtn" onclick="goThisWeek()">This week</button>
+    </div>
+
+    <div class="view on" id="view-overview">
+      <div class="cards">
+        <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Metric 1</div><div class="kv" id="m1" contenteditable="true">–</div><div class="ks" id="ms1" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Metric 2</div><div class="kv" id="m2" contenteditable="true">–</div><div class="ks" id="ms2" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml3" contenteditable="true">Metric 3</div><div class="kv" id="m3" contenteditable="true">–</div><div class="ks" id="ms3" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Metric 4</div><div class="kv" id="m4" contenteditable="true">–</div><div class="ks" id="ms4" contenteditable="true"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:#374151;white-space:pre-wrap;">–</div></div>
+        <div class="card"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:#374151;white-space:pre-wrap;">–</div></div>
+      </div>
+      <div class="card"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:#374151;">–</div></div>
+    </div>
+
+    <div class="view" id="view-sync">
+      <div class="card">
+        <h3>This week's focus <span class="pill blue">Set by EPIC</span></h3>
+        <p class="hint edit-only">The 3-5 priority actions for this week.</p>
+        <textarea id="weekFocus" placeholder="1. …&#10;2. …&#10;3. …"></textarea>
+      </div>
+      <div class="card inhouse-only">
+        <h3>My weekly update <span class="pill green" id="mgrPill">Sales manager</span></h3>
+        <p class="hint">Fill in before your weekly sync. It saves automatically.</p>
+        <textarea id="ayminDid" class="always-edit sm-edit" placeholder="What I did this week: outreach, calls, meetings, follow-ups…"></textarea>
+        <div class="grid2" style="margin-top:10px;">
+          <div><p class="hint">Top win</p><textarea id="ayminWin" class="always-edit sm-edit" style="min-height:56px;"></textarea></div>
+          <div><p class="hint">Biggest obstacle</p><textarea id="ayminBlock" class="always-edit sm-edit" style="min-height:56px;"></textarea></div>
+        </div>
+        <div class="cards" style="margin-top:10px;margin-bottom:0;">
+          <div class="kpi"><div class="kl">Calls</div><input type="number" id="aCalls" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Emails</div><input type="number" id="aEmails" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Site visits</div><input type="number" id="aSites" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">New contacts</div><input type="number" id="aContacts" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+        </div>
+      </div>
+      <div class="card epic-only">
+        <h3>EPIC activity report <span class="pill blue">Filled by EPIC</span></h3>
+        <p class="hint">Sales efforts handled by EPIC this week. The hotel reads this.</p>
+        <textarea id="epicReport" placeholder="Outreach, calls, agency contacts, GDS work done for this hotel this week…"></textarea>
+      </div>
+      <div class="card">
+        <h3>Consultant response <span class="pill amber">Feedback</span></h3>
+        <textarea id="consultResponse" placeholder="Review of the week and guidance for next week…"></textarea>
+      </div>
+      <div class="card">
+        <h3>Week-over-week activity</h3>
+        <div class="tw"><table><thead><tr><th>Week</th><th>Calls</th><th>Emails</th><th>Site visits</th><th>New contacts</th></tr></thead><tbody id="wowBody"><tr><td colspan="5" style="text-align:center;color:var(--soft);">No activity logged yet.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-market">
+      <div class="card"><h3>Executive summary</h3><textarea id="execSummary" style="min-height:140px;"></textarea></div>
+      <div class="card"><h3>Market context</h3><textarea id="marketSum"></textarea></div>
+      <div class="card">
+        <h3>Corporate demand</h3>
+        <div class="tw"><table><thead><tr><th>Corporation</th><th>Market RNs</th><th>Compset RNs</th><th>Hotel RNs</th><th>YOY</th></tr></thead><tbody id="mktBody"></tbody></table></div>
+        <button class="addbtn edit-only" onclick="addRow('mktBody',5)">+ Add row</button>
+      </div>
+      <div class="card">
+        <h3>Agency opportunities and contacts</h3>
+        <div class="tw"><table><thead><tr><th>Agency / account</th><th>Contact</th><th>Phone / site</th><th>Approach</th></tr></thead><tbody id="agBody"></tbody></table></div>
+        <button class="addbtn edit-only" onclick="addRow('agBody',4)">+ Add row</button>
+      </div>
+    </div>
+
+    <div class="view" id="view-requests">
+      <div class="card">
+        <h3>New request or action</h3>
+        <div class="grid2">
+          <input type="text" id="acTitle" class="always-edit" placeholder="Title, e.g. Audit Sabre rates for Q3">
+          <div style="display:flex;gap:8px;">
+            <select id="acOwner" class="always-edit" style="flex:1;"><option value="epic">EPIC owns it</option><option value="hotel">Hotel owns it</option></select>
+            <input type="date" id="acDue" class="always-edit" style="flex:1;">
+          </div>
+        </div>
+        <textarea id="acDetail" class="always-edit" style="margin-top:8px;min-height:56px;" placeholder="Context, deadline, accounts involved…"></textarea>
+        <button class="primary always-edit" style="margin-top:10px;" onclick="addAction()">Submit</button>
+      </div>
+      <div class="card">
+        <h3>Tracker</h3>
+        <div class="tw"><table><thead><tr><th>Title</th><th>Owner</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody id="acBodyList"></tbody></table></div>
+        <p class="hint" id="acEmpty" style="display:none;margin-top:8px;">Nothing here yet. Submit the first request above.</p>
+      </div>
+    </div>
+
+    <div class="view" id="view-comments">
+      <div class="card">
+        <h3>Comments for this week</h3>
+        <div id="cList"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <input type="text" id="cText" class="always-edit" placeholder="Add a comment or question…" onkeydown="if(event.key==='Enter')postComment()">
+          <button class="primary always-edit" onclick="postComment()">Post</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-files">
+      <div class="card">
+        <h3>File library</h3>
+        <p class="hint">Agency 360 reports, rate audits, CRM exports. Everyone on this hotel can see these.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input type="file" id="fileInput" class="always-edit" style="width:auto;flex:1;min-width:200px;">
+          <button class="primary always-edit" onclick="uploadFile()">Upload</button>
+        </div>
+        <div id="fileList" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-members">
+      <div class="card">
+        <h3>Hotel settings</h3>
+        <div class="grid2">
+          <div><p class="hint">Hotel name</p><input type="text" id="setName"></div>
+          <div><p class="hint">Sales manager name (blank if none)</p><input type="text" id="setManager"></div>
+          <div><p class="hint">Sales coverage</p><select id="setCoverage"><option value="inhouse">In-house sales manager</option><option value="epic">EPIC-managed sales</option></select></div>
+          <div><p class="hint">Agency 360 report</p><select id="setA360"><option value="true">Yes, show market intel</option><option value="false">No</option></select></div>
+        </div>
+        <button class="primary" style="margin-top:12px;" onclick="saveHotelSettings()">Save settings</button>
+        <span class="msg" id="setMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
+      <div class="card">
+        <h3>Portal access</h3>
+        <p class="hint">Add a person's email, pick their role. They sign in at portvisory.com with that email.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="mmEmail" placeholder="person@hotel.com" style="flex:2;min-width:180px;">
+          <select id="mmRole" style="flex:1;min-width:150px;"><option value="gm">GM (read only)</option><option value="sales_manager">Sales manager</option><option value="consultant">Consultant</option></select>
+          <button class="primary" onclick="addMember()">Add</button>
+        </div>
+        <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Email</th><th>Role</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
+        <span class="msg" id="mmMsg"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
+var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
+var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+var SESSION=null,EMAIL='',IS_ADMIN=false,MEMBERSHIPS=[],HOTELS=[];
+var BLOB={},WEEK='',SAVEDWEEKS=[],ACTIONS=[],DIRTY=false,SAVETIMER=null,LOADING=false;
+
+function el(id){return document.getElementById(id);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function authH(extra){var h={'apikey':SUPA_KEY,'Authorization':'Bearer '+(SESSION?SESSION.access_token:SUPA_KEY)};if(extra)for(var k in extra)h[k]=extra[k];return h;}
+function setSave(state,txt){el('saveDot').className='savedot '+state;el('saveTxt').textContent=txt;}
+
+async function sendLoginLink(){
+  var email=(el('loginEmail').value||'').trim().toLowerCase();var m=el('loginMsg');
+  if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email address.';return;}
+  m.className='msg';m.textContent='Sending…';
+  try{
+    var r=await Promise.race([sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:window.location.origin+window.location.pathname}}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('Timed out. Check your connection.'));},15000);})]);
+    if(r&&r.error){m.className='msg err';m.textContent='Could not send link: '+r.error.message;}
+    else{m.className='msg ok';m.textContent='Link sent. Check your inbox and spam folder.';}
+  }catch(e){m.className='msg err';m.textContent='Could not send link: '+(e.message||'unknown error');}
+}
+async function signOut(){await sb.auth.signOut();location.reload();}
+
+async function onSignedIn(){
+  EMAIL=(SESSION.user&&SESSION.user.email||'').toLowerCase();
+  el('loginOverlay').style.display='none';
+  try{
+    var r1=await fetch(SUPA_URL+'/rest/v1/admins?select=email',{headers:authH()});IS_ADMIN=r1.ok&&(await r1.json()).length>0;
+    var r2=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=hotel_slug,role&email=eq.'+encodeURIComponent(EMAIL),{headers:authH()});MEMBERSHIPS=r2.ok?await r2.json():[];
+    var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source,has_agency360,sales_coverage&order=name',{headers:authH()});HOTELS=r3.ok?await r3.json():[];
+  }catch(e){console.warn(e);}
+  document.body.classList.toggle('is-admin',IS_ADMIN);
+  el('avatar').textContent=EMAIL.slice(0,2).toUpperCase();
+  el('uName').textContent=EMAIL.split('@')[0];
+  el('uRole').textContent=IS_ADMIN?'Consultant · admin':(roleFor(HOTELS[0]&&HOTELS[0].slug)||'member').replace('_',' ');
+  if(HOTELS.length===0){setSave('err','No hotel assigned to '+EMAIL+'. Contact your EPIC consultant.');return;}
+  var sel=el('hotelSelect');sel.innerHTML='';
+  HOTELS.forEach(function(h){var o=document.createElement('option');o.value=h.slug;o.textContent=h.name;sel.appendChild(o);});
+  onHotelChange();
+}
+function curHotel(){return HOTELS.find(function(h){return h.slug===el('hotelSelect').value;})||HOTELS[0];}
+function roleFor(slug){if(IS_ADMIN)return 'consultant';var m=MEMBERSHIPS.find(function(x){return x.hotel_slug===slug;});return m?m.role:'gm';}
+
+async function onHotelChange(){
+  var h=curHotel();if(!h)return;
+  var role=roleFor(h.slug);
+  document.body.classList.toggle('role-view',role==='gm');
+  document.body.classList.toggle('role-sm',role==='sales_manager');
+  document.body.classList.toggle('no-a360',h.has_agency360===false);
+  document.body.classList.toggle('cov-epic',h.sales_coverage==='epic');
+  el('hotelTitle').textContent=h.name;
+  el('covMgrPill').textContent=h.manager?('Sales manager: '+h.manager):'In-house sales';
+  el('mgrPill').textContent=h.manager||'Sales manager';
+  el('hotelSub').textContent=h.sales_coverage==='epic'?'Sales handled by EPIC. Your weekly report below is filled by your consultant.':'';
+  el('ovUpdateTitle').textContent=h.sales_coverage==='epic'?'Latest EPIC activity report':'Latest weekly update';
+  if(role==='sales_manager'){document.querySelectorAll('.sm-edit').forEach(function(x){x.style.pointerEvents='auto';x.style.background='white';});}
+  var activeNav=document.querySelector('.nav.on');
+  if(!activeNav||activeNav.offsetParent===null)showView('overview');
+  await loadWeekList();
+  goThisWeek();
+  loadActions();
+  loadFiles();
+  if(IS_ADMIN)fillSettings();
+  fetch(SUPA_URL+'/rest/v1/page_views',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:EMAIL,hotel_slug:h.slug,last_seen:new Date().toISOString()})}).catch(function(){});
+}
+
+function showView(v){
+  document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
+  document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
+  el('view-'+v).classList.add('on');
+  el('nav-'+v).classList.add('on');
+}
+
+function mondayOf(d){var x=new Date(d);var day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return x.toISOString().slice(0,10);}
+function weekLabel(iso){var d=new Date(iso+'T12:00:00');return 'Week of '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+async function loadWeekList(){
+  var h=curHotel();SAVEDWEEKS=[];
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?select=week_key&week_key=like.'+encodeURIComponent(h.slug+'|*')+'&order=week_key',{headers:authH()});
+    if(r.ok){SAVEDWEEKS=(await r.json()).map(function(x){return x.week_key.split('|')[1];}).sort();}
+  }catch(e){}
+}
+function stepWeek(dir){
+  flushSave();
+  var list=SAVEDWEEKS.slice();if(list.indexOf(WEEK)<0){list.push(WEEK);list.sort();}
+  var i=list.indexOf(WEEK)+dir;
+  if(i>=0&&i<list.length){loadWeek(list[i]);}
+  else if(dir>0){loadWeek(mondayOf(new Date(new Date(WEEK+'T12:00:00').getTime()+7*864e5)));}
+  else{loadWeek(mondayOf(new Date(new Date(WEEK+'T12:00:00').getTime()-7*864e5)));}
+}
+function goThisWeek(){flushSave();loadWeek(mondayOf(new Date()));}
+
+async function loadWeek(iso){
+  LOADING=true;WEEK=iso;el('weekLabel').textContent=weekLabel(iso);
+  var h=curHotel();BLOB={};
+  setSave('busy','Loading…');
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+encodeURIComponent(h.slug+'|'+iso)+'&select=data',{headers:authH()});
+    if(r.ok){var rows=await r.json();if(rows.length)BLOB=JSON.parse(rows[0].data)||{};}
+  }catch(e){}
+  applyBlob();
+  LOADING=false;DIRTY=false;
+  setSave('ok',Object.keys(BLOB).length?'Loaded':'New week — start typing, it saves itself');
+}
+
+function applyBlob(){
+  ['weekFocus','consultResponse','execSummary','marketSum','epicReport','ayminDid','ayminWin','ayminBlock'].forEach(function(id){var e=el(id);if(e)e.value='';});
+  ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){el(id).value=0;});
+  el('weekFocus').value=BLOB.weekFocus||'';
+  el('consultResponse').value=BLOB.consultResponse||'';
+  el('execSummary').value=BLOB.execSummary||'';
+  el('marketSum').value=BLOB.marketSum||'';
+  el('epicReport').value=BLOB.epicReport||'';
+  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){el(id).textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Metric '+id[2]:(id[1]==='s'?'':'–'));});
+  el('mktBody').innerHTML=BLOB.mktBodyV3||legacyRows(BLOB.mktBodyHTML,5)||'';
+  el('agBody').innerHTML=BLOB.agBodyV3||legacyRows(BLOB.agBodyHTML,4)||legacyRows(BLOB.ctBodyHTML,4)||'';
+  var log=BLOB.activityLog||[];var e0=log.find(function(x){return x.week===WEEK;});
+  if(e0){el('ayminDid').value=e0.did||'';el('ayminWin').value=e0.win||'';el('ayminBlock').value=e0.block||'';el('aCalls').value=e0.calls||0;el('aEmails').value=e0.emails||0;el('aSites').value=e0.sites||0;el('aContacts').value=e0.contacts||0;}
+  renderWOW();renderComments();renderOverview();
+}
+function legacyRows(html,cols){
+  if(!html)return '';
+  var tmp=document.createElement('tbody');tmp.innerHTML=html;var out='';
+  tmp.querySelectorAll('tr').forEach(function(tr){
+    var cells=[].slice.call(tr.children).map(function(td){return td.textContent.trim();}).filter(function(t,i){return i<cols;});
+    while(cells.length<cols)cells.push('');
+    out+='<tr>'+cells.map(function(c){return '<td contenteditable="true">'+esc(c)+'</td>';}).join('')+'</tr>';
+  });
+  return out;
+}
+function addRow(id,cols){var tr=document.createElement('tr');tr.innerHTML=Array(cols).fill('<td contenteditable="true"></td>').join('');el(id).appendChild(tr);markDirty();}
+
+function collectBlob(){
+  var out=Object.assign({},BLOB);
+  out.week=WEEK;out.hotel=curHotel().slug;out.schemaVersion=3;
+  out.weekFocus=el('weekFocus').value;out.consultResponse=el('consultResponse').value;
+  out.execSummary=el('execSummary').value;out.marketSum=el('marketSum').value;
+  out.epicReport=el('epicReport').value;
+  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){out[id]=el(id).textContent;});
+  out.mktBodyV3=el('mktBody').innerHTML;out.agBodyV3=el('agBody').innerHTML;
+  var entry={week:WEEK,label:'Wk '+weekLabel(WEEK).replace('Week of ',''),did:el('ayminDid').value.trim(),win:el('ayminWin').value.trim(),block:el('ayminBlock').value.trim(),calls:+el('aCalls').value||0,emails:+el('aEmails').value||0,sites:+el('aSites').value||0,contacts:+el('aContacts').value||0,submittedAt:new Date().toISOString()};
+  var log=out.activityLog||[];var i=log.findIndex(function(x){return x.week===WEEK;});
+  if(entry.did||entry.win||entry.block||entry.calls||entry.emails||entry.sites||entry.contacts){if(i>=0)log[i]=entry;else log.unshift(entry);}
+  out.activityLog=log;
+  return out;
+}
+function markDirty(){if(LOADING)return;DIRTY=true;setSave('busy','Saving…');clearTimeout(SAVETIMER);SAVETIMER=setTimeout(doSave,1800);}
+function flushSave(){if(DIRTY){clearTimeout(SAVETIMER);doSave();}}
+async function doSave(){
+  if(!SESSION||!WEEK)return;
+  var h=curHotel();BLOB=collectBlob();DIRTY=false;
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({week_key:h.slug+'|'+WEEK,data:JSON.stringify(BLOB),updated_at:new Date().toISOString()})});
+    if(r.ok){setSave('ok','Saved just now');if(SAVEDWEEKS.indexOf(WEEK)<0){SAVEDWEEKS.push(WEEK);SAVEDWEEKS.sort();}renderOverview();renderWOW();return;}
+  }catch(e){}
+  DIRTY=true;setSave('err','Not saved — check connection');
+}
+document.addEventListener('input',function(e){if(e.target.closest('.main'))markDirty();});
+
+function renderWOW(){
+  var log=(BLOB.activityLog||[]).slice(0,10);var tb=el('wowBody');
+  if(!log.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--soft);">No activity logged yet.</td></tr>';return;}
+  tb.innerHTML=log.map(function(e){return '<tr><td style="font-weight:600;white-space:nowrap;">'+esc(e.label||e.week)+'</td><td>'+(e.calls||0)+'</td><td>'+(e.emails||0)+'</td><td>'+(e.sites||0)+'</td><td>'+(e.contacts||0)+'</td></tr>';}).join('');
+}
+function renderOverview(){
+  el('ovFocus').textContent=el('weekFocus').value||'No focus set for this week yet.';
+  var h=curHotel();
+  if(h.sales_coverage==='epic'){el('ovUpdate').textContent=el('epicReport').value||'No EPIC report for this week yet.';}
+  else{var log=BLOB.activityLog||[];var e0=log[0];el('ovUpdate').textContent=e0&&e0.did?e0.did:'No update submitted yet.';}
+  var open=ACTIONS.filter(function(a){return a.status==='open'||a.status==='in_progress';});
+  el('ovRequests').innerHTML=open.length?open.slice(0,5).map(function(a){return '• '+esc(a.title)+' <span class="pill '+(a.status==='in_progress'?'amber':'gray')+'">'+a.status.replace('_',' ')+'</span>';}).join('<br>'):'Nothing open. Submit one in Requests.';
+}
+
+function renderComments(){
+  var list=el('cList');var html=BLOB.commentsV3||[];
+  if(typeof html==='string')html=[];
+  if(!html.length&&BLOB.commentsHTML){list.innerHTML='<div class="citem"><div class="cmeta">Earlier comments</div><div style="font-size:13px;">'+BLOB.commentsHTML+'</div></div>';return;}
+  list.innerHTML=html.length?html.map(function(c){return '<div class="citem"><div class="cmeta"><span class="cauthor">'+esc(c.by)+'</span><span>'+esc(c.at)+'</span></div><div style="font-size:13px;">'+esc(c.text)+'</div></div>';}).join(''):'<p class="hint">No comments for this week yet.</p>';
+}
+function postComment(){
+  var t=el('cText').value.trim();if(!t)return;
+  if(!Array.isArray(BLOB.commentsV3))BLOB.commentsV3=[];
+  BLOB.commentsV3.push({by:EMAIL.split('@')[0],at:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),text:t});
+  el('cText').value='';renderComments();markDirty();
+}
+
+async function loadActions(){
+  var h=curHotel();ACTIONS=[];
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/actions?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&order=created_at.desc',{headers:authH()});
+    if(r.ok)ACTIONS=await r.json();
+  }catch(e){}
+  renderActions();renderOverview();
+}
+function renderActions(){
+  var tb=el('acBodyList');var open=ACTIONS.filter(function(a){return a.status!=='cancelled';});
+  el('acEmpty').style.display=open.length?'none':'block';
+  var badge=ACTIONS.filter(function(a){return a.status==='open';}).length;
+  el('reqBadge').style.display=badge?'inline':'none';el('reqBadge').textContent=badge;
+  tb.innerHTML=open.map(function(a){
+    var overdue=a.due_date&&a.status!=='done'&&a.due_date<new Date().toISOString().slice(0,10);
+    return '<tr><td><strong>'+esc(a.title)+'</strong>'+(a.detail?'<br><span style="color:var(--mut);font-size:12px;">'+esc(a.detail)+'</span>':'')+'</td>'+
+      '<td><span class="pill '+(a.owner==='epic'?'blue':'green')+'">'+(a.owner==='epic'?'EPIC':'Hotel')+'</span></td>'+
+      '<td class="'+(overdue?'overdue':'')+'" style="white-space:nowrap;">'+(a.due_date||'–')+(overdue?' !':'')+'</td>'+
+      '<td><select class="always-edit" style="width:auto;padding:5px 8px;font-size:12px;" onchange="setActionStatus(\''+a.id+'\',this.value)">'+['open','in_progress','done','cancelled'].map(function(s){return '<option value="'+s+'"'+(s===a.status?' selected':'')+'>'+s.replace('_',' ')+'</option>';}).join('')+'</select></td>'+
+      '<td><button class="rowbtn edit-only" onclick="delAction(\''+a.id+'\')">×</button></td></tr>';
+  }).join('');
+}
+async function addAction(){
+  var t=el('acTitle').value.trim();if(!t){setSave('err','Give the request a title.');return;}
+  var body={hotel_slug:curHotel().slug,title:t,detail:el('acDetail').value.trim(),owner:el('acOwner').value,due_date:el('acDue').value||null,created_by:EMAIL};
+  var r=await fetch(SUPA_URL+'/rest/v1/actions',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(body)});
+  if(r.ok){el('acTitle').value='';el('acDetail').value='';el('acDue').value='';loadActions();setSave('ok','Request submitted');}
+  else setSave('err','Could not submit — has the v3 database script been run?');
+}
+async function setActionStatus(id,status){
+  await fetch(SUPA_URL+'/rest/v1/actions?id=eq.'+id,{method:'PATCH',headers:authH({'Content-Type':'application/json'}),body:JSON.stringify({status:status,updated_at:new Date().toISOString()})});
+  loadActions();
+}
+async function delAction(id){
+  if(!confirm('Delete this item?'))return;
+  await fetch(SUPA_URL+'/rest/v1/actions?id=eq.'+id,{method:'DELETE',headers:authH()});
+  loadActions();
+}
+
+async function loadFiles(){
+  var h=curHotel();var list=el('fileList');
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/hotel_files?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&order=created_at.desc',{headers:authH()});
+    var rows=r.ok?await r.json():[];
+    list.innerHTML=rows.length?rows.map(function(f){return '<div class="filerow"><span class="flink" onclick="openFile(\''+f.path+'\')">'+esc(f.label)+'</span><span style="color:var(--soft);font-size:12px;margin-left:auto;">'+new Date(f.created_at).toLocaleDateString()+' · '+esc(f.uploaded_by||'')+'</span></div>';}).join(''):'<p class="hint">No files yet.</p>';
+  }catch(e){list.innerHTML='<p class="hint">Files unavailable.</p>';}
+}
+async function uploadFile(){
+  var inp=el('fileInput');var f=inp.files[0];if(!f){setSave('err','Choose a file first.');return;}
+  setSave('busy','Uploading…');
+  var path=curHotel().slug+'/library/'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  var up=await sb.storage.from('crm-uploads').upload(path,f);
+  if(up.error){setSave('err','Upload failed.');return;}
+  await fetch(SUPA_URL+'/rest/v1/hotel_files',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({hotel_slug:curHotel().slug,path:path,label:f.name,uploaded_by:EMAIL})});
+  inp.value='';setSave('ok','Uploaded');loadFiles();
+}
+async function openFile(path){
+  var r=await sb.storage.from('crm-uploads').createSignedUrl(path,3600);
+  if(r.data&&r.data.signedUrl)window.open(r.data.signedUrl,'_blank');
+}
+
+function fillSettings(){
+  var h=curHotel();
+  el('setName').value=h.name;el('setManager').value=h.manager||'';
+  el('setCoverage').value=h.sales_coverage||'inhouse';
+  el('setA360').value=String(h.has_agency360!==false);
+  loadMembers();
+}
+async function saveHotelSettings(){
+  var h=curHotel();
+  var body={name:el('setName').value.trim(),manager:el('setManager').value.trim(),sales_coverage:el('setCoverage').value,has_agency360:el('setA360').value==='true'};
+  var r=await fetch(SUPA_URL+'/rest/v1/hotels?slug=eq.'+encodeURIComponent(h.slug),{method:'PATCH',headers:authH({'Content-Type':'application/json'}),body:JSON.stringify(body)});
+  var m=el('setMsg');
+  if(r.ok){Object.assign(h,body);m.className='msg ok';m.textContent='Saved';onHotelChange();}
+  else{m.className='msg err';m.textContent='Could not save';}
+}
+async function loadMembers(){
+  var tb=el('mmBody');tb.innerHTML='';
+  var r=await fetch(SUPA_URL+'/rest/v1/hotel_members?hotel_slug=eq.'+encodeURIComponent(curHotel().slug)+'&select=email,role&order=email',{headers:authH()});
+  var rows=r.ok?await r.json():[];
+  var v=await fetch(SUPA_URL+'/rest/v1/page_views?hotel_slug=eq.'+encodeURIComponent(curHotel().slug),{headers:authH()});
+  var views=v.ok?await v.json():[];
+  tb.innerHTML=rows.map(function(m){
+    var seen=views.find(function(x){return x.email===m.email;});
+    return '<tr><td>'+esc(m.email)+'</td><td>'+m.role.replace('_',' ')+'</td><td style="color:var(--mut);font-size:12px;">'+(seen?new Date(seen.last_seen).toLocaleDateString():'never')+'</td><td><button class="rowbtn" onclick="removeMember(\''+m.email+'\')">×</button></td></tr>';
+  }).join('')||'<tr><td colspan="4" style="color:var(--soft);">No members yet.</td></tr>';
+}
+async function addMember(){
+  var email=(el('mmEmail').value||'').trim().toLowerCase();var m=el('mmMsg');
+  if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email.';return;}
+  var r=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:curHotel().slug,role:el('mmRole').value})});
+  if(r.ok){m.className='msg ok';m.textContent=email+' added. They can now sign in.';el('mmEmail').value='';loadMembers();}
+  else{m.className='msg err';m.textContent='Could not add.';}
+}
+async function removeMember(email){
+  if(!confirm('Remove '+email+'?'))return;
+  await fetch(SUPA_URL+'/rest/v1/hotel_members?email=eq.'+encodeURIComponent(email)+'&hotel_slug=eq.'+encodeURIComponent(curHotel().slug),{method:'DELETE',headers:authH()});
+  loadMembers();
+}
+async function addNewHotel(){
+  var name=prompt('Hotel name:');if(!name||!name.trim())return;
+  var slug=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24);
+  var r=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({slug:slug,name:name.trim(),has_agency360:false,sales_coverage:'inhouse'})});
+  if(!r.ok){setSave('err','Could not add hotel.');return;}
+  HOTELS.push({slug:slug,name:name.trim(),has_agency360:false,sales_coverage:'inhouse'});
+  var o=document.createElement('option');o.value=slug;o.textContent=name.trim();el('hotelSelect').appendChild(o);
+  el('hotelSelect').value=slug;onHotelChange();showView('members');
+  setSave('ok','Hotel added — set its options in Members');
+}
+
+window.addEventListener('beforeunload',function(){flushSave();});
+(async function(){
+  var got=await sb.auth.getSession();SESSION=got.data?got.data.session:null;
+  sb.auth.onAuthStateChange(function(ev,s){var had=!!SESSION;SESSION=s;if(s&&!had)onSignedIn();if(!s&&ev==='SIGNED_OUT')el('loginOverlay').style.display='flex';});
+  if(SESSION)onSignedIn();else el('loginOverlay').style.display='flex';
+})();
+</script>
+</body>
+</html>
