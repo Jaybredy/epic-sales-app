@@ -90,6 +90,10 @@ body.cov-epic .inhouse-only{display:none!important;}
 body:not(.cov-epic) .epic-only{display:none!important;}
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy),var(--navy2));z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .logincard{background:white;border-radius:18px;padding:38px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.avatar{cursor:pointer;overflow:hidden;}
+.avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+.cav{width:28px;height:28px;border-radius:50%;background:var(--bluebg);color:var(--blue);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;flex-shrink:0;}
+.cav img{width:100%;height:100%;object-fit:cover;}
 .msg{margin-top:12px;font-size:13px;min-height:18px;color:#374151;}
 .msg.ok{color:var(--green);font-weight:600;}.msg.err{color:var(--red);font-weight:600;}
 @media(max-width:760px){
@@ -120,11 +124,10 @@ body:not(.cov-epic) .epic-only{display:none!important;}
   <select id="hotelSelect" onchange="onHotelChange()"></select>
   <button class="logoutbtn adm-only" onclick="addNewHotel()">+ Hotel</button>
   <span class="savechip"><span class="savedot" id="saveDot"></span><span id="saveTxt">Loading…</span></span>
-  <button class="logoutbtn" id="themeBtn" onclick="toggleTheme()" title="Switch light/dark mode">Dark mode</button>
-  <div class="userchip">
-    <div class="avatar" id="avatar">–</div>
+  <div class="userchip" onclick="showView('profile')" title="Open my profile" style="cursor:pointer;">
+    <div class="avatar" id="avatar">..</div>
     <div><div class="uname" id="uName">…</div><div class="urole" id="uRole">…</div></div>
-    <button class="logoutbtn" onclick="signOut()">Log out</button>
+    <button class="logoutbtn" onclick="event.stopPropagation();signOut()">Log out</button>
   </div>
 </div>
 
@@ -137,6 +140,8 @@ body:not(.cov-epic) .epic-only{display:none!important;}
     <button class="nav" id="nav-comments" onclick="showView('comments')">Comments</button>
     <button class="nav" id="nav-files" onclick="showView('files')">Files</button>
     <button class="nav adm-only" id="nav-members" onclick="showView('members')">Members</button>
+    <div style="flex:1;"></div>
+    <button class="nav" id="themeBtn" onclick="toggleTheme()">Dark mode</button>
   </div>
 
   <div class="main">
@@ -157,16 +162,16 @@ body:not(.cov-epic) .epic-only{display:none!important;}
 
     <div class="view on" id="view-overview">
       <div class="cards">
-        <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Metric 1</div><div class="kv" id="m1" contenteditable="true">–</div><div class="ks" id="ms1" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Metric 2</div><div class="kv" id="m2" contenteditable="true">–</div><div class="ks" id="ms2" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml3" contenteditable="true">Metric 3</div><div class="kv" id="m3" contenteditable="true">–</div><div class="ks" id="ms3" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Metric 4</div><div class="kv" id="m4" contenteditable="true">–</div><div class="ks" id="ms4" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Metric 1</div><div class="kv" id="m1" contenteditable="true"></div><div class="ks" id="ms1" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Metric 2</div><div class="kv" id="m2" contenteditable="true"></div><div class="ks" id="ms2" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml3" contenteditable="true">Metric 3</div><div class="kv" id="m3" contenteditable="true"></div><div class="ks" id="ms3" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Metric 4</div><div class="kv" id="m4" contenteditable="true"></div><div class="ks" id="ms4" contenteditable="true"></div></div>
       </div>
       <div class="grid2">
-        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;">–</div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync →</p></div>
-        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;">–</div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync →</p></div>
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
       </div>
-      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:var(--mut);">–</div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Requests →</p></div>
+      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:var(--mut);"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Requests</p></div>
     </div>
 
     <div class="view" id="view-sync">
@@ -183,17 +188,20 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <div><p class="hint">Top win</p><textarea id="ayminWin" class="always-edit sm-edit" style="min-height:56px;"></textarea></div>
           <div><p class="hint">Biggest obstacle</p><textarea id="ayminBlock" class="always-edit sm-edit" style="min-height:56px;"></textarea></div>
         </div>
-        <div class="cards" style="margin-top:10px;margin-bottom:0;">
-          <div class="kpi"><div class="kl">Calls</div><input type="number" id="aCalls" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
-          <div class="kpi"><div class="kl">Emails</div><input type="number" id="aEmails" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
-          <div class="kpi"><div class="kl">Site visits</div><input type="number" id="aSites" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
-          <div class="kpi"><div class="kl">New contacts</div><input type="number" id="aContacts" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
-        </div>
       </div>
       <div class="card epic-only">
         <h3>EPIC activity report <span class="pill blue">Filled by EPIC</span></h3>
         <p class="hint">Sales efforts handled by EPIC this week. The hotel reads this.</p>
         <textarea id="epicReport" placeholder="Outreach, calls, agency contacts, GDS work done for this hotel this week…"></textarea>
+      </div>
+      <div class="card">
+        <h3>Weekly activity numbers</h3>
+        <div class="cards" style="margin-bottom:0;">
+          <div class="kpi"><div class="kl">Calls</div><input type="number" id="aCalls" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Emails</div><input type="number" id="aEmails" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Site visits</div><input type="number" id="aSites" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">New contacts</div><input type="number" id="aContacts" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+        </div>
       </div>
       <div class="card inhouse-only">
         <h3>Consultant response <span class="pill amber">Feedback</span></h3>
@@ -263,7 +271,31 @@ body:not(.cov-epic) .epic-only{display:none!important;}
       </div>
     </div>
 
+    <div class="view" id="view-profile">
+      <div class="card" style="max-width:480px;">
+        <h3>My profile</h3>
+        <p class="hint">Your name and photo appear next to your comments.</p>
+        <p class="hint" style="margin-bottom:4px;">Display name</p>
+        <input type="text" id="pfName" class="always-edit" placeholder="e.g. Judith B.">
+        <p class="hint" style="margin:10px 0 4px;">Profile photo</p>
+        <input type="file" id="pfPhoto" class="always-edit" accept="image/*">
+        <button class="primary always-edit" style="margin-top:12px;" onclick="saveProfile()">Save profile</button>
+        <span class="msg" id="pfMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
+    </div>
+
     <div class="view" id="view-members">
+      <div class="card">
+        <h3>Add a new hotel</h3>
+        <div class="grid2">
+          <div><p class="hint">Hotel name</p><input type="text" id="nhName" placeholder="e.g. Casa Bonita Beach Resort"></div>
+          <div><p class="hint">Sales manager name (blank if none)</p><input type="text" id="nhManager"></div>
+          <div><p class="hint">Sales coverage</p><select id="nhCoverage"><option value="inhouse">In-house sales manager</option><option value="epic">EPIC-managed sales</option></select></div>
+          <div><p class="hint">Agency 360 report</p><select id="nhA360"><option value="false">No</option><option value="true">Yes, show market intel</option></select></div>
+        </div>
+        <button class="primary" style="margin-top:12px;" onclick="createHotel()">Create hotel</button>
+        <span class="msg" id="nhMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
       <div class="card">
         <h3>Hotel settings</h3>
         <div class="grid2">
@@ -296,7 +328,38 @@ var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
 var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 var SESSION=null,EMAIL='',IS_ADMIN=false,MEMBERSHIPS=[],HOTELS=[];
-var BLOB={},WEEK='',SAVEDWEEKS=[],ACTIONS=[],DIRTY=false,SAVETIMER=null,LOADING=false;
+var BLOB={},WEEK='',SAVEDWEEKS=[],ACTIONS=[],DIRTY=false,SAVETIMER=null,LOADING=false,PROFILES={};
+
+function myName(){var p=PROFILES[EMAIL];return (p&&p.display_name)||EMAIL.split('@')[0];}
+function avatarUrl(email){var p=PROFILES[email];if(p&&p.avatar_path){return SUPA_URL+'/storage/v1/object/public/avatars/'+p.avatar_path;}return null;}
+async function loadProfiles(){
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/profiles?select=email,display_name,avatar_path',{headers:authH()});
+    if(r.ok){PROFILES={};(await r.json()).forEach(function(p){PROFILES[p.email]=p;});}
+  }catch(e){}
+  renderMe();
+}
+function renderMe(){
+  var av=el('avatar');var url=avatarUrl(EMAIL);
+  av.innerHTML=url?'<img src="'+url+'" alt="">':esc(EMAIL.slice(0,2).toUpperCase());
+  el('uName').textContent=myName();
+  var pf=el('pfName');if(pf&&!pf.value)pf.value=(PROFILES[EMAIL]&&PROFILES[EMAIL].display_name)||'';
+}
+async function saveProfile(){
+  var m=el('pfMsg');var name=el('pfName').value.trim();
+  var body={email:EMAIL,display_name:name||EMAIL.split('@')[0]};
+  var f=el('pfPhoto').files[0];
+  if(f){
+    m.className='msg';m.textContent='Uploading photo…';
+    var path=EMAIL.replace(/[^a-z0-9@.]/gi,'_')+'_'+Date.now()+'.'+(f.name.split('.').pop()||'jpg');
+    var up=await sb.storage.from('avatars').upload(path,f,{upsert:true});
+    if(up.error){m.className='msg err';m.textContent='Photo upload failed. Has the profiles script been run?';return;}
+    body.avatar_path=path;
+  }
+  var r=await fetch(SUPA_URL+'/rest/v1/profiles',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
+  if(r.ok){m.className='msg ok';m.textContent='Saved';el('pfPhoto').value='';await loadProfiles();renderComments();}
+  else{m.className='msg err';m.textContent='Could not save. Has the profiles script been run?';}
+}
 
 function el(id){return document.getElementById(id);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -324,9 +387,8 @@ async function onSignedIn(){
     var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source,has_agency360,sales_coverage&order=name',{headers:authH()});HOTELS=r3.ok?await r3.json():[];
   }catch(e){console.warn(e);}
   document.body.classList.toggle('is-admin',IS_ADMIN);
-  el('avatar').textContent=EMAIL.slice(0,2).toUpperCase();
-  el('uName').textContent=EMAIL.split('@')[0];
-  el('uRole').textContent=IS_ADMIN?'Consultant · admin':(roleFor(HOTELS[0]&&HOTELS[0].slug)||'member').replace('_',' ');
+  el('uRole').textContent=IS_ADMIN?'Consultant, admin':(roleFor(HOTELS[0]&&HOTELS[0].slug)||'member').replace('_',' ');
+  await loadProfiles();
   if(HOTELS.length===0){setSave('err','No hotel assigned to '+EMAIL+'. Contact your EPIC consultant.');return;}
   var sel=el('hotelSelect');sel.innerHTML='';
   HOTELS.forEach(function(h){var o=document.createElement('option');o.value=h.slug;o.textContent=h.name;sel.appendChild(o);});
@@ -363,7 +425,7 @@ function showView(v){
   document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
   document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
   el('view-'+v).classList.add('on');
-  el('nav-'+v).classList.add('on');
+  var nb=el('nav-'+v);if(nb)nb.classList.add('on');
   if(location.hash!=='#'+v)history.pushState(null,'','#'+v);
   growAll();
 }
@@ -372,7 +434,7 @@ window.addEventListener('popstate',function(){
   if(el('view-'+v)&&!el('view-'+v).classList.contains('on')){
     document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
     document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
-    el('view-'+v).classList.add('on');el('nav-'+v).classList.add('on');growAll();
+    el('view-'+v).classList.add('on');var nb=el('nav-'+v);if(nb)nb.classList.add('on');growAll();
   }
 });
 function grow(ta){if(ta&&ta.tagName==='TEXTAREA'){ta.style.height='auto';ta.style.height=(ta.scrollHeight+4)+'px';}}
@@ -407,7 +469,7 @@ async function loadWeek(iso){
   }catch(e){}
   applyBlob();
   LOADING=false;DIRTY=false;
-  setSave('ok',Object.keys(BLOB).length?'Loaded':'New week — start typing, it saves itself');
+  setSave('ok',Object.keys(BLOB).length?'Loaded':'New week. Start typing, it saves itself.');
 }
 
 function applyBlob(){
@@ -418,7 +480,7 @@ function applyBlob(){
   el('execSummary').value=BLOB.execSummary||'';
   el('marketSum').value=BLOB.marketSum||'';
   el('epicReport').value=BLOB.epicReport||'';
-  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){el(id).textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Metric '+id[2]:(id[1]==='s'?'':'–'));});
+  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){el(id).textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Metric '+id[2]:'');});
   el('mktBody').innerHTML=BLOB.mktBodyV3||legacyRows(BLOB.mktBodyHTML,5)||'';
   el('agBody').innerHTML=BLOB.agBodyV3||legacyRows(BLOB.agBodyHTML,4)||legacyRows(BLOB.ctBodyHTML,4)||'';
   var log=BLOB.activityLog||[];var e0=log.find(function(x){return x.week===WEEK;});
@@ -460,7 +522,7 @@ async function doSave(){
     var r=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({week_key:h.slug+'|'+WEEK,data:JSON.stringify(BLOB),updated_at:new Date().toISOString()})});
     if(r.ok){setSave('ok','Saved just now');if(SAVEDWEEKS.indexOf(WEEK)<0){SAVEDWEEKS.push(WEEK);SAVEDWEEKS.sort();}renderOverview();renderWOW();return;}
   }catch(e){}
-  DIRTY=true;setSave('err','Not saved — check connection');
+  DIRTY=true;setSave('err','Not saved . check connection');
 }
 document.addEventListener('input',function(e){if(e.target.closest('.main'))markDirty();if(e.target.tagName==='TEXTAREA')grow(e.target);});
 
@@ -482,12 +544,17 @@ function renderComments(){
   var list=el('cList');var html=BLOB.commentsV3||[];
   if(typeof html==='string')html=[];
   if(!html.length&&BLOB.commentsHTML){list.innerHTML='<div class="citem"><div class="cmeta">Earlier comments</div><div style="font-size:13px;">'+BLOB.commentsHTML+'</div></div>';return;}
-  list.innerHTML=html.length?html.map(function(c){return '<div class="citem"><div class="cmeta"><span class="cauthor">'+esc(c.by)+'</span><span>'+esc(c.at)+'</span></div><div style="font-size:13px;">'+esc(c.text)+'</div></div>';}).join(''):'<p class="hint">No comments for this week yet.</p>';
+  list.innerHTML=html.length?html.map(function(c){
+    var em=c.em||'';var url=em?avatarUrl(em):null;
+    var name=(em&&PROFILES[em]&&PROFILES[em].display_name)||c.by;
+    var av=url?'<span class="cav"><img src="'+url+'" alt=""></span>':'<span class="cav">'+esc((name||'?').slice(0,2).toUpperCase())+'</span>';
+    return '<div class="citem"><div class="cmeta">'+av+'<span class="cauthor">'+esc(name)+'</span><span>'+esc(c.at)+'</span></div><div style="font-size:13px;margin-left:36px;">'+esc(c.text)+'</div></div>';
+  }).join(''):'<p class="hint">No comments for this week yet.</p>';
 }
 function postComment(){
   var t=el('cText').value.trim();if(!t)return;
   if(!Array.isArray(BLOB.commentsV3))BLOB.commentsV3=[];
-  BLOB.commentsV3.push({by:EMAIL.split('@')[0],at:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),text:t});
+  BLOB.commentsV3.push({by:myName(),em:EMAIL,at:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),text:t});
   el('cText').value='';renderComments();markDirty();
 }
 
@@ -508,7 +575,7 @@ function renderActions(){
     var overdue=a.due_date&&a.status!=='done'&&a.due_date<new Date().toISOString().slice(0,10);
     return '<tr><td><strong>'+esc(a.title)+'</strong>'+(a.detail?'<br><span style="color:var(--mut);font-size:12px;">'+esc(a.detail)+'</span>':'')+'</td>'+
       '<td><span class="pill '+(a.owner==='epic'?'blue':'green')+'">'+(a.owner==='epic'?'EPIC':'Hotel')+'</span></td>'+
-      '<td class="'+(overdue?'overdue':'')+'" style="white-space:nowrap;">'+(a.due_date||'–')+(overdue?' !':'')+'</td>'+
+      '<td class="'+(overdue?'overdue':'')+'" style="white-space:nowrap;">'+(a.due_date||'')+(overdue?' !':'')+'</td>'+
       '<td><select class="always-edit" style="width:auto;padding:5px 8px;font-size:12px;" onchange="setActionStatus(\''+a.id+'\',this.value)">'+['open','in_progress','done','cancelled'].map(function(s){return '<option value="'+s+'"'+(s===a.status?' selected':'')+'>'+s.replace('_',' ')+'</option>';}).join('')+'</select></td>'+
       '<td><button class="rowbtn edit-only" onclick="delAction(\''+a.id+'\')">×</button></td></tr>';
   }).join('');
@@ -518,7 +585,7 @@ async function addAction(){
   var body={hotel_slug:curHotel().slug,title:t,detail:el('acDetail').value.trim(),owner:el('acOwner').value,due_date:el('acDue').value||null,created_by:EMAIL};
   var r=await fetch(SUPA_URL+'/rest/v1/actions',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(body)});
   if(r.ok){el('acTitle').value='';el('acDetail').value='';el('acDue').value='';loadActions();setSave('ok','Request submitted');}
-  else setSave('err','Could not submit — has the v3 database script been run?');
+  else setSave('err','Could not submit. Has the v3 database script been run?');
 }
 async function setActionStatus(id,status){
   await fetch(SUPA_URL+'/rest/v1/actions?id=eq.'+id,{method:'PATCH',headers:authH({'Content-Type':'application/json'}),body:JSON.stringify({status:status,updated_at:new Date().toISOString()})});
@@ -590,15 +657,20 @@ async function removeMember(email){
   await fetch(SUPA_URL+'/rest/v1/hotel_members?email=eq.'+encodeURIComponent(email)+'&hotel_slug=eq.'+encodeURIComponent(curHotel().slug),{method:'DELETE',headers:authH()});
   loadMembers();
 }
-async function addNewHotel(){
-  var name=prompt('Hotel name:');if(!name||!name.trim())return;
+function addNewHotel(){showView('members');setTimeout(function(){el('nhName').focus();},100);}
+async function createHotel(){
+  var m=el('nhMsg');var name=el('nhName').value.trim();
+  if(!name){m.className='msg err';m.textContent='Give the hotel a name.';return;}
   var slug=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24);
-  var r=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({slug:slug,name:name.trim(),has_agency360:false,sales_coverage:'inhouse'})});
-  if(!r.ok){setSave('err','Could not add hotel.');return;}
-  HOTELS.push({slug:slug,name:name.trim(),has_agency360:false,sales_coverage:'inhouse'});
-  var o=document.createElement('option');o.value=slug;o.textContent=name.trim();el('hotelSelect').appendChild(o);
+  if(HOTELS.find(function(h){return h.slug===slug;})){m.className='msg err';m.textContent='A hotel with a similar name already exists.';return;}
+  var body={slug:slug,name:name,manager:el('nhManager').value.trim(),has_agency360:el('nhA360').value==='true',sales_coverage:el('nhCoverage').value};
+  var r=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(body)});
+  if(!r.ok){m.className='msg err';m.textContent='Could not create hotel.';return;}
+  HOTELS.push(body);
+  var o=document.createElement('option');o.value=slug;o.textContent=name;el('hotelSelect').appendChild(o);
+  el('nhName').value='';el('nhManager').value='';
+  m.className='msg ok';m.textContent=name+' created. Now add its members below.';
   el('hotelSelect').value=slug;onHotelChange();showView('members');
-  setSave('ok','Hotel added — set its options in Members');
 }
 
 function toggleTheme(){
