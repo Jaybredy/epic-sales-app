@@ -1,1285 +1,693 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>EPIC Sales Advisory Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<title>EPIC Sales Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Inter',system-ui,sans-serif;background:#F4F3EF;color:#111827;font-size:15px;line-height:1.6;}
-.topbar{background:#1B2E5E;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
-.brand{font-size:18px;font-weight:700;letter-spacing:.02em;white-space:nowrap;color:white;}
-.brand span{color:#C9A84C;}
-.topright{display:flex;align-items:center;gap:8px;}
-.week-label{color:rgba(255,255,255,.7);font-size:12px;font-weight:600;white-space:nowrap;}
-.wkdate{background:white;color:#1B2E5E;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:6px 10px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;width:150px;}
-.vbtn{padding:6px 14px;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;border-radius:7px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.1);color:white;font-weight:500;transition:all .15s;}
-.vbtn:hover{background:rgba(255,255,255,0.2);}
-.vbtn.on{background:#C9A84C;color:#1B2E5E;border-color:#C9A84C;font-weight:700;}
-.sbtn{background:#C9A84C;color:#1B2E5E;border:none;border-radius:7px;padding:7px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
-.sbtn:hover{opacity:.85;}
-.lbtn{background:rgba(255,255,255,0.12);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:7px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;}
-.hero{background:linear-gradient(135deg,#1B2E5E 0%,#243D7A 100%);color:white;padding:32px 28px;}
-.hero-inner{max-width:1140px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;}
-.hbadge{display:inline-block;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:#C9A84C;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:10px;}
-.hero h1{font-size:28px;font-weight:700;margin-bottom:8px;line-height:1.3;}
-.hero-meta{color:rgba(255,255,255,.7);font-size:14px;line-height:1.9;}
-.hero-meta strong{color:white;font-weight:600;}
-.fbox .fl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;text-align:right;font-weight:600;}
-.fbox .fv{font-size:24px;color:#C9A84C;text-align:right;font-weight:700;}
-.sbar{background:white;border-bottom:1px solid #E5E5E1;padding:8px 28px;font-size:13px;color:#555;display:flex;align-items:center;gap:8px;font-weight:500;}
-.dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;flex-shrink:0;}
-.dot.ok{background:#16A34A;}.dot.busy{background:#D97706;animation:blink 1s infinite;}.dot.err{background:#DC2626;}
+:root{--navy:#1B2E5E;--navy2:#243D7A;--gold:#C9A84C;--bg:#F4F3EF;--card:#FFFFFF;--line:#E5E5E1;--txt:#111827;--mut:#6B7280;--soft:#9CA3AF;--blue:#2A4A8A;--bluebg:#EEF3FB;--green:#16A34A;--greenbg:#F0FDF4;--amber:#D97706;--amberbg:#FFFBEB;--red:#DC2626;--redbg:#FEF2F2;--thead:#F9FAFB;--rowline:#F3F4F6;}
+body.dark{--navy:#C9D6F2;--navy2:#243D7A;--bg:#0F1522;--card:#1A2233;--line:#2C3850;--txt:#E5E7EB;--mut:#9CA3AF;--soft:#6B7280;--blue:#9DB8E8;--bluebg:#22304D;--green:#4ADE80;--greenbg:#16301F;--amber:#FBBF24;--amberbg:#372B10;--red:#F87171;--redbg:#3A1B1B;--thead:#151D2E;--rowline:#232E45;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.6;}
+button{font-family:'Inter',sans-serif;cursor:pointer;}
+input,select,textarea{font-family:'Inter',sans-serif;font-size:14px;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--card);width:100%;}
+textarea{min-height:80px;resize:vertical;line-height:1.6;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(42,74,138,.08);}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);height:58px;display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;z-index:100;}
+.brand{font-size:16px;font-weight:700;color:var(--navy);white-space:nowrap;}
+.brand span{color:var(--gold);}
+#hotelSelect{width:auto;min-width:200px;padding:7px 10px;font-weight:600;}
+.savechip{margin-left:auto;font-size:12px;color:var(--mut);display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.savedot{width:8px;height:8px;border-radius:50%;background:#ccc;}
+.savedot.ok{background:var(--green);}.savedot.busy{background:var(--amber);animation:blink 1s infinite;}.savedot.err{background:var(--red);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.wrap{max-width:1140px;margin:0 auto;padding:24px;}
-.mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
-.mc{background:white;border:1px solid #E5E5E1;border-radius:14px;padding:18px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
-.mc.dark{background:#1B2E5E;border-color:#1B2E5E;}
-.ml{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6B7280;margin-bottom:8px;font-weight:600;}
-.mc.dark .ml{color:rgba(255,255,255,.5);}
-.mv{font-size:32px;color:#1B2E5E;font-weight:700;line-height:1.1;}
-.mc.dark .mv{color:#C9A84C;}
-.mv.red{color:#DC2626;}
-.ms{font-size:12px;color:#9CA3AF;margin-top:4px;font-weight:500;}
-.mc.dark .ms{color:rgba(255,255,255,.4);}
-.tabwrap{background:white;border:1px solid #E5E5E1;border-radius:14px;overflow:hidden;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
-.tablist{display:flex;overflow-x:auto;border-bottom:2px solid #F3F4F6;}
-.tablist::-webkit-scrollbar{display:none;}
-.tbtn{flex-shrink:0;padding:14px 20px;font-size:14px;color:#6B7280;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;margin-bottom:-2px;font-family:'Inter',sans-serif;font-weight:500;transition:all .15s;}
-.tbtn:hover{color:#1B2E5E;background:#F9FAFB;}
-.tbtn.on{color:#1B2E5E;border-bottom-color:#1B2E5E;font-weight:700;}
-.tcontent{padding:24px;}
-.panel{display:none;}
-.panel.on{display:block;}
-.card{background:white;border:1px solid #E5E5E1;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-.card.bl{border-left:4px solid #2A4A8A;background:#EEF3FB;}
-.card.gl{border-left:4px solid #16A34A;background:#F0FDF4;}
-.card.al{border-left:4px solid #D97706;background:#FFFBEB;}
-.card.rl{border-left:4px solid #DC2626;background:#FEF2F2;}
-.ct{font-size:16px;color:#1B2E5E;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #E5E5E1;font-weight:700;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-textarea,input[type=text],input[type=date],input[type=number],select{width:100%;padding:10px 12px;border:1px solid #D1D5DB;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:#111827;background:white;transition:border-color .15s;}
-textarea{min-height:90px;resize:none;line-height:1.6;overflow:auto;max-height:600px;}
-textarea:focus,input:focus,select:focus{outline:none;border-color:#2A4A8A;box-shadow:0 0 0 3px rgba(42,74,138,0.08);}
-[contenteditable="true"]:hover{background:rgba(42,74,138,0.04);border-radius:4px;}
-[contenteditable="true"]:focus{outline:2px solid rgba(42,74,138,0.2);border-radius:4px;}
-body.ro textarea,body.ro input,body.ro select{pointer-events:none;background:transparent;border-color:transparent;resize:none;}
-body.ro [contenteditable]{pointer-events:none;}
-body.ro .eo{display:none!important;}
-body.sm .eo{display:none!important;}
-body.sm .tablist{display:none!important;}
-body.sm .mrow{display:none!important;}
-body.sm .hero{display:none!important;}
-body.sm #exec,body.sm #market,body.sm #agency,body.sm #feedback,body.sm #comments{display:none!important;}
-body.sm #saleslog{display:block!important;}
-body.sm #tasks{display:block!important;margin-top:24px;border-top:2px solid #E5E5E1;padding-top:24px;}
-body.sm .sm-only{display:block!important;}
-body.sm .aymin-read-section{display:none!important;}
-body.sm .sbar{display:none!important;}
-/* Task request row read-only / edit toggling */
-.task-pill,.task-note-ro{display:none;}
-body.ro .task-pill,body.sm .task-pill{display:inline-block;}
-body.ro .task-note-ro,body.sm .task-note-ro{display:block;font-size:13px;color:#374151;line-height:1.6;}
-.tw{overflow-x:auto;border-radius:10px;border:1px solid #E5E5E1;margin-bottom:12px;}
-table{width:100%;border-collapse:collapse;font-size:14px;}
-th{background:#F9FAFB;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:11px 13px;text-align:left;font-weight:700;border-bottom:1px solid #E5E5E1;white-space:nowrap;}
-td{padding:11px 13px;border-top:1px solid #F3F4F6;vertical-align:top;color:#111827;white-space:normal;}
-td[contenteditable="true"]{white-space:normal;}
-tr:hover td{background:#FAFAFA;}
-td[contenteditable="true"]:hover{background:#EEF3FB;cursor:text;}
-.bg{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
-.bg-r{background:#FEE2E2;color:#DC2626;}
-.bg-a{background:#FEF3C7;color:#D97706;}
-.bg-b{background:#DBEAFE;color:#2563EB;}
-.bg-g{background:#D1FAE5;color:#16A34A;}
-.addbtn{background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:8px;padding:9px 18px;font-size:14px;cursor:pointer;margin-top:10px;font-family:'Inter',sans-serif;font-weight:600;transition:all .15s;}
-.addbtn:hover{background:#2A4A8A;color:white;border-color:#2A4A8A;}
-.logbtn{background:#1B2E5E;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
-.logbtn:hover{opacity:.85;}
-.clist{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
-.citem{background:white;border:1px solid #E5E5E1;border-radius:12px;padding:14px 16px;}
-.cmeta{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
-.cauthor{font-weight:700;font-size:14px;color:#1B2E5E;}
-.cdate{font-size:12px;color:#9CA3AF;margin-left:auto;}
-.cbody{font-size:14px;color:#374151;line-height:1.7;outline:none;}
-.cbody:focus{background:rgba(42,74,138,0.04);border-radius:4px;}
-.cform{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:12px;padding:16px;}
-.crow{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
-.crow input,.crow select{flex:1;min-width:140px;width:auto;}
-.csubmit{background:#1B2E5E;color:white;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
-.li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;}
-.li:last-child{border-bottom:none;}
-.bull{color:#C9A84C;font-weight:700;flex-shrink:0;margin-top:3px;font-size:16px;}
-.li textarea{border:none;background:transparent;padding:0;min-height:unset;resize:none;font-size:14px;color:#374151;}
-.log-section{background:white;border:1px solid #E5E5E1;border-radius:14px;padding:20px;margin-bottom:16px;}
-.log-section.sm-only{display:none;}
-.log-section-title{font-size:14px;font-weight:700;color:#1B2E5E;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
-.log-section-title .tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
-.tag-consultant{background:#DBEAFE;color:#2563EB;}
-.tag-aymin{background:#D1FAE5;color:#16A34A;}
-.tag-response{background:#FEF3C7;color:#D97706;}
-.wow-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
-.wow-field label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;display:block;margin-bottom:5px;font-weight:600;}
-.wow-field input{text-align:center;font-size:22px;font-weight:700;color:#1B2E5E;padding:10px;}
-.wow-table td.up{color:#16A34A;font-weight:700;}
-.wow-table td.down{color:#DC2626;font-weight:700;}
-.file-upload-area{border:2px dashed #D1D5DB;border-radius:8px;padding:16px;text-align:center;background:#F9FAFB;cursor:pointer;transition:border-color .15s;}
-.file-upload-area:hover{border-color:#2A4A8A;background:#EEF3FB;}
-.file-upload-label{font-size:13px;color:#6B7280;font-weight:500;}
-.file-attached{background:#F0FDF4;border:1px solid #16A34A;border-radius:8px;padding:10px 14px;font-size:13px;color:#16A34A;font-weight:600;display:flex;align-items:center;gap:8px;margin-top:8px;}
-/* Aymin read-only cards */
-.ayr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-.ayr-stat{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:10px;padding:12px;text-align:center;}
-.ayr-stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:4px;font-weight:600;}
-.ayr-stat-value{font-size:28px;font-weight:700;color:#1B2E5E;}
-.ayr-field{background:#F9FAFB;border:1px solid #E5E5E1;border-radius:10px;padding:14px;margin-bottom:10px;}
-.ayr-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:6px;}
-.ayr-value{font-size:14px;color:#111827;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;}
-/* Aymin read-view: side-by-side cards should size to their own content, not stretch */
-#ayminReadContent .g2{align-items:start;}
-/* WOW table narrative row — 3 horizontal cards instead of cramped vertical columns */
-.wow-nar-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;align-items:start;}
-.wow-nar-card{background:#FFFFFF;border:1px solid #E5E5E1;border-radius:8px;padding:10px 12px;}
-.wow-nar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:6px;}
-.wow-nar-text{font-size:13px;color:#111827;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;}
-.wow-narrative-row td{border-top:none!important;}
-.no-update-msg{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px;font-size:14px;color:#92400E;font-weight:500;}
-@media(max-width:768px){
-  .mrow{grid-template-columns:1fr 1fr;}
-  .g2{grid-template-columns:1fr;}
-  .hero-inner{flex-direction:column;}
-  .fbox{text-align:left;}
-  .wow-row{grid-template-columns:1fr 1fr;}
-  .wow-nar-grid{grid-template-columns:1fr;}
-  .ayr-stats{grid-template-columns:1fr 1fr;}
-  .topright{gap:4px;}
-  .wkdate{width:120px;}
-  .week-label{display:none;}
+.userchip{display:flex;align-items:center;gap:9px;border-left:1px solid var(--line);padding-left:14px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--bluebg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.uname{font-size:13px;font-weight:600;line-height:1.2;}
+.urole{font-size:11px;color:var(--soft);line-height:1.2;}
+.logoutbtn{border:1px solid var(--line);background:var(--card);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--txt);}
+.logoutbtn:hover{background:var(--bg);}
+.layout{display:grid;grid-template-columns:190px minmax(0,1fr);min-height:calc(100vh - 58px);}
+.sidebar{border-right:1px solid var(--line);background:var(--card);padding:12px 8px;display:flex;flex-direction:column;gap:2px;}
+.nav{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--mut);border:none;background:none;text-align:left;width:100%;}
+.nav:hover{background:var(--bg);color:var(--txt);}
+.nav.on{background:var(--bluebg);color:var(--blue);font-weight:700;}
+.nav .badge{margin-left:auto;font-size:11px;background:var(--amberbg);color:var(--amber);border-radius:9px;padding:1px 7px;font-weight:700;}
+.main{padding:20px 24px;max-width:1050px;}
+.htitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+.htitle h1{font-size:20px;font-weight:700;color:var(--navy);}
+.pill{font-size:11px;border-radius:11px;padding:3px 10px;font-weight:600;white-space:nowrap;}
+.pill.blue{background:var(--bluebg);color:var(--blue);}
+.pill.green{background:var(--greenbg);color:var(--green);}
+.pill.amber{background:var(--amberbg);color:var(--amber);}
+.pill.gray{background:var(--bg);color:var(--mut);border:1px solid var(--line);}
+.pill.red{background:var(--redbg);color:var(--red);}
+.hsub{font-size:12px;color:var(--soft);margin-bottom:14px;}
+.weekbar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.wkbtn{border:1px solid var(--line);background:var(--card);border-radius:7px;padding:5px 10px;font-size:13px;font-weight:600;color:var(--txt);}
+.wkbtn:hover{background:var(--bg);}
+.wklabel{font-size:14px;font-weight:700;min-width:200px;text-align:center;}
+.view{display:none;}
+.view.on{display:block;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+.kpi .kl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:600;min-height:16px;}
+.kpi .kv{font-size:24px;font-weight:700;color:var(--navy);margin-top:2px;min-height:32px;}
+.kpi .ks{font-size:11px;color:var(--soft);min-height:15px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+.card h3{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+.hint{font-size:12px;color:var(--mut);margin-bottom:8px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--thead);color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:9px 10px;text-align:left;font-weight:700;border-bottom:1px solid var(--line);}
+td{padding:9px 10px;border-top:1px solid var(--rowline);vertical-align:top;}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
+.rowbtn{background:none;border:none;color:var(--red);font-size:17px;line-height:1;}
+.addbtn{background:var(--bluebg);color:var(--blue);border:1px solid #DBEAFE;border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;margin-top:10px;}
+.addbtn:hover{background:var(--blue);color:white;}
+.primary{background:var(--navy);color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;}
+.primary:hover{opacity:.88;}
+.citem{border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:9px;}
+.cmeta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--soft);margin-bottom:5px;flex-wrap:wrap;}
+.cauthor{font-weight:700;color:var(--navy);font-size:13px;}
+.overdue{color:var(--red);font-weight:700;}
+.filerow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:13px;}
+.filerow:last-child{border-bottom:none;}
+.flink{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:underline;}
+[contenteditable="true"]:hover{background:rgba(42,74,138,.05);border-radius:3px;}
+[contenteditable="true"]:focus{outline:2px solid rgba(42,74,138,.25);border-radius:3px;}
+body.role-view [contenteditable]{pointer-events:none;}
+body.role-view textarea:not(.always-edit),body.role-view input:not(.always-edit),body.role-view select:not(.always-edit){pointer-events:none;background:var(--bg);border-color:var(--line);}
+body.role-view .edit-only{display:none!important;}
+body.role-sm [contenteditable]{pointer-events:none;}
+body.role-sm textarea:not(.sm-edit):not(.always-edit),body.role-sm input:not(.sm-edit):not(.always-edit){pointer-events:none;background:var(--bg);border-color:var(--line);}
+body.role-sm .edit-only{display:none!important;}
+body:not(.is-admin) .adm-only{display:none!important;}
+body.no-a360 .a360-only{display:none!important;}
+body.cov-epic .inhouse-only{display:none!important;}
+body:not(.cov-epic) .epic-only{display:none!important;}
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy),var(--navy2));z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.logincard{background:white;border-radius:18px;padding:38px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.avatar{cursor:pointer;overflow:hidden;}
+.avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+.cav{width:28px;height:28px;border-radius:50%;background:var(--bluebg);color:var(--blue);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;flex-shrink:0;}
+.cav img{width:100%;height:100%;object-fit:cover;}
+.msg{margin-top:12px;font-size:13px;min-height:18px;color:#374151;}
+.msg.ok{color:var(--green);font-weight:600;}.msg.err{color:var(--red);font-weight:600;}
+@media(max-width:760px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);}
+  .nav{white-space:nowrap;width:auto;}
+  .topbar{flex-wrap:wrap;height:auto;padding:10px 12px;gap:8px;}
+  .savechip{margin-left:0;}
+  .uname,.urole{display:none;}
+  #hotelSelect{min-width:150px;}
 }
-/* ============ LOGIN & ACCESS (Phase 2) ============ */
-#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#1B2E5E 0%,#243D7A 100%);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
-.login-card{background:white;border-radius:18px;padding:40px 36px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;}
-.login-brand{font-size:24px;font-weight:700;color:#1B2E5E;margin-bottom:6px;}
-.login-brand span{color:#C9A84C;}
-.login-sub{font-size:14px;color:#6B7280;margin-bottom:24px;line-height:1.6;}
-.login-card input{margin-bottom:12px;text-align:center;font-size:15px;}
-.login-btn{width:100%;background:#1B2E5E;color:white;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
-.login-btn:hover{opacity:.88;}
-.login-msg{margin-top:14px;font-size:13px;line-height:1.6;color:#374151;min-height:20px;}
-.login-msg.ok{color:#16A34A;font-weight:600;}
-.login-msg.err{color:#DC2626;font-weight:600;}
-/* admin-only elements hidden unless body.is-admin */
-.adm{display:none!important;}
-body.is-admin .adm{display:inline-block!important;}
-/* view-toggle buttons hidden for hotel users (role is locked) */
-body.locked .vt{display:none!important;}
-/* members modal */
-#membersModal{position:fixed;inset:0;background:rgba(17,24,39,.55);z-index:2500;display:none;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto;}
-#membersModal.open{display:flex;}
-.mm-card{background:white;border-radius:16px;padding:26px;max-width:640px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
-.mm-title{font-size:18px;font-weight:700;color:#1B2E5E;margin-bottom:4px;}
-.mm-sub{font-size:13px;color:#6B7280;margin-bottom:16px;line-height:1.6;}
-.mm-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.mm-row input,.mm-row select{flex:1;min-width:150px;width:auto;}
-.mm-close{background:none;border:none;font-size:24px;color:#9CA3AF;cursor:pointer;float:right;line-height:1;}
-.crm-link{color:#2A4A8A;font-weight:600;cursor:pointer;text-decoration:underline;}
-/* Hotels without the Agency 360 report: hide the market-intelligence tabs */
-body.no-a360 .a360tab{display:none!important;}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="brand">EPIC <span>Sales</span> Portal</div>
-  <div class="topright">
-    <select class="wkdate" id="hotelSelect" onchange="onHotelChange()" style="width:auto;min-width:170px;"></select>
-    <button class="vbtn adm" onclick="addNewHotel()" title="Add a new hotel" style="padding:6px 8px;">+ Hotel</button>
-    <button class="vbtn adm" onclick="openMembers()" title="Manage who can access each hotel">Members</button>
-    <span class="week-label">Week of</span>
-    <input type="date" class="wkdate" id="weekDate">
-    <button class="vbtn on vt" id="vbtnEdit" onclick="setView('edit')">Consultant</button>
-    <button class="vbtn vt" id="vbtnRead" onclick="setView('read')">GM View</button>
-    <button class="vbtn vt" id="vbtnSales" onclick="setView('sales')">Sales Manager</button>
-    <button class="lbtn" onclick="loadData()">Load</button>
-    <button class="sbtn eo" onclick="saveData()">Save</button>
-    <button class="lbtn" onclick="signOut()" title="Sign out" style="padding:7px 10px;">&#x21E5;</button>
-  </div>
-</div>
-<div class="hero">
-  <div class="hero-inner">
-    <div>
-      <div class="hbadge" id="badgeText" contenteditable="true">Sales Advisory Brief</div>
-      <h1 id="titleText" contenteditable="true">EPIC Sales Weekly Feedback</h1>
-      <div class="hero-meta">
-        <strong id="hotelText" contenteditable="true">Uma House by Yurbban South Beach</strong><br>
-        Sales Manager: <span id="managerText" contenteditable="true">Aymin</span> &nbsp;&middot;&nbsp;
-        Source: <span id="sourceText" contenteditable="true">TravelClick Agency 360</span><br>
-        <span id="periodText" contenteditable="true">Forward-looking demand &middot; Next 90 days</span>
-      </div>
-    </div>
-    <div class="fbox">
-      <div class="fl">Action Focus</div>
-      <div class="fv" id="focusText" contenteditable="true">Next 90 days</div>
-    </div>
-  </div>
-</div>
-<div class="sbar">
-  <span class="dot" id="sdot"></span>
-  <span id="stxt">Select a date and click Load or Save</span>
-</div>
-<div class="wrap">
-  <div class="mrow">
-    <div class="mc dark"><div class="ml" id="ml1" contenteditable="true">Total Market RNs</div><div class="mv" id="m1" contenteditable="true">11,845</div><div class="ms" id="ms1" contenteditable="true">Next 90 days</div></div>
-    <div class="mc"><div class="ml" id="ml2" contenteditable="true">Hotel GDS</div><div class="mv red" id="m2" contenteditable="true">0</div><div class="ms" id="ms2" contenteditable="true">Bookings captured</div></div>
-    <div class="mc"><div class="ml" id="ml3" contenteditable="true">Compset GDS</div><div class="mv" id="m3" contenteditable="true">195</div><div class="ms" id="ms3" contenteditable="true">Room nights</div></div>
-    <div class="mc"><div class="ml" id="ml4" contenteditable="true">Revenue Opportunity</div><div class="mv" id="m4" contenteditable="true">$271K</div><div class="ms" id="ms4" contenteditable="true">At 10% capture</div></div>
-  </div>
-  <div class="tabwrap">
-    <div class="tablist">
-      <button class="tbtn on a360tab" id="tab-exec" onclick="showTab('exec',this)">Executive Summary</button>
-      <button class="tbtn a360tab" id="tab-market" onclick="showTab('market',this)">Market Position</button>
-      <button class="tbtn a360tab" id="tab-agency" onclick="showTab('agency',this)">Agency Opportunities</button>
-      <button class="tbtn" id="tab-feedback" onclick="showTab('feedback',this)">Action Plan</button>
-      <button class="tbtn" id="tab-saleslog" onclick="showTab('saleslog',this)">Weekly Sales Log</button>
-      <button class="tbtn" id="tab-tasks" onclick="showTab('tasks',this)">Task Requests</button>
-      <button class="tbtn" id="tab-comments" onclick="showTab('comments',this)">Comments</button>
-    </div>
-    <div class="tcontent">
-      <div id="exec" class="panel on">
-        <div class="card bl">
-          <div class="ct">For the General Manager: Overview</div>
-          <textarea id="execSummary">The April Agency 360 report covers the next 90 days of forward-looking demand and confirms the South Beach corporate market is not just healthy, it is accelerating. Uma House's competitive set is actively capturing this demand while the hotel shows zero GDS production. This is an access and visibility issue, not a demand issue. The accounts are there. We just need to get in front of them.
 
-National Airlines is the standout, with 475 market RNs in the next 90 days, up +2,400% vs last year, zero compset, zero hotel. This is essentially a brand new account that exploded into the market. They are based in Miami at (305) 576-3200 and book through CTC II. A Miami-based airline with South Beach demand is a natural fit for Uma House and nobody in the compset has touched it yet.
-
-Amazon is up +95% year over year, now at 926 RNs vs 476 last year. The urgency is even higher than originally shown. Fedrooms is up +74%, now at 2,137 RNs. Both book through agencies with direct contact paths in this report.
-
-Citigroup, 215 market RNs, up +63%, but the compset already has 49 RNs. Competitors are starting to capture this account. We need to move before it is locked in. Books through AEGBT.
-
-VISA, 202 market RNs, up +76%, zero compset, zero hotel. Books through NAVAN which is already listed in this portal, a warm path Aymin can activate quickly.
-
-Bloomberg International, 236 market RNs, more than doubled vs last year (+107%), zero compset, zero hotel. Books through BCD London.
-
-The recommendations in this report are sequenced by urgency. Every account above has a direct contact path, phone number, and recommended approach in the Agency Opportunities tab.</textarea>
-        </div>
-        <div class="card" style="border-left:4px solid #C9A84C;background:#FFFDF5;">
-          <div class="ct" id="marketIntelTitle" contenteditable="true" style="color:#92400E;">Market Intelligence Highlights, April 2026</div>
-          <div id="marketIntelBody" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
-              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">New Account, Act Now</div>
-              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">National Airlines</div>
-              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">475 RNs, +2,400% YOY, Zero compset, Miami-based</div>
-              <div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;">Brand new demand entering market, no competitor has captured this yet</div>
-            </div>
-            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
-              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">Compset Moving In</div>
-              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">Citigroup</div>
-              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">215 RNs, +63% YOY, 49 compset RNs</div>
-              <div contenteditable="true" style="font-size:12px;color:#DC2626;margin-top:4px;">Competitors already booking, window closing fast</div>
-            </div>
-            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
-              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">Growing Fast</div>
-              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">Amazon</div>
-              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">926 RNs, +95% YOY, 52 compset RNs</div>
-              <div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;">Bigger than originally shown, outreach urgency is higher</div>
-            </div>
-            <div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">
-              <div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">Local Warm Path</div>
-              <div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">EY / Ernst &amp; Young</div>
-              <div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">565 RNs, +2% YOY, 5 compset RNs</div>
-              <div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;">Books through BTM Brickell Travel, Miami local agency, easy outreach</div>
-            </div>
-          </div>
-        </div>
-        <div class="g2">
-          <div class="card gl"><div class="ct">What is Working Well</div><div id="wwList"></div><button class="addbtn eo" onclick="addListItem('wwList')">+ Add item</button></div>
-          <div class="card al"><div class="ct">Immediate Commercial Focus</div><div id="cfList"></div><button class="addbtn eo" onclick="addListItem('cfList')">+ Add item</button></div>
-        </div>
-        <div class="card"><div class="ct">Leadership Alignment Required</div><div id="laList"></div></div>
-      </div>
-      <div id="market" class="panel">
-        <div class="card"><div class="ct">Market Context</div><textarea id="marketSum">The majority of this demand is corporate travel booked through agencies and travel management companies via GDS, not direct hotel relationships. The compset is capturing room nights from these accounts while Uma House is not yet participating, indicating this is an access issue rather than a demand issue. Several accounts have shown explosive year-over-year growth this month, creating a narrow window of opportunity before competitors lock in preferred status.</textarea></div>
-        <div class="card">
-          <div class="ct">Corporate Demand Breakdown</div>
-          <div class="tw"><table>
-            <thead><tr><th>Corporation</th><th>Priority</th><th>Market RNs</th><th>Compset RNs</th><th>Hotel RNs</th><th>Compset Share</th><th>YOY Growth</th><th>Trend</th></tr></thead>
-            <tbody id="mktBody">
-              <tr><td contenteditable="true">Fedrooms</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">2,137</td><td contenteditable="true">91</td><td contenteditable="true">0</td><td contenteditable="true">4.3%</td><td contenteditable="true">+912 RNs</td><td><span class="bg bg-g">+74% YOY</span></td></tr>
-              <tr><td contenteditable="true">Amazon</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">926</td><td contenteditable="true">52</td><td contenteditable="true">0</td><td contenteditable="true">5.6%</td><td contenteditable="true">+450 RNs</td><td><span class="bg bg-g">+95% YOY</span></td></tr>
-              <tr><td contenteditable="true">Royal Caribbean</td><td><span class="bg bg-a">Secondary</span></td><td contenteditable="true">813</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+106 RNs</td><td><span class="bg bg-g">+15% YOY</span></td></tr>
-              <tr><td contenteditable="true">National Airlines</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">475</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+456 RNs</td><td><span class="bg bg-g">+2,400% YOY</span></td></tr>
-              <tr><td contenteditable="true">EY / Ernst &amp; Young</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">565</td><td contenteditable="true">5</td><td contenteditable="true">0</td><td contenteditable="true">0.9%</td><td contenteditable="true">+11 RNs</td><td><span class="bg bg-b">+2% YOY</span></td></tr>
-              <tr><td contenteditable="true">Citigroup</td><td><span class="bg bg-r">Primary</span></td><td contenteditable="true">215</td><td contenteditable="true">49</td><td contenteditable="true">0</td><td contenteditable="true">22.8%</td><td contenteditable="true">+83 RNs</td><td><span class="bg bg-g">+63% YOY</span></td></tr>
-              <tr><td contenteditable="true">Bloomberg International</td><td><span class="bg bg-a">Secondary</span></td><td contenteditable="true">236</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+122 RNs</td><td><span class="bg bg-g">+107% YOY</span></td></tr>
-              <tr><td contenteditable="true">VISA</td><td><span class="bg bg-a">Secondary</span></td><td contenteditable="true">202</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">+87 RNs</td><td><span class="bg bg-g">+76% YOY</span></td></tr>
-              <tr><td contenteditable="true">McKinsey &amp; Co</td><td><span class="bg bg-b">Emerging</span></td><td contenteditable="true">526</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0%</td><td contenteditable="true">-16 RNs</td><td><span class="bg bg-a">-3% YOY</span></td></tr>
-            </tbody>
-          </table></div>
-          <button class="addbtn eo" onclick="addRow('mktBody','<td contenteditable=true>New Corp</td><td><span class=bg bg-b>Emerging</span></td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true>0</td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td>')">+ Add corporation</button>
-        </div>
-      </div>
-      <div id="agency" class="panel">
-        <div class="card">
-          <div class="ct">Top Agency Opportunities</div>
-          <div class="tw"><table>
-            <thead><tr><th>Agency</th><th>Primary Demand Drivers</th><th>Contact Path</th><th>Opportunity Gap (RNs)</th><th>Revenue at 10%</th><th>Why Now</th></tr></thead>
-            <tbody id="agBody">
-              <tr><td contenteditable="true">CTC II</td><td contenteditable="true">National Airlines</td><td contenteditable="true">Miami office, (305) 576-3200</td><td contenteditable="true">-475</td><td contenteditable="true">~$87K</td><td contenteditable="true">+2,400% new demand, zero compset penetration, act before competitors notice</td></tr>
-              <tr><td contenteditable="true">BTM Brickell Travel</td><td contenteditable="true">EY / Ernst &amp; Young</td><td contenteditable="true">Local Miami, (305) 856-8889</td><td contenteditable="true">-565</td><td contenteditable="true">~$103K</td><td contenteditable="true">Local Miami agency, warmest outreach path in entire report</td></tr>
-              <tr><td contenteditable="true">AEGBT</td><td contenteditable="true">Citigroup, McKinsey, Bank of America</td><td contenteditable="true">Phoenix, (305) 913-7239</td><td contenteditable="true">-900+</td><td contenteditable="true">~$165K</td><td contenteditable="true">Compset already has 49 Citigroup RNs, window closing, position now</td></tr>
-              <tr><td contenteditable="true">NAVAN</td><td contenteditable="true">VISA, Tech corporate</td><td contenteditable="true">navanforhotels.com</td><td contenteditable="true">-3,511</td><td contenteditable="true">~$80K</td><td contenteditable="true">VISA up +76% YOY, growing fast with zero compset capture</td></tr>
-              <tr><td contenteditable="true">BCD 1S US</td><td contenteditable="true">Amazon, Fedrooms</td><td contenteditable="true">Atlanta office, sourcing desk</td><td contenteditable="true">-3,587</td><td contenteditable="true">~$65K</td><td contenteditable="true">Amazon up +95% YOY, urgency higher than originally estimated</td></tr>
-              <tr><td contenteditable="true">CONNEXIONS</td><td contenteditable="true">Leisure corporate mix</td><td contenteditable="true">Preferred hotel program</td><td contenteditable="true">-6,094</td><td contenteditable="true">~$126K</td><td contenteditable="true">Largest single gap in report, broad corporate and leisure mix</td></tr>
-            </tbody>
-          </table></div>
-          <button class="addbtn eo" onclick="addRow('agBody','<td contenteditable=true>Agency</td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true></td>')">+ Add agency</button>
-        </div>
-        <div class="card">
-          <div class="ct">Key Contacts &amp; Outreach Path</div>
-          <div class="tw"><table>
-            <thead><tr><th>Account</th><th>Agency / Channel</th><th>Contact</th><th>Phone</th><th>Website</th><th>Recommended Approach</th></tr></thead>
-            <tbody id="ctBody">
-              <tr><td contenteditable="true">National Airlines</td><td contenteditable="true">CTC II (Corporate Travel Consultants II)</td><td contenteditable="true">Nancy Rodriguez</td><td contenteditable="true" style="white-space:nowrap">(305) 576-3200</td><td contenteditable="true">ctc2.com</td><td contenteditable="true">Miami-based agency at 2699 Collins Ave, same neighborhood. Ask for Nancy Rodriguez. Lead with crew/corporate rate and South Beach proximity.</td></tr>
-              <tr><td contenteditable="true">EY / Ernst &amp; Young</td><td contenteditable="true">Brickell Travel Management</td><td contenteditable="true">Mitch Rodriguez, CEO</td><td contenteditable="true" style="white-space:nowrap">(305) 856-8889</td><td contenteditable="true">brickelltravel.com</td><td contenteditable="true">Email: mitch@brickelltravel.com. Local Miami agency, 66 W Flagler St, Floor 8. Warm call, reference Brickell location and EY South Florida presence.</td></tr>
-              <tr><td contenteditable="true">Citigroup</td><td contenteditable="true">Amex GBT (AEGBT)</td><td contenteditable="true">Hotel sourcing portal</td><td contenteditable="true" style="white-space:nowrap">(305) 913-7239</td><td contenteditable="true">connectprofile.amexgbt.com</td><td contenteditable="true">Register property at connectprofile.amexgbt.com first. Then call (305) 913-7239 and ask for Citigroup account or Miami market sourcing manager.</td></tr>
-              <tr><td contenteditable="true">VISA</td><td contenteditable="true">NAVAN</td><td contenteditable="true">Vendor Program (hotel partners)</td><td contenteditable="true" style="white-space:nowrap">N/A</td><td contenteditable="true">navan.com/about/partners</td><td contenteditable="true">Register as hotel vendor at navan.com/about/partners (free). Select Vendor Program. Navan contacts you to complete setup. Confirms VISA rate visibility.</td></tr>
-              <tr><td contenteditable="true">Amazon</td><td contenteditable="true">BCD Travel (Atlanta)</td><td contenteditable="true">Atlanta sourcing desk</td><td contenteditable="true" style="white-space:nowrap">(678) 579-8741</td><td contenteditable="true">bcdtravel.com</td><td contenteditable="true">Ask specifically for Amazon sourcing or travel manager. Position corporate rate before call. Amazon up 95% YOY, urgency is high.</td></tr>
-              <tr><td contenteditable="true">Fedrooms</td><td contenteditable="true">CWTSATO Travel</td><td contenteditable="true">Hotel Program, hotels@cwtsatotravel.com</td><td contenteditable="true" style="white-space:nowrap">866-576-4635</td><td contenteditable="true">cwtsatotravel.com</td><td contenteditable="true">Email hotels@cwtsatotravel.com directly. Confirm GSA eligibility and FEMA certification first. Rates must be at or below federal per diem to qualify.</td></tr>
-              <tr><td contenteditable="true">Bloomberg International</td><td contenteditable="true">BCD Travel (London)</td><td contenteditable="true">BCD London office</td><td contenteditable="true" style="white-space:nowrap">+44 207 343 7628</td><td contenteditable="true">bcdtravel.com</td><td contenteditable="true">Up +107% YOY. Contact BCD London and ask for Bloomberg account. Position Miami as key US market destination for Bloomberg employees.</td></tr>
-            </tbody>
-          </table></div>
-          <button class="addbtn eo" onclick="addRow('ctBody','<td contenteditable=true>Account</td><td contenteditable=true></td><td contenteditable=true></td><td contenteditable=true style=white-space:nowrap></td><td contenteditable=true></td><td contenteditable=true></td>')">+ Add contact</button>
-        </div>
-      </div>
-      <div id="feedback" class="panel">
-        <div class="g2">
-          <div class="card gl">
-            <div class="ct">Strengths This Week</div>
-            <textarea id="strengthsTxt">• High call volume across NYC, Miami, and Nashville
-• Written cold-call script in use
-• First contact at McKinsey and Royal Caribbean achieved
-• House of Travel site visit confirmed</textarea>
-          </div>
-          <div class="card al">
-            <div class="ct">My Follow-Up &amp; Guidance</div>
-            <textarea id="guidanceTxt">• Amazon: Outreach has not yet been initiated despite being the highest priority demand driver
-• Fedrooms: Outreach path misaligned and should route through CWTSATO
-• Call effectiveness: Script lacks a defined closing step to secure next action
-• Royal Caribbean: Current contact sits in crew operations; need to identify corporate travel decision-maker</textarea>
-          </div>
-        </div>
-        <div class="card">
-          <div class="ct">Account-by-Account Status</div>
-          <div class="tw"><table>
-            <thead><tr><th>Account</th><th>Status</th><th>Contact Reached</th><th>Recommended Next Step</th><th>CRM Report</th></tr></thead>
-            <tbody id="acBody">
-              <tr><td contenteditable="true">Amazon</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">-</td><td contenteditable="true">Call BCD Travel Atlanta and ask for Amazon sourcing manager.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
-              <tr><td contenteditable="true">Fedrooms</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option selected>Redirect Needed</option></select></td><td contenteditable="true">Current path misaligned</td><td contenteditable="true">Route through CWTSATO. Confirm GSA eligibility first.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
-              <tr><td contenteditable="true">Royal Caribbean</td><td><select><option>Not Started</option><option selected>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable="true">Initial crew ops contact</td><td contenteditable="true">Identify corporate travel decision-maker.</td><td><label style="cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;">Upload <input type="file" style="display:none;" onchange="handleFileUpload(this)"></label><span class="file-name" style="font-size:12px;color:#16A34A;margin-left:6px;"></span></td></tr>
-            </tbody>
-          </table></div>
-          <button class="addbtn eo" onclick="addRow('acBody','<td contenteditable=true>Account</td><td><select><option>Not Started</option><option>In Progress</option><option>Done</option><option>Redirect Needed</option></select></td><td contenteditable=true></td><td contenteditable=true></td><td><label style=cursor:pointer;background:#EEF3FB;color:#2A4A8A;border:1px solid #DBEAFE;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;>Upload <input type=file style=display:none; onchange=handleFileUpload(this)></label><span class=file-name style=font-size:12px;color:#16A34A;margin-left:6px;></span></td>')">+ Add account</button>
-        </div>
-        <div class="card"><div class="ct">Consultant Notes</div><textarea id="notesTxt" placeholder="Private notes for this advisory session..."></textarea></div>
-      </div>
-
-      <!-- WEEKLY SALES LOG TAB -->
-      <div id="saleslog" class="panel">
-
-        <!-- Consultant sets focus — always visible -->
-        <div class="log-section">
-          <div class="log-section-title">
-            <span>This Week's Focus</span>
-            <span class="tag tag-consultant">Recommended by Advisor</span>
-          </div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">You set the 3-5 priority actions for <span class="mgrname">the sales manager</span> this week, to be read before logging the weekly update.</p>
-          <textarea id="weekFocus" placeholder="e.g.&#10;1. Call BCD Travel Atlanta, ask for Amazon sourcing manager&#10;2. Contact CWTSATO to confirm Fedrooms / GSA eligibility&#10;3. Follow up with House of Travel on site visit confirmation&#10;4. Identify corporate travel decision-maker at Royal Caribbean"></textarea>
-        </div>
-
-        <!-- INPUT FORM — Sales Manager mode only -->
-        <div class="log-section sm-only" id="ayminInputSection">
-          <div class="log-section-title">
-            <span>My Weekly Update</span>
-            <span class="tag tag-aymin">Filled by <span class="mgrname">Sales Manager</span></span>
-          </div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Fill this out each week before your sync with the consultant. Takes 2 minutes. Hit Submit, then Save.</p>
-          <div style="margin-bottom:14px;">
-            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">What I did this week</label>
-            <textarea id="ayminDid" placeholder="Summarize your outreach, calls, meetings, and any follow-ups completed this week..."></textarea>
-          </div>
-          <div class="g2">
-            <div>
-              <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Top win or progress</label>
-              <textarea id="ayminWin" placeholder="What moved forward this week?"></textarea>
-            </div>
-            <div>
-              <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Biggest obstacle</label>
-              <textarea id="ayminBlock" placeholder="What got in the way or is still stuck?"></textarea>
-            </div>
-          </div>
-          <div style="margin-bottom:14px;">
-            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Quick numbers (optional)</label>
-            <div class="wow-row">
-              <div class="wow-field"><label>Calls Made</label><input type="number" id="aCalls" min="0" value="0"></div>
-              <div class="wow-field"><label>Emails Sent</label><input type="number" id="aEmails" min="0" value="0"></div>
-              <div class="wow-field"><label>Site Visits</label><input type="number" id="aSites" min="0" value="0"></div>
-              <div class="wow-field"><label>New Contacts</label><input type="number" id="aContacts" min="0" value="0"></div>
-            </div>
-          </div>
-          <div style="margin-bottom:14px;">
-            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Attach CRM Report (optional)</label>
-            <div class="file-upload-area" onclick="document.getElementById('ayminFile').click()">
-              <div class="file-upload-label">Click to attach your CRM report, any file type accepted</div>
-              <input type="file" id="ayminFile" style="display:none;">
-            </div>
-            <div id="fileLabel" style="display:none;" class="file-attached"></div>
-          </div>
-          <button class="logbtn" onclick="logActivity()">Submit My Update</button>
-        </div>
-
-        <!-- READ-ONLY VIEW — Consultant and GM see this -->
-        <div class="log-section aymin-read-section">
-          <div class="log-section-title">
-            <span><span class="mgrname">Sales Manager</span>'s Weekly Update</span>
-            <span class="tag tag-aymin">Submitted by <span class="mgrname">Sales Manager</span></span>
-          </div>
-          <div id="ayminReadContent">
-            <div class="no-update-msg">No update submitted for this week yet. Ask your sales manager to sign in, fill in the weekly update, and hit Submit.</div>
-          </div>
-        </div>
-
-        <!-- Consultant response — always visible -->
-        <div class="log-section">
-          <div class="log-section-title">
-            <span>Consultant Response</span>
-            <span class="tag tag-response">Filled by Consultant</span>
-          </div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">After reviewing Aymin's update, add your feedback and guidance for the next week here.</p>
-          <textarea id="consultResponse" placeholder="e.g. Good progress on Royal Caribbean contact..."></textarea>
-        </div>
-
-        <!-- WOW table — always visible -->
-        <div class="card">
-          <div class="ct">Week-over-Week Activity</div>
-          <div class="tw"><table class="wow-table">
-            <thead><tr><th>Week</th><th>Calls</th><th>Emails</th><th>Site Visits</th><th>New Contacts</th></tr></thead>
-            <tbody id="wowBody"><tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr></tbody>
-          </table></div>
-        </div>
-      </div>
-
-      <!-- TASK REQUESTS TAB -->
-      <div id="tasks" class="panel">
-        <div class="card bl">
-          <div class="ct">Request a Task from EPIC</div>
-          <p style="font-size:13px;color:#6B7280;margin-bottom:14px;">Hotel team: use this to request work from your EPIC consultant, including outreach support, rate analysis, GDS audit, or anything else. Status updates appear below as the work moves forward.</p>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Task title</label>
-            <input type="text" id="taskNewTitle" placeholder="e.g. Audit our Sabre rates for Q3">
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Description / context</label>
-            <textarea id="taskNewDesc" placeholder="What do you need? Any deadlines, accounts, or context the consultant should know."></textarea>
-          </div>
-          <div class="crow">
-            <div style="flex:1;min-width:140px;">
-              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Priority</label>
-              <select id="taskNewPriority"><option>Low</option><option selected>Medium</option><option>High</option></select>
-            </div>
-            <div style="flex:1;min-width:140px;">
-              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Requested by</label>
-              <input type="text" id="taskNewBy" placeholder="Your name">
-            </div>
-          </div>
-          <br>
-          <button class="logbtn" onclick="submitTaskRequest()">Submit Request</button>
-        </div>
-        <div class="card">
-          <div class="ct">Open Requests</div>
-          <div class="tw"><table>
-            <thead><tr><th>Title</th><th>Description</th><th>Requested By</th><th>Priority</th><th>Status</th><th>Submitted</th><th>EPIC Notes</th><th></th></tr></thead>
-            <tbody id="taskBody"></tbody>
-          </table></div>
-          <div id="taskEmpty" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;display:none;">No task requests yet. Submit one above.</div>
-        </div>
-      </div>
-
-      <div id="comments" class="panel">
-        <div class="card">
-          <div class="ct">Comments &amp; Updates</div>
-          <div class="clist" id="cList">
-            <div class="citem">
-              <div class="cmeta"><span class="cauthor">Advisor</span><span class="bg bg-b" style="font-size:12px">Advisor</span><span class="cdate">Week of Apr 7, 2026</span></div>
-              <div class="cbody" contenteditable="true">Initial report delivered. Priority focus: GDS visibility and Amazon/Fedrooms outreach. Please review the Weekly Sales Log and confirm you understand this week's focus before our next sync.</div>
-            </div>
-          </div>
-          <div class="cform eo">
-            <div class="crow">
-              <input type="text" id="cAuthor" placeholder="Your name">
-              <select id="cRole"><option>Advisor</option><option>Sales Manager</option><option>General Manager</option><option>Other</option></select>
-            </div>
-            <textarea id="cText" placeholder="Add a comment, question, or update..."></textarea>
-            <br><br>
-            <button class="csubmit" onclick="postComment()">Post Comment</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- LOGIN SCREEN (shown until signed in) -->
 <div id="loginOverlay">
-  <div class="login-card">
-    <div class="login-brand">EPIC <span>Sales</span> Portal</div>
-    <div class="login-sub">Enter your email and we'll send you a one-click sign-in link. No password needed.</div>
-    <input type="text" id="loginEmail" placeholder="you@yourhotel.com" onkeydown="if(event.key==='Enter')sendLoginLink()">
-    <button class="login-btn" onclick="sendLoginLink()">Send sign-in link</button>
-    <div class="login-msg" id="loginMsg"></div>
+  <div class="logincard">
+    <div class="brand" style="font-size:22px;margin-bottom:6px;">EPIC <span>Sales</span> Portal</div>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:20px;">Enter your email for a one-click sign-in link. No password needed.</p>
+    <input type="text" id="loginEmail" placeholder="you@yourhotel.com" style="text-align:center;margin-bottom:10px;" onkeydown="if(event.key==='Enter')sendLoginLink()">
+    <button class="primary" style="width:100%;" onclick="sendLoginLink()">Send sign-in link</button>
+    <div class="msg" id="loginMsg"></div>
   </div>
 </div>
 
-<!-- MEMBERS PANEL (admin only) -->
-<div id="membersModal">
-  <div class="mm-card">
-    <button class="mm-close" onclick="closeMembers()">&times;</button>
-    <div class="mm-title">Portal Access</div>
-    <div class="mm-sub">Give a hotel team member access: add their email, pick their hotel and role. They then go to the portal, enter that email, and click the link in their inbox. Remove access anytime with the &times; next to their name.</div>
-    <div class="mm-row">
-      <input type="text" id="mmEmail" placeholder="person@hotel.com">
-      <select id="mmHotel"></select>
-      <select id="mmRole">
-        <option value="gm">GM (read only)</option>
-        <option value="sales_manager">Sales Manager</option>
-        <option value="consultant">Consultant (full edit)</option>
-      </select>
-      <button class="csubmit" onclick="addMember()">Add</button>
+<div class="topbar">
+  <span class="brand">EPIC <span>Sales</span> Portal</span>
+  <select id="hotelSelect" onchange="onHotelChange()"></select>
+  <button class="logoutbtn adm-only" onclick="addNewHotel()">+ Hotel</button>
+  <span class="savechip"><span class="savedot" id="saveDot"></span><span id="saveTxt">Loading…</span></span>
+  <div class="userchip" onclick="showView('profile')" title="Open my profile" style="cursor:pointer;">
+    <div class="avatar" id="avatar">..</div>
+    <div><div class="uname" id="uName">…</div><div class="urole" id="uRole">…</div></div>
+    <button class="logoutbtn" onclick="event.stopPropagation();signOut()">Log out</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <button class="nav on" id="nav-overview" onclick="showView('overview')">Overview</button>
+    <button class="nav" id="nav-sync" onclick="showView('sync')">Weekly sync</button>
+    <button class="nav a360-only" id="nav-market" onclick="showView('market')">Market intel</button>
+    <button class="nav" id="nav-requests" onclick="showView('requests')">Requests <span class="badge" id="reqBadge" style="display:none;">0</span></button>
+    <button class="nav" id="nav-comments" onclick="showView('comments')">Comments</button>
+    <button class="nav" id="nav-files" onclick="showView('files')">Files</button>
+    <button class="nav adm-only" id="nav-members" onclick="showView('members')">Members</button>
+    <div style="flex:1;"></div>
+    <button class="nav" id="themeBtn" onclick="toggleTheme()">Dark mode</button>
+  </div>
+
+  <div class="main">
+    <div class="htitle">
+      <h1 id="hotelTitle">…</h1>
+      <span class="pill blue epic-only">Sales by EPIC</span>
+      <span class="pill green inhouse-only" id="covMgrPill">In-house sales</span>
+      <span class="pill gray a360-only">Agency 360</span>
     </div>
-    <div class="tw"><table>
-      <thead><tr><th>Email</th><th>Hotel</th><th>Role</th><th></th></tr></thead>
-      <tbody id="mmBody"></tbody>
-    </table></div>
-    <div class="login-msg" id="mmMsg"></div>
+    <p class="hsub" id="hotelSub"></p>
+
+    <div class="weekbar">
+      <button class="wkbtn" onclick="stepWeek(-1)">‹</button>
+      <span class="wklabel" id="weekLabel">…</span>
+      <button class="wkbtn" onclick="stepWeek(1)">›</button>
+      <button class="wkbtn" onclick="goThisWeek()">This week</button>
+    </div>
+
+    <div class="view on" id="view-overview">
+      <div class="cards">
+        <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Metric 1</div><div class="kv" id="m1" contenteditable="true"></div><div class="ks" id="ms1" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Metric 2</div><div class="kv" id="m2" contenteditable="true"></div><div class="ks" id="ms2" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml3" contenteditable="true">Metric 3</div><div class="kv" id="m3" contenteditable="true"></div><div class="ks" id="ms3" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Metric 4</div><div class="kv" id="m4" contenteditable="true"></div><div class="ks" id="ms4" contenteditable="true"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
+      </div>
+      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:var(--mut);"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Requests</p></div>
+    </div>
+
+    <div class="view" id="view-sync">
+      <div class="card">
+        <h3>This week's focus <span class="pill blue">Set by EPIC</span></h3>
+        <p class="hint edit-only">The 3-5 priority actions for this week.</p>
+        <textarea id="weekFocus" placeholder="1. …&#10;2. …&#10;3. …"></textarea>
+      </div>
+      <div class="card inhouse-only">
+        <h3>My weekly update <span class="pill green" id="mgrPill">Sales manager</span></h3>
+        <p class="hint">Fill in before your weekly sync. It saves automatically.</p>
+        <textarea id="ayminDid" class="always-edit sm-edit" placeholder="What I did this week: outreach, calls, meetings, follow-ups…"></textarea>
+        <div class="grid2" style="margin-top:10px;">
+          <div><p class="hint">Top win</p><textarea id="ayminWin" class="always-edit sm-edit" style="min-height:56px;"></textarea></div>
+          <div><p class="hint">Biggest obstacle</p><textarea id="ayminBlock" class="always-edit sm-edit" style="min-height:56px;"></textarea></div>
+        </div>
+      </div>
+      <div class="card epic-only">
+        <h3>EPIC activity report <span class="pill blue">Filled by EPIC</span></h3>
+        <p class="hint">Sales efforts handled by EPIC this week. The hotel reads this.</p>
+        <textarea id="epicReport" placeholder="Outreach, calls, agency contacts, GDS work done for this hotel this week…"></textarea>
+      </div>
+      <div class="card">
+        <h3>Weekly activity numbers</h3>
+        <div class="cards" style="margin-bottom:0;">
+          <div class="kpi"><div class="kl">Calls</div><input type="number" id="aCalls" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Emails</div><input type="number" id="aEmails" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Site visits</div><input type="number" id="aSites" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">New contacts</div><input type="number" id="aContacts" class="always-edit sm-edit" min="0" value="0" style="font-size:20px;font-weight:700;text-align:center;"></div>
+        </div>
+      </div>
+      <div class="card inhouse-only">
+        <h3>Consultant response <span class="pill amber">Feedback</span></h3>
+        <textarea id="consultResponse" placeholder="Review of the week and guidance for next week…"></textarea>
+      </div>
+      <div class="card">
+        <h3>Week-over-week activity</h3>
+        <div class="tw"><table><thead><tr><th>Week</th><th>Calls</th><th>Emails</th><th>Site visits</th><th>New contacts</th></tr></thead><tbody id="wowBody"><tr><td colspan="5" style="text-align:center;color:var(--soft);">No activity logged yet.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-market">
+      <div class="card"><h3>Executive summary</h3><textarea id="execSummary" style="min-height:140px;"></textarea></div>
+      <div class="card"><h3>Market context</h3><textarea id="marketSum"></textarea></div>
+      <div class="card">
+        <h3>Corporate demand</h3>
+        <div class="tw"><table><thead><tr><th>Corporation</th><th>Market RNs</th><th>Compset RNs</th><th>Hotel RNs</th><th>YOY</th></tr></thead><tbody id="mktBody"></tbody></table></div>
+        <button class="addbtn edit-only" onclick="addRow('mktBody',5)">+ Add row</button>
+      </div>
+      <div class="card">
+        <h3>Agency opportunities and contacts</h3>
+        <div class="tw"><table><thead><tr><th>Agency / account</th><th>Contact</th><th>Phone / site</th><th>Approach</th></tr></thead><tbody id="agBody"></tbody></table></div>
+        <button class="addbtn edit-only" onclick="addRow('agBody',4)">+ Add row</button>
+      </div>
+    </div>
+
+    <div class="view" id="view-requests">
+      <div class="card">
+        <h3>New request or action</h3>
+        <div class="grid2">
+          <input type="text" id="acTitle" class="always-edit" placeholder="Title, e.g. Audit Sabre rates for Q3">
+          <div style="display:flex;gap:8px;">
+            <select id="acOwner" class="always-edit" style="flex:1;"><option value="epic">EPIC owns it</option><option value="hotel">Hotel owns it</option></select>
+            <input type="date" id="acDue" class="always-edit" style="flex:1;">
+          </div>
+        </div>
+        <textarea id="acDetail" class="always-edit" style="margin-top:8px;min-height:56px;" placeholder="Context, deadline, accounts involved…"></textarea>
+        <button class="primary always-edit" style="margin-top:10px;" onclick="addAction()">Submit</button>
+      </div>
+      <div class="card">
+        <h3>Tracker</h3>
+        <div class="tw"><table><thead><tr><th>Title</th><th>Owner</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody id="acBodyList"></tbody></table></div>
+        <p class="hint" id="acEmpty" style="display:none;margin-top:8px;">Nothing here yet. Submit the first request above.</p>
+      </div>
+    </div>
+
+    <div class="view" id="view-comments">
+      <div class="card">
+        <h3>Comments for this week</h3>
+        <div id="cList"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <input type="text" id="cText" class="always-edit" placeholder="Add a comment or question…" onkeydown="if(event.key==='Enter')postComment()">
+          <button class="primary always-edit" onclick="postComment()">Post</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-files">
+      <div class="card">
+        <h3>File library</h3>
+        <p class="hint">Agency 360 reports, rate audits, CRM exports. Everyone on this hotel can see these.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input type="file" id="fileInput" class="always-edit" style="width:auto;flex:1;min-width:200px;">
+          <button class="primary always-edit" onclick="uploadFile()">Upload</button>
+        </div>
+        <div id="fileList" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-profile">
+      <div class="card" style="max-width:480px;">
+        <h3>My profile</h3>
+        <p class="hint">Your name and photo appear next to your comments.</p>
+        <p class="hint" style="margin-bottom:4px;">Display name</p>
+        <input type="text" id="pfName" class="always-edit" placeholder="e.g. Judith B.">
+        <p class="hint" style="margin:10px 0 4px;">Profile photo</p>
+        <input type="file" id="pfPhoto" class="always-edit" accept="image/*">
+        <button class="primary always-edit" style="margin-top:12px;" onclick="saveProfile()">Save profile</button>
+        <span class="msg" id="pfMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
+    </div>
+
+    <div class="view" id="view-members">
+      <div class="card">
+        <h3>Add a new hotel</h3>
+        <div class="grid2">
+          <div><p class="hint">Hotel name</p><input type="text" id="nhName" placeholder="e.g. Casa Bonita Beach Resort"></div>
+          <div><p class="hint">Sales manager name (blank if none)</p><input type="text" id="nhManager"></div>
+          <div><p class="hint">Sales coverage</p><select id="nhCoverage"><option value="inhouse">In-house sales manager</option><option value="epic">EPIC-managed sales</option></select></div>
+          <div><p class="hint">Agency 360 report</p><select id="nhA360"><option value="false">No</option><option value="true">Yes, show market intel</option></select></div>
+        </div>
+        <button class="primary" style="margin-top:12px;" onclick="createHotel()">Create hotel</button>
+        <span class="msg" id="nhMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
+      <div class="card">
+        <h3>Hotel settings</h3>
+        <div class="grid2">
+          <div><p class="hint">Hotel name</p><input type="text" id="setName"></div>
+          <div><p class="hint">Sales manager name (blank if none)</p><input type="text" id="setManager"></div>
+          <div><p class="hint">Sales coverage</p><select id="setCoverage"><option value="inhouse">In-house sales manager</option><option value="epic">EPIC-managed sales</option></select></div>
+          <div><p class="hint">Agency 360 report</p><select id="setA360"><option value="true">Yes, show market intel</option><option value="false">No</option></select></div>
+        </div>
+        <button class="primary" style="margin-top:12px;" onclick="saveHotelSettings()">Save settings</button>
+        <span class="msg" id="setMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
+      <div class="card">
+        <h3>Portal access</h3>
+        <p class="hint">Add a person's email, pick their role. They sign in at portvisory.com with that email.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="mmEmail" placeholder="person@hotel.com" style="flex:2;min-width:180px;">
+          <select id="mmRole" style="flex:1;min-width:150px;"><option value="gm">GM (read only)</option><option value="sales_manager">Sales manager</option><option value="consultant">Consultant</option></select>
+          <button class="primary" onclick="addMember()">Add</button>
+        </div>
+        <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Email</th><th>Role</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
+        <span class="msg" id="mmMsg"></span>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script>
 var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
 var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
-
-// ============ AUTH & ACCESS (Phase 2) ============
-// Hotels now live in the database. Who sees what is controlled by
-// sign-in + database rules, not by anything in this file.
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
-var SESSION=null,USER_EMAIL='',IS_ADMIN=false,MEMBERSHIPS=[],HOTELS=[];
+var SESSION=null,EMAIL='',IS_ADMIN=false,MEMBERSHIPS=[],HOTELS=[];
+var BLOB={},WEEK='',SAVEDWEEKS=[],ACTIONS=[],DIRTY=false,SAVETIMER=null,LOADING=false,PROFILES={};
 
-function authHeaders(extra){
-  var h={'apikey':SUPA_KEY,'Authorization':'Bearer '+(SESSION?SESSION.access_token:SUPA_KEY)};
-  if(extra)for(var k in extra)h[k]=extra[k];
-  return h;
-}
-async function sendLoginLink(){
-  var email=(document.getElementById('loginEmail').value||'').trim().toLowerCase();
-  var msg=document.getElementById('loginMsg');
-  if(!email||email.indexOf('@')<0){msg.className='login-msg err';msg.textContent='Please enter a valid email address.';return;}
-  msg.className='login-msg';msg.textContent='Sending...';
+function myName(){var p=PROFILES[EMAIL];return (p&&p.display_name)||EMAIL.split('@')[0];}
+function avatarUrl(email){var p=PROFILES[email];if(p&&p.avatar_path){return SUPA_URL+'/storage/v1/object/public/avatars/'+p.avatar_path;}return null;}
+async function loadProfiles(){
   try{
-    var timeout=new Promise(function(_,rej){setTimeout(function(){rej(new Error('Request timed out. Check your internet connection and try again.'));},15000);});
-    var call=sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:window.location.origin+window.location.pathname}});
-    var r=await Promise.race([call,timeout]);
-    if(r&&r.error){msg.className='login-msg err';msg.textContent='Could not send link: '+r.error.message;}
-    else{msg.className='login-msg ok';msg.textContent='Link sent. Check your inbox (and spam folder), then click the link to sign in.';}
-  }catch(e){
-    msg.className='login-msg err';
-    msg.textContent='Could not send link: '+(e&&e.message?e.message:'unknown error');
-  }
+    var r=await fetch(SUPA_URL+'/rest/v1/profiles?select=email,display_name,avatar_path',{headers:authH()});
+    if(r.ok){PROFILES={};(await r.json()).forEach(function(p){PROFILES[p.email]=p;});}
+  }catch(e){}
+  renderMe();
 }
-async function signOut(){await sb.auth.signOut();window.location.reload();}
-function showLogin(){document.getElementById('loginOverlay').style.display='flex';}
-function hideLogin(){document.getElementById('loginOverlay').style.display='none';}
+function renderMe(){
+  var av=el('avatar');var url=avatarUrl(EMAIL);
+  av.innerHTML=url?'<img src="'+url+'" alt="">':esc(EMAIL.slice(0,2).toUpperCase());
+  el('uName').textContent=myName();
+  var pf=el('pfName');if(pf&&!pf.value)pf.value=(PROFILES[EMAIL]&&PROFILES[EMAIL].display_name)||'';
+}
+async function saveProfile(){
+  var m=el('pfMsg');var name=el('pfName').value.trim();
+  var body={email:EMAIL,display_name:name||EMAIL.split('@')[0]};
+  var f=el('pfPhoto').files[0];
+  if(f){
+    m.className='msg';m.textContent='Uploading photo…';
+    var path=EMAIL.replace(/[^a-z0-9@.]/gi,'_')+'_'+Date.now()+'.'+(f.name.split('.').pop()||'jpg');
+    var up=await sb.storage.from('avatars').upload(path,f,{upsert:true});
+    if(up.error){m.className='msg err';m.textContent='Photo upload failed. Has the profiles script been run?';return;}
+    body.avatar_path=path;
+  }
+  var r=await fetch(SUPA_URL+'/rest/v1/profiles',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
+  if(r.ok){m.className='msg ok';m.textContent='Saved';el('pfPhoto').value='';await loadProfiles();renderComments();}
+  else{m.className='msg err';m.textContent='Could not save. Has the profiles script been run?';}
+}
+
+function el(id){return document.getElementById(id);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function authH(extra){var h={'apikey':SUPA_KEY,'Authorization':'Bearer '+(SESSION?SESSION.access_token:SUPA_KEY)};if(extra)for(var k in extra)h[k]=extra[k];return h;}
+function setSave(state,txt){el('saveDot').className='savedot '+state;el('saveTxt').textContent=txt;}
+
+async function sendLoginLink(){
+  var email=(el('loginEmail').value||'').trim().toLowerCase();var m=el('loginMsg');
+  if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email address.';return;}
+  m.className='msg';m.textContent='Sending…';
+  try{
+    var r=await Promise.race([sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:window.location.origin+window.location.pathname}}),new Promise(function(_,rej){setTimeout(function(){rej(new Error('Timed out. Check your connection.'));},15000);})]);
+    if(r&&r.error){m.className='msg err';m.textContent='Could not send link: '+r.error.message;}
+    else{m.className='msg ok';m.textContent='Link sent. Check your inbox and spam folder.';}
+  }catch(e){m.className='msg err';m.textContent='Could not send link: '+(e.message||'unknown error');}
+}
+async function signOut(){await sb.auth.signOut();location.reload();}
 
 async function onSignedIn(){
-  USER_EMAIL=(SESSION.user&&SESSION.user.email||'').toLowerCase();
-  hideLogin();
+  EMAIL=(SESSION.user&&SESSION.user.email||'').toLowerCase();
+  el('loginOverlay').style.display='none';
   try{
-    var r1=await fetch(SUPA_URL+'/rest/v1/admins?select=email',{headers:authHeaders()});
-    IS_ADMIN=r1.ok&&(await r1.json()).length>0;
-    var r2=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=hotel_slug,role&email=eq.'+encodeURIComponent(USER_EMAIL),{headers:authHeaders()});
-    MEMBERSHIPS=r2.ok?await r2.json():[];
-    var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source,has_agency360&order=name',{headers:authHeaders()});
-    var hotels=r3.ok?await r3.json():[];
-    HOTELS=hotels.map(function(h){return{key:h.slug,name:h.name,manager:h.manager,source:h.source,has_agency360:h.has_agency360!==false};});
-  }catch(e){console.warn('Access load error:',e);}
+    var r1=await fetch(SUPA_URL+'/rest/v1/admins?select=email',{headers:authH()});IS_ADMIN=r1.ok&&(await r1.json()).length>0;
+    var r2=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=hotel_slug,role&email=eq.'+encodeURIComponent(EMAIL),{headers:authH()});MEMBERSHIPS=r2.ok?await r2.json():[];
+    var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source,has_agency360,sales_coverage&order=name',{headers:authH()});HOTELS=r3.ok?await r3.json():[];
+  }catch(e){console.warn(e);}
   document.body.classList.toggle('is-admin',IS_ADMIN);
-  if(HOTELS.length===0){
-    setStatus('err','Your email ('+USER_EMAIL+') has no hotel assigned yet. Contact your EPIC consultant.');
-    return;
-  }
-  populateHotelDropdown();
+  el('uRole').textContent=IS_ADMIN?'Consultant, admin':(roleFor(HOTELS[0]&&HOTELS[0].slug)||'member').replace('_',' ');
+  await loadProfiles();
+  if(HOTELS.length===0){setSave('err','No hotel assigned to '+EMAIL+'. Contact your EPIC consultant.');return;}
+  var sel=el('hotelSelect');sel.innerHTML='';
+  HOTELS.forEach(function(h){var o=document.createElement('option');o.value=h.slug;o.textContent=h.name;sel.appendChild(o);});
   onHotelChange();
 }
-function roleForHotel(slug){
-  if(IS_ADMIN)return 'consultant';
-  var m=MEMBERSHIPS.find(function(x){return x.hotel_slug===slug;});
-  return m?m.role:'gm';
-}
-function applyRole(){
-  var role=roleForHotel(getHotelKey());
-  if(role==='consultant'){document.body.classList.remove('locked');setView('edit');}
-  else if(role==='sales_manager'){document.body.classList.add('locked');setView('sales');}
-  else{document.body.classList.add('locked');setView('read');}
+function curHotel(){return HOTELS.find(function(h){return h.slug===el('hotelSelect').value;})||HOTELS[0];}
+function roleFor(slug){if(IS_ADMIN)return 'consultant';var m=MEMBERSHIPS.find(function(x){return x.hotel_slug===slug;});return m?m.role:'gm';}
+
+async function onHotelChange(){
+  var h=curHotel();if(!h)return;
+  var role=roleFor(h.slug);
+  document.body.classList.toggle('role-view',role==='gm');
+  document.body.classList.toggle('role-sm',role==='sales_manager');
+  document.body.classList.toggle('no-a360',h.has_agency360===false);
+  document.body.classList.toggle('cov-epic',h.sales_coverage==='epic');
+  el('hotelTitle').textContent=h.name;
+  el('covMgrPill').textContent=h.manager?('Sales manager: '+h.manager):'In-house sales';
+  el('mgrPill').textContent=h.manager||'Sales manager';
+  el('hotelSub').textContent=h.sales_coverage==='epic'?'Sales handled by EPIC. Your weekly report below is filled by your consultant.':'';
+  el('ovUpdateTitle').textContent=h.sales_coverage==='epic'?'Latest EPIC activity report':'Latest weekly update';
+  if(role==='sales_manager'){document.querySelectorAll('.sm-edit').forEach(function(x){x.style.pointerEvents='auto';x.style.background='white';});}
+  var activeNav=document.querySelector('.nav.on');
+  if(!activeNav||activeNav.offsetParent===null)showView('overview');
+  await loadWeekList();
+  goThisWeek();
+  loadActions();
+  loadFiles();
+  if(IS_ADMIN)fillSettings();
+  fetch(SUPA_URL+'/rest/v1/page_views',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:EMAIL,hotel_slug:h.slug,last_seen:new Date().toISOString()})}).catch(function(){});
 }
 
-// ============ PER-HOTEL MODULES & LABELS ============
-function currentHotel(){return HOTELS.find(function(x){return x.key===getHotelKey();});}
-function mgrFirst(){
-  var h=currentHotel();
-  var m=(h&&h.manager||'').trim();
-  return m?m.split(' ')[0]:'Sales Manager';
+function showView(v){
+  if(!el('view-'+v))return;
+  document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
+  document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
+  el('view-'+v).classList.add('on');
+  var nb=el('nav-'+v);if(nb)nb.classList.add('on');
+  if(location.hash!=='#'+v)history.pushState(null,'','#'+v);
+  growAll();
 }
-function updateManagerLabels(){
-  document.querySelectorAll('.mgrname').forEach(function(el){el.textContent=mgrFirst();});
-}
-function applyModules(){
-  var h=currentHotel();
-  var noA360=!!(h&&h.has_agency360===false);
-  document.body.classList.toggle('no-a360',noA360);
-  // If the active tab just got hidden, jump to the Weekly Sales Log
-  var active=document.querySelector('.tbtn.on');
-  if(noA360&&active&&active.classList.contains('a360tab')){
-    showTab('saleslog',document.getElementById('tab-saleslog'));
-  }
-}
-
-var taskRequests=[];
-var comments=[];
-
-(function(){
-  var today=new Date();
-  var y=today.getFullYear();
-  var m=String(today.getMonth()+1).padStart(2,'0');
-  var d=String(today.getDate()).padStart(2,'0');
-  var dateEl=document.getElementById('weekDate');
-  if(dateEl)dateEl.value=y+'-'+m+'-'+d;
-})();
-
-function getWeekKey(){return document.getElementById('weekDate').value;}
-function getHotelKey(){
-  var sel=document.getElementById('hotelSelect');
-  return sel?sel.value:'uma';
-}
-function getHotelDisplayName(){
-  var k=getHotelKey();
-  var h=HOTELS.find(function(x){return x.key===k;});
-  return h?h.name:k;
-}
-function populateHotelDropdown(){
-  var sel=document.getElementById('hotelSelect');
-  if(!sel)return;
-  var prev=sel.value||'uma';
-  sel.innerHTML='';
-  HOTELS.forEach(function(h){
-    var o=document.createElement('option');
-    o.value=h.key;o.textContent=h.name;
-    sel.appendChild(o);
-  });
-  // Restore previous selection if still present, else default to first
-  if(HOTELS.find(function(x){return x.key===prev;})){sel.value=prev;}
-  else if(HOTELS.length){sel.value=HOTELS[0].key;}
-}
-function onHotelChange(){
-  // Update the hotelText/managerText to match selected hotel defaults (only if blank)
-  var h=HOTELS.find(function(x){return x.key===getHotelKey();});
-  if(h){
-    var htEl=document.getElementById('hotelText');
-    var mgrEl=document.getElementById('managerText');
-    var srcEl=document.getElementById('sourceText');
-    if(htEl)htEl.textContent=h.name;
-    if(mgrEl)mgrEl.textContent=h.manager||'';
-    if(srcEl)srcEl.textContent=h.source||'';
-  }
-  applyRole();
-  applyModules();
-  updateManagerLabels();
-  loadData();
-}
-async function addNewHotel(){
-  var name=prompt('Hotel display name (e.g. "Marriott Aventura"):');
-  if(!name||!name.trim())return;
-  var key=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);
-  if(!key){alert('Could not derive a hotel key from that name. Try a simpler name.');return;}
-  if(HOTELS.find(function(x){return x.key===key;})){alert('A hotel with that key already exists.');return;}
-  var manager=(prompt('Sales manager name (optional):')||'').trim();
-  var a360=confirm('Does this hotel receive the TravelClick Agency 360 (or similar GDS market) report?\n\nOK = Yes, show the market intelligence tabs\nCancel = No, communication portal only');
-  var source=(prompt('Primary data source:',a360?'TravelClick Agency 360':'Sales Advisory')||(a360?'TravelClick Agency 360':'Sales Advisory')).trim();
-  setStatus('busy','Adding hotel...');
-  var res=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({slug:key,name:name.trim(),manager:manager,source:source,has_agency360:a360})});
-  if(!res.ok){setStatus('err','Could not add hotel: '+(await res.text()));return;}
-  HOTELS.push({key:key,name:name.trim(),manager:manager,source:source,has_agency360:a360});
-  populateHotelDropdown();
-  document.getElementById('hotelSelect').value=key;
-  onHotelChange();
-  setStatus('ok','Hotel added. Now open Members to give their team access.');
-}
-
-// ============ MEMBERS PANEL (admin) ============
-async function openMembers(){
-  var sel=document.getElementById('mmHotel');
-  sel.innerHTML='';
-  HOTELS.forEach(function(h){var o=document.createElement('option');o.value=h.key;o.textContent=h.name;sel.appendChild(o);});
-  sel.value=getHotelKey();
-  document.getElementById('membersModal').classList.add('open');
-  await refreshMembers();
-}
-function closeMembers(){document.getElementById('membersModal').classList.remove('open');}
-async function refreshMembers(){
-  var tb=document.getElementById('mmBody');
-  tb.innerHTML='<tr><td colspan="4" style="color:#9CA3AF;">Loading...</td></tr>';
-  var res=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=email,hotel_slug,role&order=hotel_slug,email',{headers:authHeaders()});
-  var rows=res.ok?await res.json():[];
-  tb.innerHTML='';
-  if(rows.length===0){tb.innerHTML='<tr><td colspan="4" style="color:#9CA3AF;">No members yet. Add the first one above.</td></tr>';return;}
-  rows.forEach(function(m){
-    var h=HOTELS.find(function(x){return x.key===m.hotel_slug;});
-    var roleLabel=m.role==='gm'?'GM (read only)':m.role==='sales_manager'?'Sales Manager':'Consultant';
-    var tr=document.createElement('tr');
-    tr.innerHTML='<td>'+escapeHTML(m.email)+'</td><td>'+escapeHTML(h?h.name:m.hotel_slug)+'</td><td>'+roleLabel+'</td>'+
-      '<td><button onclick="removeMember(\''+m.email+'\',\''+m.hotel_slug+'\')" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:18px;">&times;</button></td>';
-    tb.appendChild(tr);
-  });
-}
-async function addMember(){
-  var email=(document.getElementById('mmEmail').value||'').trim().toLowerCase();
-  var hotel=document.getElementById('mmHotel').value;
-  var role=document.getElementById('mmRole').value;
-  var msg=document.getElementById('mmMsg');
-  if(!email||email.indexOf('@')<0){msg.className='login-msg err';msg.textContent='Enter a valid email.';return;}
-  var res=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:hotel,role:role})});
-  if(!res.ok){msg.className='login-msg err';msg.textContent='Could not add: '+(await res.text());return;}
-  msg.className='login-msg ok';msg.textContent=email+' added. Tell them to visit the portal and sign in with that email.';
-  document.getElementById('mmEmail').value='';
-  refreshMembers();
-}
-async function removeMember(email,hotel){
-  if(!confirm('Remove '+email+' from this hotel?'))return;
-  await fetch(SUPA_URL+'/rest/v1/hotel_members?email=eq.'+encodeURIComponent(email)+'&hotel_slug=eq.'+encodeURIComponent(hotel),{method:'DELETE',headers:authHeaders()});
-  refreshMembers();
-}
-function getWeekLabel(){
-  var val=document.getElementById('weekDate').value;
-  if(!val)return 'No date selected';
-  var p=val.split('-');
-  var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
-  return 'Wk '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-}
-function showTab(id,btn){
-  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
-  document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('on');});
-  document.getElementById(id).classList.add('on');
-  btn.classList.add('on');
-  setTimeout(function(){document.querySelectorAll('#'+id+' textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});},20);
-}
-function setView(mode){
-  var eb=document.getElementById('vbtnEdit'),rb=document.getElementById('vbtnRead'),sb=document.getElementById('vbtnSales');
-  document.body.classList.remove('ro','sm');
-  eb.classList.remove('on');rb.classList.remove('on');sb.classList.remove('on');
-  if(mode==='read'){document.body.classList.add('ro');rb.classList.add('on');}
-  else if(mode==='sales'){document.body.classList.add('sm');sb.classList.add('on');}
-  else{eb.classList.add('on');}
-  // Newly-visible textareas need a resize pass — their scrollHeight was 0 while hidden
-  autoSizeAllTextareas();
-}
-
-// ============ TEXTAREA AUTO-GROW (portal-wide) ============
-function autoSizeTextarea(ta){
-  if(!ta||ta.tagName!=='TEXTAREA')return;
-  ta.style.height='auto';
-  ta.style.height=ta.scrollHeight+'px';
-}
-function autoSizeAllTextareas(){
-  setTimeout(function(){
-    document.querySelectorAll('textarea').forEach(autoSizeTextarea);
-  },30);
-}
-// Delegate input event so EVERY textarea grows as user types — no need to wire each one individually
-document.addEventListener('input',function(e){
-  if(e.target&&e.target.tagName==='TEXTAREA')autoSizeTextarea(e.target);
-});
-// Initial sweep once DOM is parsed
-document.addEventListener('DOMContentLoaded',autoSizeAllTextareas);
-function setStatus(state,msg){
-  document.getElementById('sdot').className='dot '+(state==='ok'?'ok':state==='busy'?'busy':'err');
-  document.getElementById('stxt').textContent=msg;
-}
-// ============ REAL FILE UPLOADS (Phase 2) ============
-// Files now actually upload to secure storage instead of only showing a name.
-async function uploadCrmFile(file){
-  var path=getHotelKey()+'/'+getWeekKey()+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-  var r=await sb.storage.from('crm-uploads').upload(path,file);
-  return r.error?null:path;
-}
-async function downloadCrm(path){
-  var r=await sb.storage.from('crm-uploads').createSignedUrl(path,3600);
-  if(r.data&&r.data.signedUrl)window.open(r.data.signedUrl,'_blank');
-  else alert('Could not open file. It may have been removed.');
-}
-async function handleFileUpload(input){
-  var f=input.files[0];
-  if(!f)return;
-  var span=input.closest('td').querySelector('.file-name');
-  if(span)span.textContent='Uploading...';
-  var path=await uploadCrmFile(f);
-  if(span){
-    if(path)span.innerHTML='<span class="crm-link" onclick="downloadCrm(\''+path+'\')">'+escapeHTML(f.name)+'</span>';
-    else span.textContent='Upload failed, try again';
-  }
-  if(path)saveData(true);
-}
-document.addEventListener('DOMContentLoaded',function(){
-  var ayminFile=document.getElementById('ayminFile');
-  if(ayminFile){
-    ayminFile.addEventListener('change',function(){
-      var f=this.files[0];
-      if(f){
-        var lbl=document.getElementById('fileLabel');
-        lbl.style.display='flex';
-        lbl.innerHTML='Attached: <strong style="margin-left:4px;">'+f.name+'</strong><span style="color:#6B7280;margin-left:6px;">('+Math.round(f.size/1024)+' KB)</span><a href="#" onclick="document.getElementById(\'ayminFile\').value=\'\';document.getElementById(\'fileLabel\').style.display=\'none\';return false;" style="color:#DC2626;margin-left:auto;font-size:12px;font-weight:600;">Remove</a>';
-      }
-    });
+window.addEventListener('popstate',function(){
+  var v=(location.hash||'#overview').slice(1);
+  if(el('view-'+v)&&!el('view-'+v).classList.contains('on')){
+    document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
+    document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
+    el('view-'+v).classList.add('on');var nb=el('nav-'+v);if(nb)nb.classList.add('on');growAll();
   }
 });
-// Snapshot the default Market Intel section at load so legacy saves (without marketIntelBodyHTML) still display it
-var DEFAULT_MARKET_INTEL_TITLE='';
-var DEFAULT_MARKET_INTEL_HTML='';
-(function(){
-  var mit=document.getElementById('marketIntelTitle');if(mit)DEFAULT_MARKET_INTEL_TITLE=mit.innerHTML;
-  var mib=document.getElementById('marketIntelBody');if(mib)DEFAULT_MARKET_INTEL_HTML=mib.innerHTML;
-})();
-function renderList(id,items){
-  var el=document.getElementById(id);if(!el)return;
-  el.innerHTML='';
-  items.forEach(function(txt){
-    var d=document.createElement('div');d.className='li';
-    d.innerHTML='<span class="bull">&#8250;</span><textarea>'+txt+'</textarea>';
-    el.appendChild(d);
+function grow(ta){if(ta&&ta.tagName==='TEXTAREA'){ta.style.height='auto';ta.style.height=(ta.scrollHeight+4)+'px';}}
+function growAll(){setTimeout(function(){document.querySelectorAll('.view.on textarea').forEach(grow);},30);}
+
+function mondayOf(d){var x=new Date(d);var day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return x.toISOString().slice(0,10);}
+function weekLabel(iso){var d=new Date(iso+'T12:00:00');return 'Week of '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+async function loadWeekList(){
+  var h=curHotel();SAVEDWEEKS=[];
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?select=week_key&week_key=like.'+encodeURIComponent(h.slug+'|*')+'&order=week_key',{headers:authH()});
+    if(r.ok){SAVEDWEEKS=(await r.json()).map(function(x){return x.week_key.split('|')[1];}).sort();}
+  }catch(e){}
+}
+function stepWeek(dir){
+  flushSave();
+  var list=SAVEDWEEKS.slice();if(list.indexOf(WEEK)<0){list.push(WEEK);list.sort();}
+  var i=list.indexOf(WEEK)+dir;
+  if(i>=0&&i<list.length){loadWeek(list[i]);}
+  else if(dir>0){loadWeek(mondayOf(new Date(new Date(WEEK+'T12:00:00').getTime()+7*864e5)));}
+  else{loadWeek(mondayOf(new Date(new Date(WEEK+'T12:00:00').getTime()-7*864e5)));}
+}
+function goThisWeek(){flushSave();loadWeek(mondayOf(new Date()));}
+
+async function loadWeek(iso){
+  LOADING=true;WEEK=iso;el('weekLabel').textContent=weekLabel(iso);
+  var h=curHotel();BLOB={};
+  setSave('busy','Loading…');
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+encodeURIComponent(h.slug+'|'+iso)+'&select=data',{headers:authH()});
+    if(r.ok){var rows=await r.json();if(rows.length)BLOB=JSON.parse(rows[0].data)||{};}
+  }catch(e){}
+  applyBlob();
+  LOADING=false;DIRTY=false;
+  setSave('ok',Object.keys(BLOB).length?'Loaded':'New week. Start typing, it saves itself.');
+}
+
+function applyBlob(){
+  ['weekFocus','consultResponse','execSummary','marketSum','epicReport','ayminDid','ayminWin','ayminBlock'].forEach(function(id){var e=el(id);if(e)e.value='';});
+  ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){el(id).value=0;});
+  el('weekFocus').value=BLOB.weekFocus||'';
+  el('consultResponse').value=BLOB.consultResponse||'';
+  el('execSummary').value=BLOB.execSummary||'';
+  el('marketSum').value=BLOB.marketSum||'';
+  el('epicReport').value=BLOB.epicReport||'';
+  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){el(id).textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Metric '+id[2]:'');});
+  el('mktBody').innerHTML=BLOB.mktBodyV3||legacyRows(BLOB.mktBodyHTML,5)||'';
+  el('agBody').innerHTML=BLOB.agBodyV3||legacyRows(BLOB.agBodyHTML,4)||legacyRows(BLOB.ctBodyHTML,4)||'';
+  var log=BLOB.activityLog||[];var e0=log.find(function(x){return x.week===WEEK;});
+  if(e0){el('ayminDid').value=e0.did||'';el('ayminWin').value=e0.win||'';el('ayminBlock').value=e0.block||'';el('aCalls').value=e0.calls||0;el('aEmails').value=e0.emails||0;el('aSites').value=e0.sites||0;el('aContacts').value=e0.contacts||0;}
+  renderWOW();renderComments();renderOverview();growAll();
+}
+function legacyRows(html,cols){
+  if(!html)return '';
+  var tmp=document.createElement('tbody');tmp.innerHTML=html;var out='';
+  tmp.querySelectorAll('tr').forEach(function(tr){
+    var cells=[].slice.call(tr.children).map(function(td){return td.textContent.trim();}).filter(function(t,i){return i<cols;});
+    while(cells.length<cols)cells.push('');
+    out+='<tr>'+cells.map(function(c){return '<td contenteditable="true">'+esc(c)+'</td>';}).join('')+'</tr>';
   });
-  el.querySelectorAll('textarea').forEach(function(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});
+  return out;
 }
-renderList('wwList',['Aymin is making calls consistently across NYC, Miami, and Nashville','Good first contacts at McKinsey and Royal Caribbean achieved','House of Travel site visit confirmed','Written call script in place and being used']);
-renderList('cfList',['Amazon remains highest priority, outreach must start this week','Fedrooms access path should be corrected to CWTSATO','Agency conversations should lead with a defined rate position','Early calls should confirm decision-maker and booking flow']);
-renderList('laList',['GDS: Confirm updated HOD is visible across Sabre, Amadeus, and Travelport','Rates: Approve corporate rate range for agency outreach','Fedrooms: Decide go/no-go and align with CWTSATO path','Positioning: Align on what is being communicated in sales calls','Constraints: Confirm no availability or rate restrictions blocking bookings']);
+function addRow(id,cols){var tr=document.createElement('tr');tr.innerHTML=Array(cols).fill('<td contenteditable="true"></td>').join('');el(id).appendChild(tr);markDirty();}
 
-function addListItem(id){
-  var el=document.getElementById(id);
-  var d=document.createElement('div');d.className='li';
-  d.innerHTML='<span class="bull">&#8250;</span><textarea></textarea>';
-  el.appendChild(d);
-  var ta=d.querySelector('textarea');
-  ta.focus();
-  ta.addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
+function collectBlob(){
+  var out=Object.assign({},BLOB);
+  out.week=WEEK;out.hotel=curHotel().slug;out.schemaVersion=3;
+  out.weekFocus=el('weekFocus').value;out.consultResponse=el('consultResponse').value;
+  out.execSummary=el('execSummary').value;out.marketSum=el('marketSum').value;
+  out.epicReport=el('epicReport').value;
+  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){out[id]=el(id).textContent;});
+  out.mktBodyV3=el('mktBody').innerHTML;out.agBodyV3=el('agBody').innerHTML;
+  var entry={week:WEEK,label:'Wk '+weekLabel(WEEK).replace('Week of ',''),did:el('ayminDid').value.trim(),win:el('ayminWin').value.trim(),block:el('ayminBlock').value.trim(),calls:+el('aCalls').value||0,emails:+el('aEmails').value||0,sites:+el('aSites').value||0,contacts:+el('aContacts').value||0,submittedAt:new Date().toISOString()};
+  var log=out.activityLog||[];var i=log.findIndex(function(x){return x.week===WEEK;});
+  if(entry.did||entry.win||entry.block||entry.calls||entry.emails||entry.sites||entry.contacts){if(i>=0)log[i]=entry;else log.unshift(entry);}
+  out.activityLog=log;
+  return out;
 }
-function addRow(tbodyId,html){
-  var tb=document.getElementById(tbodyId);var tr=document.createElement('tr');tr.innerHTML=html;tb.appendChild(tr);
+function markDirty(){if(LOADING)return;DIRTY=true;setSave('busy','Saving…');clearTimeout(SAVETIMER);SAVETIMER=setTimeout(doSave,1800);}
+function flushSave(){if(DIRTY){clearTimeout(SAVETIMER);doSave();}}
+async function doSave(){
+  if(!SESSION||!WEEK)return;
+  var h=curHotel();BLOB=collectBlob();DIRTY=false;
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({week_key:h.slug+'|'+WEEK,data:JSON.stringify(BLOB),updated_at:new Date().toISOString()})});
+    if(r.ok){setSave('ok','Saved just now');if(SAVEDWEEKS.indexOf(WEEK)<0){SAVEDWEEKS.push(WEEK);SAVEDWEEKS.sort();}renderOverview();renderWOW();return;}
+  }catch(e){}
+  DIRTY=true;setSave('err','Not saved . check connection');
 }
-
-var activityLog=[];
-
-// ============ TASK REQUESTS ============
-function renderTaskRequests(){
-  var tb=document.getElementById('taskBody');
-  var empty=document.getElementById('taskEmpty');
-  if(!tb)return;
-  if(!taskRequests||taskRequests.length===0){
-    tb.innerHTML='';
-    if(empty)empty.style.display='block';
-    return;
-  }
-  if(empty)empty.style.display='none';
-  tb.innerHTML='';
-  // Sort: Open first, In Progress next, Done last; within group by submitted desc
-  var ordered=taskRequests.slice().sort(function(a,b){
-    var so={Open:0,'In Progress':1,Done:2,Cancelled:3};
-    if(so[a.status]!==so[b.status])return so[a.status]-so[b.status];
-    return (b.submittedAt||'').localeCompare(a.submittedAt||'');
-  });
-  ordered.forEach(function(t){
-    var tr=document.createElement('tr');
-    var prioCls=t.priority==='High'?'bg-r':t.priority==='Low'?'bg-b':'bg-a';
-    var statusCls=t.status==='Done'?'bg-g':t.status==='In Progress'?'bg-a':t.status==='Cancelled'?'bg-b':'bg-r';
-    var d=t.submittedAt?new Date(t.submittedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
-    tr.innerHTML=
-      '<td style="font-weight:600;color:#1B2E5E;">'+escapeHTML(t.title||'')+'</td>'+
-      '<td style="max-width:280px;white-space:normal;font-size:13px;">'+escapeHTML(t.description||'')+'</td>'+
-      '<td style="white-space:nowrap;font-size:13px;">'+escapeHTML(t.requestedBy||'-')+'</td>'+
-      '<td><span class="bg '+prioCls+'">'+escapeHTML(t.priority||'Medium')+'</span></td>'+
-      '<td>'+
-        '<select class="eo" onchange="updateTaskStatus(\''+t.id+'\',this.value)">'+
-          ['Open','In Progress','Done','Cancelled'].map(function(s){return '<option'+(s===t.status?' selected':'')+'>'+s+'</option>';}).join('')+
-        '</select>'+
-        '<span class="bg '+statusCls+' task-pill">'+escapeHTML(t.status||'Open')+'</span>'+
-      '</td>'+
-      '<td style="white-space:nowrap;font-size:12px;color:#6B7280;">'+d+'</td>'+
-      '<td style="max-width:220px;white-space:normal;">'+
-        '<textarea class="eo" style="min-height:50px;font-size:13px;" placeholder="EPIC notes / status update" onblur="updateTaskNote(\''+t.id+'\',this.value)">'+escapeHTML(t.note||'')+'</textarea>'+
-        '<div class="task-note-ro">'+escapeHTML(t.note||'-')+'</div>'+
-      '</td>'+
-      '<td><button class="eo" onclick="deleteTask(\''+t.id+'\')" title="Delete task" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:20px;line-height:1;">×</button></td>';
-    tb.appendChild(tr);
-  });
-  // Auto-resize task note textareas
-  setTimeout(function(){
-    document.querySelectorAll('#taskBody textarea').forEach(function(ta){
-      ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';
-    });
-  },20);
-}
-function escapeHTML(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-async function submitTaskRequest(){
-  var title=(document.getElementById('taskNewTitle').value||'').trim();
-  var desc=(document.getElementById('taskNewDesc').value||'').trim();
-  var prio=document.getElementById('taskNewPriority').value;
-  var by=(document.getElementById('taskNewBy').value||'').trim();
-  if(!title){setStatus('err','Please enter a task title.');return;}
-  var t={
-    id:'t_'+Date.now()+'_'+Math.floor(Math.random()*1000),
-    title:title,description:desc,priority:prio,requestedBy:by,
-    status:'Open',note:'',
-    submittedAt:new Date().toISOString()
-  };
-  taskRequests.unshift(t);
-  document.getElementById('taskNewTitle').value='';
-  document.getElementById('taskNewDesc').value='';
-  document.getElementById('taskNewBy').value='';
-  document.getElementById('taskNewPriority').value='Medium';
-  renderTaskRequests();
-  setStatus('busy','Submitting task request...');
-  var ok=await saveData(true);
-  if(ok)setStatus('ok','Task request submitted. EPIC will see it.');
-  else setStatus('err','Saved locally, portal sync failed.');
-}
-function updateTaskStatus(id,status){
-  var t=taskRequests.find(function(x){return x.id===id;});
-  if(!t)return;
-  t.status=status;
-  renderTaskRequests();
-  saveData(true);
-}
-function updateTaskNote(id,note){
-  var t=taskRequests.find(function(x){return x.id===id;});
-  if(!t)return;
-  if(t.note===note)return;
-  t.note=note;
-  saveData(true);
-}
-function deleteTask(id){
-  if(!confirm('Delete this task request?'))return;
-  taskRequests=taskRequests.filter(function(x){return x.id!==id;});
-  renderTaskRequests();
-  saveData(true);
-}
-
-// ============ AYMIN READ VIEW ============
-function renderAyminReadView(){
-  var el=document.getElementById('ayminReadContent');
-  if(!el)return;
-  if(!activityLog||activityLog.length===0){
-    el.innerHTML='<div class="no-update-msg">No update submitted for this week yet. Ask '+escapeHTML(mgrFirst())+' to sign in, fill in the weekly update, and hit Submit My Update.</div>';
-    return;
-  }
-  var e=activityLog[0];
-  var html='';
-  html+='<div class="ayr-stats">';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">Calls Made</div><div class="ayr-stat-value">'+(e.calls||0)+'</div></div>';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">Emails Sent</div><div class="ayr-stat-value">'+(e.emails||0)+'</div></div>';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">Site Visits</div><div class="ayr-stat-value">'+(e.sites||0)+'</div></div>';
-  html+='<div class="ayr-stat"><div class="ayr-stat-label">New Contacts</div><div class="ayr-stat-value">'+(e.contacts||0)+'</div></div>';
-  html+='</div>';
-  html+='<div class="ayr-field"><div class="ayr-label">What I did this week</div><div class="ayr-value">'+(e.did?escapeHTML(e.did):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
-  html+='<div class="g2">';
-  html+='<div class="ayr-field" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="ayr-label" style="color:#16A34A;">Top win or progress</div><div class="ayr-value">'+(e.win?escapeHTML(e.win):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
-  html+='<div class="ayr-field" style="background:#FFFBEB;border-color:#FDE68A;"><div class="ayr-label" style="color:#D97706;">Biggest obstacle</div><div class="ayr-value">'+(e.block?escapeHTML(e.block):'<em style="color:#9CA3AF">Not filled in</em>')+'</div></div>';
-  html+='</div>';
-  if(e.crmFile){
-    var fileHtml=e.crmPath?'<span class="crm-link" onclick="downloadCrm(\''+e.crmPath+'\')">'+escapeHTML(e.crmFile)+'</span> <span style="font-size:12px;color:#6B7280;">(click to open)</span>':escapeHTML(e.crmFile);
-    html+='<div class="ayr-field"><div class="ayr-label">CRM File Attached</div><div class="ayr-value" style="color:#16A34A;">'+fileHtml+'</div></div>';
-  }
-  html+='<p style="font-size:12px;color:#9CA3AF;margin-top:10px;">Submitted for: '+escapeHTML(e.label||'')+(e.submittedAt?(' at '+new Date(e.submittedAt).toLocaleString()):'')+'</p>';
-  el.innerHTML=html;
-}
-
-// ============ AYMIN LOG SUBMISSION (auto-saves) ============
-async function logActivity(){
-  var week=getWeekKey();
-  if(!week){setStatus('err','Please select a date first.');return;}
-  var wkLabel=getWeekLabel();
-  var fileInput=document.getElementById('ayminFile');
-  var theFile=fileInput&&fileInput.files[0]?fileInput.files[0]:null;
-  var didVal=document.getElementById('ayminDid').value.trim();
-  var winVal=document.getElementById('ayminWin').value.trim();
-  var blockVal=document.getElementById('ayminBlock').value.trim();
-  if(!didVal&&!winVal&&!blockVal){setStatus('err','Please fill in at least one field before submitting.');return;}
-  var crmPath='';
-  if(theFile){
-    setStatus('busy','Uploading your file...');
-    crmPath=await uploadCrmFile(theFile)||'';
-    if(!crmPath)setStatus('err','File upload failed; submitting your update without it.');
-  }
-  var entry={week:week,label:wkLabel,did:didVal,win:winVal,block:blockVal,calls:parseInt(document.getElementById('aCalls').value)||0,emails:parseInt(document.getElementById('aEmails').value)||0,sites:parseInt(document.getElementById('aSites').value)||0,contacts:parseInt(document.getElementById('aContacts').value)||0,crmFile:theFile?theFile.name:'',crmPath:crmPath,submittedAt:new Date().toISOString()};
-  var idx=activityLog.findIndex(function(e){return e.week===week;});
-  if(idx>=0)activityLog[idx]=entry;else activityLog.unshift(entry);
-  renderWOW();
-  renderAyminReadView();
-  setStatus('busy','Submitting and saving to portal...');
-  var saved=await saveData(true);
-  if(saved){
-    setStatus('ok','Update saved for '+wkLabel+'. The consultant can now see it. You can edit above and resubmit anytime.');
-    // Form fields stay populated so Aymin can verify and edit her submission
-  }else{
-    setStatus('err','Your update could not be saved to the portal. Please screenshot what you typed and contact Judith.');
-  }
-}
+document.addEventListener('input',function(e){if(e.target.closest('.main'))markDirty();if(e.target.tagName==='TEXTAREA')grow(e.target);});
 
 function renderWOW(){
-  var tb=document.getElementById('wowBody');
-  if(!tb)return;
-  if(!activityLog||activityLog.length===0){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';return;}
-  tb.innerHTML='';
-  activityLog.forEach(function(e,i){
-    var prev=activityLog[i+1];
-    function cell(val,key){if(!prev)return '<td>'+val+'</td>';var cls=val>prev[key]?'up':val<prev[key]?'down':'';var arrow=val>prev[key]?' ↑':val<prev[key]?' ↓':'';return '<td class="'+cls+'">'+val+arrow+'</td>';}
-    var tr=document.createElement('tr');
-    tr.innerHTML='<td style="white-space:nowrap;font-weight:600">'+escapeHTML(e.label||'')+'</td>'+cell(e.calls||0,'calls')+cell(e.emails||0,'emails')+cell(e.sites||0,'sites')+cell(e.contacts||0,'contacts');
-    tb.appendChild(tr);
-    var hasNarrative=(e.did&&e.did.trim())||(e.win&&e.win.trim())||(e.block&&e.block.trim());
-    if(hasNarrative){
-      var tr2=document.createElement('tr');
-      tr2.className='wow-narrative-row';
-      var didCell='<div class="wow-nar-card"><div class="wow-nar-label">What I Did</div><div class="wow-nar-text">'+(e.did?escapeHTML(e.did):'<em style="color:#9CA3AF">-</em>')+'</div></div>';
-      var winCell='<div class="wow-nar-card" style="background:#F0FDF4;border-color:#BBF7D0;"><div class="wow-nar-label" style="color:#16A34A;">Top Win</div><div class="wow-nar-text">'+(e.win?escapeHTML(e.win):'<em style="color:#9CA3AF">-</em>')+'</div></div>';
-      var blkCell='<div class="wow-nar-card" style="background:#FFFBEB;border-color:#FDE68A;"><div class="wow-nar-label" style="color:#D97706;">Obstacle</div><div class="wow-nar-text">'+(e.block?escapeHTML(e.block):'<em style="color:#9CA3AF">-</em>')+'</div></div>';
-      tr2.innerHTML='<td colspan="5" style="padding:0 8px 14px 8px;background:#FAFAF7;"><div class="wow-nar-grid">'+didCell+winCell+blkCell+'</div></td>';
-      tb.appendChild(tr2);
-    }
-  });
+  var log=(BLOB.activityLog||[]).slice(0,10);var tb=el('wowBody');
+  if(!log.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--soft);">No activity logged yet.</td></tr>';return;}
+  tb.innerHTML=log.map(function(e){return '<tr><td style="font-weight:600;white-space:nowrap;">'+esc(e.label||e.week)+'</td><td>'+(e.calls||0)+'</td><td>'+(e.emails||0)+'</td><td>'+(e.sites||0)+'</td><td>'+(e.contacts||0)+'</td></tr>';}).join('');
+}
+function renderOverview(){
+  el('ovFocus').textContent=el('weekFocus').value||'No focus set for this week yet.';
+  var h=curHotel();
+  if(h.sales_coverage==='epic'){el('ovUpdate').textContent=el('epicReport').value||'No EPIC report for this week yet.';}
+  else{var log=BLOB.activityLog||[];var e0=log[0];el('ovUpdate').textContent=e0&&e0.did?e0.did:'No update submitted yet.';}
+  var open=ACTIONS.filter(function(a){return a.status==='open'||a.status==='in_progress';});
+  el('ovRequests').innerHTML=open.length?open.slice(0,5).map(function(a){return '• '+esc(a.title)+' <span class="pill '+(a.status==='in_progress'?'amber':'gray')+'">'+a.status.replace('_',' ')+'</span>';}).join('<br>'):'Nothing open. Submit one in Requests.';
 }
 
+function renderComments(){
+  var list=el('cList');var html=BLOB.commentsV3||[];
+  if(typeof html==='string')html=[];
+  if(!html.length&&BLOB.commentsHTML){list.innerHTML='<div class="citem"><div class="cmeta">Earlier comments</div><div style="font-size:13px;">'+BLOB.commentsHTML+'</div></div>';return;}
+  list.innerHTML=html.length?html.map(function(c){
+    var em=c.em||'';var url=em?avatarUrl(em):null;
+    var name=(em&&PROFILES[em]&&PROFILES[em].display_name)||c.by;
+    var av=url?'<span class="cav"><img src="'+url+'" alt=""></span>':'<span class="cav">'+esc((name||'?').slice(0,2).toUpperCase())+'</span>';
+    return '<div class="citem"><div class="cmeta">'+av+'<span class="cauthor">'+esc(name)+'</span><span>'+esc(c.at)+'</span></div><div style="font-size:13px;margin-left:36px;">'+esc(c.text)+'</div></div>';
+  }).join(''):'<p class="hint">No comments for this week yet.</p>';
+}
 function postComment(){
-  var author=document.getElementById('cAuthor').value.trim()||'Advisor';
-  var role=document.getElementById('cRole').value;
-  var body=document.getElementById('cText').value.trim();
-  if(!body)return;
-  var now=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  var cls=role==='Advisor'?'bg-b':role==='General Manager'?'bg-g':'bg-a';
-  var d=document.createElement('div');d.className='citem';
-  d.innerHTML='<div class="cmeta"><span class="cauthor">'+escapeHTML(author)+'</span><span class="bg '+cls+'" style="font-size:12px">'+escapeHTML(role)+'</span><span class="cdate">'+now+'</span></div><div class="cbody" contenteditable="true">'+escapeHTML(body)+'</div>';
-  var list=document.getElementById('cList');
-  // Remove empty placeholder if present
-  if(list.children.length===1&&list.children[0].textContent&&list.children[0].textContent.indexOf('No comments')>=0)list.innerHTML='';
-  list.appendChild(d);
-  document.getElementById('cText').value='';
-  saveData(true);
+  var t=el('cText').value.trim();if(!t)return;
+  if(!Array.isArray(BLOB.commentsV3))BLOB.commentsV3=[];
+  BLOB.commentsV3.push({by:myName(),em:EMAIL,at:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}),text:t});
+  el('cText').value='';renderComments();markDirty();
 }
 
-// ============ DATA COLLECT / APPLY / CLEAR ============
-function getTableHTML(id){var el=document.getElementById(id);return el?el.innerHTML:'';}
-function getCommentsHTML(){var el=document.getElementById('cList');return el?el.innerHTML:'';}
-
-function collectData(){
-  return{
-    week:getWeekKey(),
-    hotel:getHotelKey(),
-    badgeText:document.getElementById('badgeText').textContent,
-    ml1:document.getElementById('ml1').textContent,
-    ml2:document.getElementById('ml2').textContent,
-    ml3:document.getElementById('ml3').textContent,
-    ml4:document.getElementById('ml4').textContent,
-    ms1:document.getElementById('ms1').textContent,
-    ms2:document.getElementById('ms2').textContent,
-    ms3:document.getElementById('ms3').textContent,
-    ms4:document.getElementById('ms4').textContent,
-    titleText:document.getElementById('titleText').textContent,
-    hotelText:document.getElementById('hotelText').textContent,
-    managerText:document.getElementById('managerText').textContent,
-    sourceText:document.getElementById('sourceText').textContent,
-    periodText:document.getElementById('periodText').textContent,
-    focusText:document.getElementById('focusText').textContent,
-    m1:document.getElementById('m1').textContent,
-    m2:document.getElementById('m2').textContent,
-    m3:document.getElementById('m3').textContent,
-    m4:document.getElementById('m4').textContent,
-    execSummary:document.getElementById('execSummary').value,
-    marketSum:document.getElementById('marketSum').value,
-    strengthsTxt:document.getElementById('strengthsTxt').value,
-    guidanceTxt:document.getElementById('guidanceTxt').value,
-    notesTxt:document.getElementById('notesTxt').value,
-    weekFocus:document.getElementById('weekFocus').value,
-    consultResponse:document.getElementById('consultResponse').value,
-    wwList:Array.from(document.querySelectorAll('#wwList textarea')).map(function(t){return t.value;}),
-    cfList:Array.from(document.querySelectorAll('#cfList textarea')).map(function(t){return t.value;}),
-    laList:Array.from(document.querySelectorAll('#laList textarea')).map(function(t){return t.value;}),
-    marketIntelTitle:(document.getElementById('marketIntelTitle')?document.getElementById('marketIntelTitle').innerHTML:''),
-    marketIntelBodyHTML:getTableHTML('marketIntelBody'),
-    mktBodyHTML:getTableHTML('mktBody'),
-    agBodyHTML:getTableHTML('agBody'),
-    ctBodyHTML:getTableHTML('ctBody'),
-    acBodyHTML:getTableHTML('acBody'),
-    commentsHTML:getCommentsHTML(),
-    activityLog:activityLog,
-    taskRequests:taskRequests,
-    schemaVersion:2
-  };
-}
-
-function applyData(d){
-  if(!d)return;
-  ['titleText','hotelText','managerText','sourceText','periodText','focusText','badgeText','m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.textContent=d[id];});
-  // Older saves have no KPI labels — reset them to this hotel's defaults so labels from another hotel never linger
-  if(d.ml1===undefined)resetKpiLabels();
-  ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse'].forEach(function(id){var el=document.getElementById(id);if(el&&d[id]!==undefined)el.value=d[id];});
-  if(d.wwList)renderList('wwList',d.wwList);
-  if(d.cfList)renderList('cfList',d.cfList);
-  if(d.laList)renderList('laList',d.laList);
-  // Legacy saves before this field existed get the original April defaults; new saves restore exactly what was saved
-  if(d.marketIntelTitle!==undefined){var mit=document.getElementById('marketIntelTitle');if(mit)mit.innerHTML=d.marketIntelTitle;}
-  else{var mit2=document.getElementById('marketIntelTitle');if(mit2&&DEFAULT_MARKET_INTEL_TITLE)mit2.innerHTML=DEFAULT_MARKET_INTEL_TITLE;}
-  if(d.marketIntelBodyHTML!==undefined){var mib=document.getElementById('marketIntelBody');if(mib)mib.innerHTML=d.marketIntelBodyHTML;}
-  else{var mib2=document.getElementById('marketIntelBody');if(mib2&&DEFAULT_MARKET_INTEL_HTML)mib2.innerHTML=DEFAULT_MARKET_INTEL_HTML;}
-  if(d.mktBodyHTML!==undefined){var el1=document.getElementById('mktBody');if(el1)el1.innerHTML=d.mktBodyHTML;}
-  if(d.agBodyHTML!==undefined){var el2=document.getElementById('agBody');if(el2)el2.innerHTML=d.agBodyHTML;}
-  if(d.ctBodyHTML!==undefined){var el3=document.getElementById('ctBody');if(el3)el3.innerHTML=d.ctBodyHTML;}
-  if(d.acBodyHTML!==undefined){var el4=document.getElementById('acBody');if(el4)el4.innerHTML=d.acBodyHTML;}
-  if(d.commentsHTML!==undefined){var cl=document.getElementById('cList');if(cl)cl.innerHTML=d.commentsHTML;}
-  activityLog=d.activityLog||[];
-  taskRequests=d.taskRequests||[];
-  // Pre-fill Aymin's input form with the current week's saved entry so she can see and edit what she submitted
-  var currentWeek=getWeekKey();
-  var existingEntry=activityLog.find(function(e){return e.week===currentWeek;});
-  if(existingEntry){
-    var didEl=document.getElementById('ayminDid');if(didEl)didEl.value=existingEntry.did||'';
-    var winEl=document.getElementById('ayminWin');if(winEl)winEl.value=existingEntry.win||'';
-    var blkEl=document.getElementById('ayminBlock');if(blkEl)blkEl.value=existingEntry.block||'';
-    var cEl=document.getElementById('aCalls');if(cEl)cEl.value=existingEntry.calls||0;
-    var eEl=document.getElementById('aEmails');if(eEl)eEl.value=existingEntry.emails||0;
-    var sEl=document.getElementById('aSites');if(sEl)sEl.value=existingEntry.sites||0;
-    var nEl=document.getElementById('aContacts');if(nEl)nEl.value=existingEntry.contacts||0;
-  }
-  renderWOW();
-  renderAyminReadView();
-  renderTaskRequests();
-  autoSizeAllTextareas();
-}
-
-function resetKpiLabels(){
-  // Market defaults for Agency 360 hotels, generic editable labels for others
-  var noA=document.body.classList.contains('no-a360');
-  var mls=noA?['Key Metric 1','Key Metric 2','Key Metric 3','Key Metric 4']:['Total Market RNs','Hotel GDS','Compset GDS','Revenue Opportunity'];
-  var mss=noA?['','','','']:['Next 90 days','Bookings captured','Room nights','At 10% capture'];
-  ['ml1','ml2','ml3','ml4'].forEach(function(id,i){var el=document.getElementById(id);if(el)el.textContent=mls[i];});
-  ['ms1','ms2','ms3','ms4'].forEach(function(id,i){var el=document.getElementById(id);if(el)el.textContent=mss[i];});
-}
-function clearData(){
-  ['titleText','sourceText','periodText','focusText'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
-  ['m1','m2','m3','m4'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
-  resetKpiLabels();
-  var bt=document.getElementById('badgeText');if(bt)bt.textContent='Sales Advisory Brief';
-  ['execSummary','marketSum','strengthsTxt','guidanceTxt','notesTxt','weekFocus','consultResponse','ayminDid','ayminWin','ayminBlock','taskNewTitle','taskNewDesc'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  ['aCalls','aEmails','aSites','aContacts'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=0;});
-  renderList('wwList',[]);renderList('cfList',[]);renderList('laList',[]);
-  ['mktBody','agBody','ctBody','acBody'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='';});
-  var mit=document.getElementById('marketIntelTitle');if(mit)mit.innerHTML='Market Intelligence Highlights';
-  var mib=document.getElementById('marketIntelBody');
-  if(mib){
-    var blankCard=function(label){return '<div style="background:white;border:1px solid #E5E5E1;border-radius:10px;padding:14px;">'+
-      '<div contenteditable="true" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:6px;">'+label+'</div>'+
-      '<div contenteditable="true" style="font-size:14px;font-weight:700;color:#1B2E5E;">-</div>'+
-      '<div contenteditable="true" style="font-size:13px;color:#374151;margin-top:4px;">No data for this week. Upload an Agency 360 report or enter manually.</div>'+
-      '<div contenteditable="true" style="font-size:12px;color:#6B7280;margin-top:4px;"></div>'+
-    '</div>';};
-    mib.innerHTML=blankCard('New Account, Act Now')+blankCard('Compset Moving In')+blankCard('Growing Fast')+blankCard('Local Warm Path');
-  }
-  var wow=document.getElementById('wowBody');
-  if(wow)wow.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No updates logged yet.</td></tr>';
-  var cList=document.getElementById('cList');
-  if(cList)cList.innerHTML='<div style="text-align:center;color:#9CA3AF;padding:20px;font-size:13px;">No comments for this week yet.</div>';
-  activityLog=[];
-  taskRequests=[];
-  comments=[];
-  renderWOW();
-  renderAyminReadView();
-  renderTaskRequests();
-  autoSizeAllTextareas();
-}
-
-// ============ SAVE / LOAD ============
-async function saveData(silent){
-  var week=getWeekKey();
-  if(!week){setStatus('err','Please select a date first.');return false;}
-  if(!SESSION){setStatus('err','You are signed out. Refresh the page and sign in again.');return false;}
-  if(!silent)setStatus('busy','Saving...');
-  var wkLabel=getWeekLabel();
-  var hotel=getHotelKey();
-  var weekKey=hotel+'|'+week;
-  var json=JSON.stringify(collectData());
+async function loadActions(){
+  var h=curHotel();ACTIONS=[];
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({week_key:weekKey,data:json,updated_at:new Date().toISOString()})});
-    if(res.ok){
-      try{localStorage.setItem('epic_'+weekKey,json);}catch(e){}
-      if(!silent)setStatus('ok','Saved to portal, '+wkLabel);
-      return true;
-    }else{
-      var errTxt=await res.text();
-      console.warn('Supabase save error:',res.status,errTxt);
-    }
-  }catch(e){console.warn('Supabase save exception:',e);}
-  // Portal save failed — keep a local copy so nothing typed is lost, but report failure
-  try{localStorage.setItem('epic_'+weekKey,json);}catch(e){}
-  setStatus('err','Not saved to portal for '+wkLabel+'. A copy is kept on this device; check your connection and hit Save again.');
-  return false;
+    var r=await fetch(SUPA_URL+'/rest/v1/actions?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&order=created_at.desc',{headers:authH()});
+    if(r.ok)ACTIONS=await r.json();
+  }catch(e){}
+  renderActions();renderOverview();
+}
+function renderActions(){
+  var tb=el('acBodyList');var open=ACTIONS.filter(function(a){return a.status!=='cancelled';});
+  el('acEmpty').style.display=open.length?'none':'block';
+  var badge=ACTIONS.filter(function(a){return a.status==='open';}).length;
+  el('reqBadge').style.display=badge?'inline':'none';el('reqBadge').textContent=badge;
+  tb.innerHTML=open.map(function(a){
+    var overdue=a.due_date&&a.status!=='done'&&a.due_date<new Date().toISOString().slice(0,10);
+    return '<tr><td><strong>'+esc(a.title)+'</strong>'+(a.detail?'<br><span style="color:var(--mut);font-size:12px;">'+esc(a.detail)+'</span>':'')+'</td>'+
+      '<td><span class="pill '+(a.owner==='epic'?'blue':'green')+'">'+(a.owner==='epic'?'EPIC':'Hotel')+'</span></td>'+
+      '<td class="'+(overdue?'overdue':'')+'" style="white-space:nowrap;">'+(a.due_date||'')+(overdue?' !':'')+'</td>'+
+      '<td><select class="always-edit" style="width:auto;padding:5px 8px;font-size:12px;" onchange="setActionStatus(\''+a.id+'\',this.value)">'+['open','in_progress','done','cancelled'].map(function(s){return '<option value="'+s+'"'+(s===a.status?' selected':'')+'>'+s.replace('_',' ')+'</option>';}).join('')+'</select></td>'+
+      '<td><button class="rowbtn edit-only" onclick="delAction(\''+a.id+'\')">×</button></td></tr>';
+  }).join('');
+}
+async function addAction(){
+  var t=el('acTitle').value.trim();if(!t){setSave('err','Give the request a title.');return;}
+  var body={hotel_slug:curHotel().slug,title:t,detail:el('acDetail').value.trim(),owner:el('acOwner').value,due_date:el('acDue').value||null,created_by:EMAIL};
+  var r=await fetch(SUPA_URL+'/rest/v1/actions',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(body)});
+  if(r.ok){el('acTitle').value='';el('acDetail').value='';el('acDue').value='';loadActions();setSave('ok','Request submitted');}
+  else setSave('err','Could not submit. Has the v3 database script been run?');
+}
+async function setActionStatus(id,status){
+  await fetch(SUPA_URL+'/rest/v1/actions?id=eq.'+id,{method:'PATCH',headers:authH({'Content-Type':'application/json'}),body:JSON.stringify({status:status,updated_at:new Date().toISOString()})});
+  loadActions();
+}
+async function delAction(id){
+  if(!confirm('Delete this item?'))return;
+  await fetch(SUPA_URL+'/rest/v1/actions?id=eq.'+id,{method:'DELETE',headers:authH()});
+  loadActions();
 }
 
-async function loadData(){
-  var week=getWeekKey();
-  if(!week){setStatus('err','Please select a date first.');return;}
-  setStatus('busy','Loading...');
-  var wkLabel=getWeekLabel();
-  var hotel=getHotelKey();
-  var weekKey=hotel+'|'+week;
+async function loadFiles(){
+  var h=curHotel();var list=el('fileList');
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/epic_dashboard?week_key=eq.'+encodeURIComponent(weekKey)+'&select=data',{headers:authHeaders()});
-    if(res.ok){
-      var rows=await res.json();
-      if(rows&&rows.length>0){applyData(JSON.parse(rows[0].data));setStatus('ok','Loaded '+wkLabel);return;}
-    }
-  }catch(e){console.warn('Load error:',e);}
-  var raw=localStorage.getItem('epic_'+weekKey)||(hotel==='uma'?localStorage.getItem('epic_'+week):null);
-  if(raw){applyData(JSON.parse(raw));setStatus('ok','Loaded locally for '+wkLabel);return;}
-  clearData();
-  setStatus('err','No data saved for '+wkLabel+' yet. Fill in fields and save, or pick a past date with data.');
+    var r=await fetch(SUPA_URL+'/rest/v1/hotel_files?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&order=created_at.desc',{headers:authH()});
+    var rows=r.ok?await r.json():[];
+    list.innerHTML=rows.length?rows.map(function(f){return '<div class="filerow"><span class="flink" onclick="openFile(\''+f.path+'\')">'+esc(f.label)+'</span><span style="color:var(--soft);font-size:12px;margin-left:auto;">'+new Date(f.created_at).toLocaleDateString()+' · '+esc(f.uploaded_by||'')+'</span></div>';}).join(''):'<p class="hint">No files yet.</p>';
+  }catch(e){list.innerHTML='<p class="hint">Files unavailable.</p>';}
+}
+async function uploadFile(){
+  var inp=el('fileInput');var f=inp.files[0];if(!f){setSave('err','Choose a file first.');return;}
+  setSave('busy','Uploading…');
+  var path=curHotel().slug+'/library/'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  var up=await sb.storage.from('crm-uploads').upload(path,f);
+  if(up.error){setSave('err','Upload failed.');return;}
+  await fetch(SUPA_URL+'/rest/v1/hotel_files',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({hotel_slug:curHotel().slug,path:path,label:f.name,uploaded_by:EMAIL})});
+  inp.value='';setSave('ok','Uploaded');loadFiles();
+}
+async function openFile(path){
+  var r=await sb.storage.from('crm-uploads').createSignedUrl(path,3600);
+  if(r.data&&r.data.signedUrl)window.open(r.data.signedUrl,'_blank');
 }
 
-// ============ INIT ============
-document.getElementById('weekDate').addEventListener('change',function(){loadData();});
-document.querySelectorAll('textarea').forEach(function(ta){
-  ta.addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px';});
-  ta.style.height='auto';
-  ta.style.height=ta.scrollHeight+'px';
-});
-renderTaskRequests();
+function fillSettings(){
+  var h=curHotel();
+  el('setName').value=h.name;el('setManager').value=h.manager||'';
+  el('setCoverage').value=h.sales_coverage||'inhouse';
+  el('setA360').value=String(h.has_agency360!==false);
+  loadMembers();
+}
+async function saveHotelSettings(){
+  var h=curHotel();
+  var body={name:el('setName').value.trim(),manager:el('setManager').value.trim(),sales_coverage:el('setCoverage').value,has_agency360:el('setA360').value==='true'};
+  var r=await fetch(SUPA_URL+'/rest/v1/hotels?slug=eq.'+encodeURIComponent(h.slug),{method:'PATCH',headers:authH({'Content-Type':'application/json'}),body:JSON.stringify(body)});
+  var m=el('setMsg');
+  if(r.ok){Object.assign(h,body);m.className='msg ok';m.textContent='Saved';onHotelChange();}
+  else{m.className='msg err';m.textContent='Could not save';}
+}
+async function loadMembers(){
+  var tb=el('mmBody');tb.innerHTML='';
+  var r=await fetch(SUPA_URL+'/rest/v1/hotel_members?hotel_slug=eq.'+encodeURIComponent(curHotel().slug)+'&select=email,role&order=email',{headers:authH()});
+  var rows=r.ok?await r.json():[];
+  var v=await fetch(SUPA_URL+'/rest/v1/page_views?hotel_slug=eq.'+encodeURIComponent(curHotel().slug),{headers:authH()});
+  var views=v.ok?await v.json():[];
+  tb.innerHTML=rows.map(function(m){
+    var seen=views.find(function(x){return x.email===m.email;});
+    return '<tr><td>'+esc(m.email)+'</td><td>'+m.role.replace('_',' ')+'</td><td style="color:var(--mut);font-size:12px;">'+(seen?new Date(seen.last_seen).toLocaleDateString():'never')+'</td><td><button class="rowbtn" onclick="removeMember(\''+m.email+'\')">×</button></td></tr>';
+  }).join('')||'<tr><td colspan="4" style="color:var(--soft);">No members yet.</td></tr>';
+}
+async function addMember(){
+  var email=(el('mmEmail').value||'').trim().toLowerCase();var m=el('mmMsg');
+  if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email.';return;}
+  var r=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:curHotel().slug,role:el('mmRole').value})});
+  if(r.ok){m.className='msg ok';m.textContent=email+' added. They can now sign in.';el('mmEmail').value='';loadMembers();}
+  else{m.className='msg err';m.textContent='Could not add.';}
+}
+async function removeMember(email){
+  if(!confirm('Remove '+email+'?'))return;
+  await fetch(SUPA_URL+'/rest/v1/hotel_members?email=eq.'+encodeURIComponent(email)+'&hotel_slug=eq.'+encodeURIComponent(curHotel().slug),{method:'DELETE',headers:authH()});
+  loadMembers();
+}
+function addNewHotel(){showView('members');setTimeout(function(){el('nhName').focus();},100);}
+async function createHotel(){
+  var m=el('nhMsg');var name=el('nhName').value.trim();
+  if(!name){m.className='msg err';m.textContent='Give the hotel a name.';return;}
+  var slug=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24);
+  if(HOTELS.find(function(h){return h.slug===slug;})){m.className='msg err';m.textContent='A hotel with a similar name already exists.';return;}
+  var body={slug:slug,name:name,manager:el('nhManager').value.trim(),has_agency360:el('nhA360').value==='true',sales_coverage:el('nhCoverage').value};
+  var r=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(body)});
+  if(!r.ok){m.className='msg err';m.textContent='Could not create hotel.';return;}
+  HOTELS.push(body);
+  var o=document.createElement('option');o.value=slug;o.textContent=name;el('hotelSelect').appendChild(o);
+  el('nhName').value='';el('nhManager').value='';
+  m.className='msg ok';m.textContent=name+' created. Now add its members below.';
+  el('hotelSelect').value=slug;onHotelChange();showView('members');
+}
 
-// Sign-in gate: nothing loads until a valid session exists.
+function toggleTheme(){
+  var dark=!document.body.classList.contains('dark');
+  document.body.classList.toggle('dark',dark);
+  el('themeBtn').textContent=dark?'Light mode':'Dark mode';
+  try{localStorage.setItem('pv_theme',dark?'dark':'light');}catch(e){}
+}
+(function(){try{if(localStorage.getItem('pv_theme')==='dark'){document.body.classList.add('dark');el('themeBtn').textContent='Light mode';}}catch(e){}})();
+
+window.addEventListener('beforeunload',function(){flushSave();});
 (async function(){
-  var got=await sb.auth.getSession();
-  SESSION=got.data?got.data.session:null;
-  sb.auth.onAuthStateChange(function(event,s){
-    var hadSession=!!SESSION;
-    SESSION=s;
-    if(s&&!hadSession)onSignedIn();
-    if(!s&&event==='SIGNED_OUT')showLogin();
-  });
-  if(SESSION)onSignedIn();
-  else showLogin();
+  var got=await sb.auth.getSession();SESSION=got.data?got.data.session:null;
+  sb.auth.onAuthStateChange(function(ev,s){var had=!!SESSION;SESSION=s;if(s&&!had)onSignedIn();if(!s&&ev==='SIGNED_OUT')el('loginOverlay').style.display='flex';});
+  if(SESSION)onSignedIn();else el('loginOverlay').style.display='flex';
+  var h0=(location.hash||'').slice(1);
+  if(h0&&el('view-'+h0))showView(h0);
 })();
 </script>
 </body>
