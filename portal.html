@@ -133,9 +133,11 @@ body:not(.cov-epic) .epic-only{display:none!important;}
 
 <div class="layout">
   <div class="sidebar">
-    <button class="nav on" id="nav-overview" onclick="showView('overview')">Overview</button>
+    <button class="nav on" id="nav-home" onclick="showView('home')">Home</button>
+    <button class="nav" id="nav-overview" onclick="showView('overview')">Overview</button>
     <button class="nav" id="nav-sync" onclick="showView('sync')">Weekly sync</button>
     <button class="nav a360-only" id="nav-market" onclick="showView('market')">Market intel</button>
+    <button class="nav" id="nav-reports" onclick="showView('reports')">Reports</button>
     <button class="nav" id="nav-requests" onclick="showView('requests')">Requests <span class="badge" id="reqBadge" style="display:none;">0</span></button>
     <button class="nav" id="nav-comments" onclick="showView('comments')">Comments</button>
     <button class="nav" id="nav-files" onclick="showView('files')">Files</button>
@@ -160,7 +162,15 @@ body:not(.cov-epic) .epic-only{display:none!important;}
       <button class="wkbtn" onclick="goThisWeek()">This week</button>
     </div>
 
-    <div class="view on" id="view-overview">
+    <div class="view on" id="view-home">
+      <div class="card">
+        <h3 id="homeGreet">Welcome</h3>
+        <p class="hint" id="homeSub" style="margin-bottom:0;">Your engagement with EPIC at a glance.</p>
+      </div>
+      <div class="grid2" id="svcCards"></div>
+    </div>
+
+    <div class="view" id="view-overview">
       <div class="cards">
         <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Metric 1</div><div class="kv" id="m1" contenteditable="true"></div><div class="ks" id="ms1" contenteditable="true"></div></div>
         <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Metric 2</div><div class="kv" id="m2" contenteditable="true"></div><div class="ks" id="ms2" contenteditable="true"></div></div>
@@ -284,6 +294,46 @@ body:not(.cov-epic) .epic-only{display:none!important;}
       </div>
     </div>
 
+    <div class="view" id="view-reports">
+      <div class="card edit-only">
+        <h3>Attach a report</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <select id="rpService" style="width:auto;">
+            <option value="sales">Sales advisory</option>
+            <option value="revenue">Revenue management</option>
+            <option value="marketing">Digital marketing</option>
+            <option value="tech">Tech stack and audits</option>
+            <option value="general">General</option>
+          </select>
+          <input type="date" id="rpDate" style="width:auto;">
+          <input type="file" id="rpFile" style="flex:1;min-width:200px;">
+          <button class="primary" onclick="uploadReport()">Attach</button>
+        </div>
+        <p class="hint" style="margin-top:8px;margin-bottom:0;">The file name becomes the report title. Clients see it right away on their Home page.</p>
+      </div>
+      <div class="card">
+        <h3>Reports</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+          <select id="rpFilter" class="always-edit" style="width:auto;" onchange="renderReports()">
+            <option value="all">All services</option>
+            <option value="sales">Sales advisory</option>
+            <option value="revenue">Revenue management</option>
+            <option value="marketing">Digital marketing</option>
+            <option value="tech">Tech stack and audits</option>
+            <option value="general">General</option>
+          </select>
+          <select id="rpRange" class="always-edit" style="width:auto;" onchange="renderReports()">
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="year">This year</option>
+            <option value="all" selected>All time</option>
+          </select>
+        </div>
+        <div class="tw"><table><thead><tr><th>Date</th><th>Service</th><th>Report</th><th></th></tr></thead><tbody id="rpBody"></tbody></table></div>
+        <p class="hint" id="rpEmpty" style="display:none;">No reports yet for this filter.</p>
+      </div>
+    </div>
+
     <div class="view" id="view-comments">
       <div class="card">
         <h3>Comments for this week</h3>
@@ -345,6 +395,14 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <button class="primary" style="margin-top:12px;" onclick="saveHotelSettings()">Save settings</button>
         <span class="msg" id="setMsg" style="display:inline-block;margin-left:10px;"></span>
       </div>
+      <div class="card">
+        <h3>Services on the Home page</h3>
+        <p class="hint">Toggle what this hotel subscribes to and keep each status line current. Clients see this first when they sign in.</p>
+        <div id="svcSettings"></div>
+        <button class="primary" style="margin-top:12px;" onclick="saveServices()">Save services</button>
+        <span class="msg" id="svcMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
+
       <div class="card">
         <h3>Portal access</h3>
         <p class="hint">Add a person's email, pick their role. They sign in at portvisory.com with that email.</p>
@@ -453,12 +511,13 @@ async function onHotelChange(){
   el('ovUpdateTitle').textContent=h.sales_coverage==='epic'?'Latest EPIC activity report':'Latest weekly update';
   if(role==='sales_manager'){document.querySelectorAll('.sm-edit').forEach(function(x){x.style.pointerEvents='auto';x.style.background='white';});}
   var activeNav=document.querySelector('.nav.on');
-  if(!activeNav||activeNav.offsetParent===null)showView('overview');
+  if(!activeNav||activeNav.offsetParent===null)showView('home');
   await loadWeekList();
   goThisWeek();
   loadActions();
   loadFiles();
   loadAllActivity();
+  loadHome();
   if(IS_ADMIN)fillSettings();
   fetch(SUPA_URL+'/rest/v1/page_views',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:EMAIL,hotel_slug:h.slug,last_seen:new Date().toISOString()})}).catch(function(){});
 }
@@ -476,7 +535,7 @@ function showView(v){
   growAll();
 }
 window.addEventListener('popstate',function(){
-  var v=(location.hash||'#overview').slice(1);
+  var v=(location.hash||'#home').slice(1);
   if(el('view-'+v)&&!el('view-'+v).classList.contains('on')){
     document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
     document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
@@ -832,6 +891,100 @@ async function createHotel(){
   el('nhName').value='';el('nhManager').value='';
   m.className='msg ok';m.textContent=name+' created. Now add its members below.';
   el('hotelSelect').value=slug;onHotelChange();showView('members');
+}
+
+var SVCS=[
+  {k:'sales',name:'Sales advisory',desc:'Weekly sync, focus and activity.',view:'sync'},
+  {k:'revenue',name:'Revenue management',desc:'Pricing, pickup and performance.',view:'reports'},
+  {k:'marketing',name:'Digital marketing',desc:'Campaigns, website and OTA content.',view:'reports'},
+  {k:'tech',name:'Tech stack and audits',desc:'GDS audits and system reviews.',view:'reports'}
+];
+var SERVICES={},REPORTS=[];
+function svcName(k){var s=SVCS.find(function(x){return x.k===k;});return s?s.name:'General';}
+async function loadHome(){
+  var h=curHotel();SERVICES={};REPORTS=[];
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/hotel_services?hotel_slug=eq.'+encodeURIComponent(h.slug),{headers:authH()});
+    if(r.ok)(await r.json()).forEach(function(s){SERVICES[s.service]=s;});
+    var p=await fetch(SUPA_URL+'/rest/v1/reports?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&order=report_date.desc,created_at.desc',{headers:authH()});
+    if(p.ok)REPORTS=await p.json();
+  }catch(e){}
+  if(el('rpDate')&&!el('rpDate').value)el('rpDate').value=new Date().toISOString().slice(0,10);
+  renderHome();renderReports();renderSvcSettings();
+}
+function greet(){var g=new Date().getHours();return g<12?'Good morning':(g<17?'Good afternoon':'Good evening');}
+function renderHome(){
+  var h=curHotel();if(!el('svcCards'))return;
+  el('homeGreet').textContent=greet()+', '+myName();
+  el('homeSub').textContent='Here is where '+h.name+' stands with EPIC today. Click any card to dive in.';
+  el('svcCards').innerHTML=SVCS.map(function(s){
+    var st=SERVICES[s.k];var on=!!(st&&st.active);
+    var rep=REPORTS.find(function(r){return r.service===s.k;});
+    var note=(st&&st.note)?esc(st.note):(on?s.desc:'Not part of the current engagement. Ask your EPIC consultant.');
+    return '<div class="card" style="cursor:pointer;'+(on?'':'opacity:.55;')+'" onclick="showView(\''+(on?s.view:'requests')+'\')">'+
+      '<h3>'+s.name+' <span class="pill '+(on?'green':'gray')+'">'+(on?'Active':'Not active')+'</span></h3>'+
+      '<div style="font-size:13px;color:var(--mut);">'+note+'</div>'+
+      (rep?'<p class="hint" style="margin-top:8px;margin-bottom:0;">Latest report: <span class="flink" onclick="event.stopPropagation();openFile(\''+rep.path+'\')">'+esc(rep.label)+'</span> ('+rep.report_date+')</p>':'')+
+      '</div>';
+  }).join('');
+}
+function renderReports(){
+  var tb=el('rpBody');if(!tb)return;
+  var f=el('rpFilter').value,rg=el('rpRange').value;
+  var from=null,now=new Date();
+  if(rg==='30')from=new Date(now.getTime()-30*864e5);
+  else if(rg==='90')from=new Date(now.getTime()-90*864e5);
+  else if(rg==='year')from=new Date(now.getFullYear(),0,1);
+  var vis=REPORTS.filter(function(r){
+    if(f!=='all'&&r.service!==f)return false;
+    if(from&&new Date(r.report_date+'T12:00:00')<from)return false;
+    return true;
+  });
+  el('rpEmpty').style.display=vis.length?'none':'block';
+  tb.innerHTML=vis.map(function(r){
+    return '<tr><td style="white-space:nowrap;">'+r.report_date+'</td>'+
+      '<td><span class="pill blue">'+svcName(r.service)+'</span></td>'+
+      '<td><span class="flink" onclick="openFile(\''+r.path+'\')">'+esc(r.label)+'</span></td>'+
+      '<td><button class="rowbtn edit-only" onclick="delReport(\''+r.id+'\')">×</button></td></tr>';
+  }).join('');
+}
+async function uploadReport(){
+  var f=el('rpFile').files[0];if(!f){setSave('err','Choose a file first.');return;}
+  setSave('busy','Uploading…');
+  var h=curHotel();
+  var path=h.slug+'/reports/'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  var up=await sb.storage.from('crm-uploads').upload(path,f);
+  if(up.error){setSave('err','Upload failed.');return;}
+  var body={hotel_slug:h.slug,service:el('rpService').value,report_date:el('rpDate').value||new Date().toISOString().slice(0,10),label:f.name,path:path,uploaded_by:EMAIL};
+  var r=await fetch(SUPA_URL+'/rest/v1/reports',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(body)});
+  if(r.ok){el('rpFile').value='';setSave('ok','Report attached');loadHome();}
+  else setSave('err','Could not save. Has the Phase B script been run?');
+}
+async function delReport(id){
+  if(!confirm('Remove this report?'))return;
+  await fetch(SUPA_URL+'/rest/v1/reports?id=eq.'+id,{method:'DELETE',headers:authH()});
+  loadHome();
+}
+function renderSvcSettings(){
+  var box=el('svcSettings');if(!box)return;
+  box.innerHTML=SVCS.map(function(s){
+    var st=SERVICES[s.k]||{};
+    return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;">'+
+      '<label style="display:flex;gap:6px;align-items:center;min-width:200px;font-size:13px;cursor:pointer;"><input type="checkbox" id="svc_'+s.k+'"'+(st.active?' checked':'')+'> '+s.name+'</label>'+
+      '<input type="text" id="svcNote_'+s.k+'" placeholder="Status line clients see, e.g. Q3 audit in progress" style="flex:1;min-width:220px;" value="'+esc(st.note||'')+'">'+
+      '</div>';
+  }).join('');
+}
+async function saveServices(){
+  var h=curHotel();var m=el('svcMsg');var ok=true;
+  for(var i=0;i<SVCS.length;i++){
+    var s=SVCS[i];
+    var body={hotel_slug:h.slug,service:s.k,active:el('svc_'+s.k).checked,note:el('svcNote_'+s.k).value.trim(),updated_at:new Date().toISOString()};
+    var r=await fetch(SUPA_URL+'/rest/v1/hotel_services?on_conflict=hotel_slug,service',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
+    if(!r.ok)ok=false;
+  }
+  if(ok){m.className='msg ok';m.textContent='Saved';loadHome();}
+  else{m.className='msg err';m.textContent='Could not save. Has the Phase B script been run?';}
 }
 
 function toggleTheme(){
