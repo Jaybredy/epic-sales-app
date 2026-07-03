@@ -350,7 +350,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <p class="hint">Add a person's email, pick their role. They sign in at portvisory.com with that email.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <input type="text" id="mmEmail" placeholder="person@hotel.com" style="flex:2;min-width:180px;">
-          <select id="mmRole" style="flex:1;min-width:150px;"><option value="gm">GM (read only)</option><option value="sales_manager">Sales manager</option><option value="consultant">Consultant</option></select>
+          <select id="mmRole" style="flex:1;min-width:190px;"><option value="gm">Hotel GM (read only, this hotel)</option><option value="sales_manager">Hotel sales manager (this hotel)</option><option value="consultant">EPIC consultant (edit, this hotel)</option><option value="epic_admin">EPIC admin (all hotels)</option></select>
           <button class="primary" onclick="addMember()">Add</button>
         </div>
         <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Email</th><th>Role</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
@@ -425,7 +425,7 @@ async function onSignedIn(){
     var r3=await fetch(SUPA_URL+'/rest/v1/hotels?select=slug,name,manager,source,has_agency360,sales_coverage&order=name',{headers:authH()});HOTELS=r3.ok?await r3.json():[];
   }catch(e){console.warn(e);}
   document.body.classList.toggle('is-admin',IS_ADMIN);
-  el('uRole').textContent=IS_ADMIN?'Consultant, admin':(roleFor(HOTELS[0]&&HOTELS[0].slug)||'member').replace('_',' ');
+  el('uRole').textContent=IS_ADMIN?'EPIC admin':roleLabel(roleFor(HOTELS[0]&&HOTELS[0].slug)||'member');
   await loadProfiles();
   if(HOTELS.length===0){setSave('err','No hotel assigned to '+EMAIL+'. Contact your EPIC consultant.');return;}
   var sel=el('hotelSelect');sel.innerHTML='';
@@ -570,7 +570,7 @@ async function doSave(){
       renderOverview();renderWOW();return;
     }
   }catch(e){}
-  DIRTY=true;setSave('err','Not saved . check connection');
+  DIRTY=true;setSave('err','Not saved. Check connection');
 }
 document.addEventListener('input',function(e){if(e.target.closest('.main'))markDirty();if(e.target.tagName==='TEXTAREA')grow(e.target);});
 
@@ -702,23 +702,49 @@ async function saveHotelSettings(){
   if(r.ok){Object.assign(h,body);m.className='msg ok';m.textContent='Saved';onHotelChange();}
   else{m.className='msg err';m.textContent='Could not save';}
 }
+function roleLabel(r){
+  if(r==='gm')return 'Hotel GM';
+  if(r==='sales_manager')return 'Hotel sales manager';
+  if(r==='consultant')return 'EPIC consultant';
+  return r;
+}
 async function loadMembers(){
   var tb=el('mmBody');tb.innerHTML='';
   var r=await fetch(SUPA_URL+'/rest/v1/hotel_members?hotel_slug=eq.'+encodeURIComponent(curHotel().slug)+'&select=email,role&order=email',{headers:authH()});
   var rows=r.ok?await r.json():[];
   var v=await fetch(SUPA_URL+'/rest/v1/page_views?hotel_slug=eq.'+encodeURIComponent(curHotel().slug),{headers:authH()});
   var views=v.ok?await v.json():[];
-  tb.innerHTML=rows.map(function(m){
+  var a=await fetch(SUPA_URL+'/rest/v1/admins?select=email&order=email',{headers:authH()});
+  var admins=a.ok?await a.json():[];
+  var html=rows.map(function(m){
     var seen=views.find(function(x){return x.email===m.email;});
-    return '<tr><td>'+esc(m.email)+'</td><td>'+m.role.replace('_',' ')+'</td><td style="color:var(--mut);font-size:12px;">'+(seen?new Date(seen.last_seen).toLocaleDateString():'never')+'</td><td><button class="rowbtn" onclick="removeMember(\''+m.email+'\')">×</button></td></tr>';
-  }).join('')||'<tr><td colspan="4" style="color:var(--soft);">No members yet.</td></tr>';
+    return '<tr><td>'+esc(m.email)+'</td><td>'+roleLabel(m.role)+'</td><td style="color:var(--mut);font-size:12px;">'+(seen?new Date(seen.last_seen).toLocaleDateString():'never')+'</td><td><button class="rowbtn" onclick="removeMember(\''+m.email+'\')">×</button></td></tr>';
+  }).join('');
+  html+=admins.map(function(m){
+    var self=m.email===EMAIL;
+    return '<tr><td>'+esc(m.email)+(self?' <span class="pill gray">you</span>':'')+'</td><td><span class="pill blue">EPIC admin, all hotels</span></td><td></td><td>'+(self?'':'<button class="rowbtn" onclick="removeAdmin(\''+m.email+'\')">×</button>')+'</td></tr>';
+  }).join('');
+  tb.innerHTML=html||'<tr><td colspan="4" style="color:var(--soft);">No members yet.</td></tr>';
 }
 async function addMember(){
   var email=(el('mmEmail').value||'').trim().toLowerCase();var m=el('mmMsg');
   if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email.';return;}
-  var r=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:curHotel().slug,role:el('mmRole').value})});
+  var role=el('mmRole').value;
+  if(role==='epic_admin'){
+    var ra=await fetch(SUPA_URL+'/rest/v1/admins',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email})});
+    if(ra.ok){m.className='msg ok';m.textContent=email+' added as EPIC admin with access to every hotel.';el('mmEmail').value='';loadMembers();}
+    else{m.className='msg err';m.textContent='Could not add admin. Has the admin policy script been run?';}
+    return;
+  }
+  var r=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:curHotel().slug,role:role})});
   if(r.ok){m.className='msg ok';m.textContent=email+' added. They can now sign in.';el('mmEmail').value='';loadMembers();}
   else{m.className='msg err';m.textContent='Could not add.';}
+}
+async function removeAdmin(email){
+  if(email===EMAIL){alert('You cannot remove yourself.');return;}
+  if(!confirm('Remove '+email+' as EPIC admin? They lose access to all hotels.'))return;
+  await fetch(SUPA_URL+'/rest/v1/admins?email=eq.'+encodeURIComponent(email),{method:'DELETE',headers:authH()});
+  loadMembers();
 }
 async function removeMember(email){
   if(!confirm('Remove '+email+'?'))return;
