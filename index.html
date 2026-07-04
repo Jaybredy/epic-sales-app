@@ -100,6 +100,7 @@ body.no-a360 .a360-only{display:none!important;}
 body.cov-epic .inhouse-only{display:none!important;}
 body:not(.cov-epic) .epic-only{display:none!important;}
 body.no-rev .rev-only{display:none!important;}
+body.no-sales:not(.is-admin) #nav-sync{opacity:.4;pointer-events:none;}
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy),var(--navy2));z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .logincard{background:white;border-radius:18px;padding:38px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);}
 .avatar{cursor:pointer;overflow:hidden;}
@@ -161,9 +162,10 @@ body.no-rev .rev-only{display:none!important;}
 
   <div class="main">
     <div class="htitle">
+      <button class="wkbtn" onclick="goBack()" title="Go back" style="margin-right:4px;">&#8249; Back</button>
       <h1 id="hotelTitle">…</h1>
       <span class="pill blue epic-only">Sales by EPIC</span>
-      <span class="pill green inhouse-only" id="covMgrPill">In-house sales</span>
+      <span class="pill green inhouse-only" id="covMgrPill" style="display:none;"></span>
       <span class="pill gray a360-only">Agency 360</span>
     </div>
     <p class="hsub" id="hotelSub"></p>
@@ -191,6 +193,10 @@ body.no-rev .rev-only{display:none!important;}
         <h3>Systems on file</h3>
         <div id="homeSysList" style="font-size:13px;color:var(--mut);"></div>
       </div>
+      <div class="card" id="homeTeam" style="display:none;">
+        <h3>Your EPIC team</h3>
+        <div id="homeTeamList" style="font-size:13px;color:var(--mut);"></div>
+      </div>
     </div>
 
     <div class="view" id="view-overview">
@@ -200,17 +206,11 @@ body.no-rev .rev-only{display:none!important;}
         <div class="kpi" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><div class="kl">Open requests</div><div class="kv" id="ovOpen">0</div><div class="ks">Click to view</div></div>
         <div class="kpi" style="cursor:pointer;" onclick="showView('reports')" title="Open Reports"><div class="kl">Latest report</div><div class="kv" id="ovLastRep" style="font-size:14px;line-height:1.35;">None yet</div><div class="ks" id="ovLastRepDate"></div></div>
       </div>
-      <div class="cards" id="goalsRow">
-        <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Goal 1</div><div class="kv" id="m1" contenteditable="true"></div><div class="ks" id="ms1" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Goal 2</div><div class="kv" id="m2" contenteditable="true"></div><div class="ks" id="ms2" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml3" contenteditable="true">Goal 3</div><div class="kv" id="m3" contenteditable="true"></div><div class="ks" id="ms3" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Goal 4</div><div class="kv" id="m4" contenteditable="true"></div><div class="ks" id="ms4" contenteditable="true"></div></div>
-      </div>
       <div class="grid2">
-        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint golink" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
-        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint golink" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
+        <div class="card" style="cursor:pointer;" onclick="ovGoSync()"><h3><span id="ovFocusTitle">This week's focus</span> <span class="pill blue">Set by EPIC</span><span style="float:right;color:var(--soft);">&#8594;</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div></div>
+        <div class="card" style="cursor:pointer;" onclick="ovGoSync()"><h3><span id="ovUpdateTitle">Latest weekly update</span><span style="float:right;color:var(--soft);">&#8594;</span></h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div></div>
       </div>
-      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:var(--mut);"></div><p class="hint golink" style="margin-top:8px;margin-bottom:0;">Click to open Requests</p></div>
+      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions<span style="float:right;color:var(--soft);">&#8594;</span></h3><div id="ovRequests" style="font-size:13px;color:var(--mut);"></div></div>
       <div class="card">
         <h3>Activity totals <span class="pill gray" id="atWeeks"></span></h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
@@ -517,6 +517,24 @@ body.no-rev .rev-only{display:none!important;}
             <div id="mmHotelChecks" style="max-height:190px;overflow:auto;display:flex;flex-direction:column;gap:4px;"></div>
           </div>
         </div>
+        <div id="uEdit" style="display:none;margin-top:10px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--card);">
+          <p class="hint" style="margin-top:0;">Editing <b id="uEditEmail"></b></p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" id="uEditName" placeholder="Display name" style="flex:1;min-width:160px;">
+            <select id="uEditTitle" style="flex:1;min-width:200px;">
+              <option value="">EPIC role, if EPIC staff</option>
+              <option>Revenue manager</option>
+              <option>Revenue director</option>
+              <option>Tech stack director</option>
+              <option>Analyst</option>
+              <option>Social media specialist</option>
+              <option>VP of Sales &amp; Business Dev</option>
+              <option>CEO</option>
+            </select>
+            <button class="primary" onclick="saveUserEdit()">Save</button>
+            <button class="cancelbtn" onclick="el('uEdit').style.display='none'">Cancel</button>
+          </div>
+        </div>
         <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Hotels</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
         <span class="msg" id="mmMsg"></span>
       </div>
@@ -536,7 +554,7 @@ function myName(){var p=PROFILES[EMAIL];return (p&&p.display_name)||EMAIL.split(
 function avatarUrl(email){var p=PROFILES[email];if(p&&p.avatar_path){return SUPA_URL+'/storage/v1/object/public/avatars/'+p.avatar_path;}return null;}
 async function loadProfiles(){
   try{
-    var r=await fetch(SUPA_URL+'/rest/v1/profiles?select=email,display_name,avatar_path',{headers:authH()});
+    var r=await fetch(SUPA_URL+'/rest/v1/profiles?select=email,display_name,avatar_path,title',{headers:authH()});
     if(r.ok){PROFILES={};(await r.json()).forEach(function(p){PROFILES[p.email]=p;});}
   }catch(e){}
   renderMe();
@@ -607,7 +625,7 @@ async function onHotelChange(){
   document.body.classList.toggle('no-a360',h.has_agency360===false);
   document.body.classList.toggle('cov-epic',h.sales_coverage==='epic');
   el('hotelTitle').textContent=h.name;
-  el('covMgrPill').textContent=h.manager?('Sales manager: '+h.manager):'In-house sales';
+  var cvp=el('covMgrPill');if(h.manager){cvp.textContent='Sales manager: '+h.manager;cvp.style.display='';}else{cvp.textContent='';cvp.style.display='none';}
   el('mgrPill').textContent=h.manager||'Sales manager';
   el('hotelSub').textContent=h.sales_coverage==='epic'?'Sales handled by EPIC. Your weekly report below is filled by your consultant.':'';
   el('ovUpdateTitle').textContent=h.sales_coverage==='epic'?'Latest EPIC activity report':'Latest weekly update';
@@ -626,8 +644,13 @@ async function onHotelChange(){
 
 var WEEKVIEWS={overview:1,sync:1,revsync:1,market:1,comments:1};
 function syncChrome(v){var wb=el('weekbar');if(wb)wb.style.display=WEEKVIEWS[v]?'flex':'none';}
+var VSTACK=[],VNOPUSH=false;
+function goBack(){var p=VSTACK.pop()||'home';VNOPUSH=true;showView(p);VNOPUSH=false;}
 function showView(v){
+  if(v==='sync'&&document.body.classList.contains('no-sales')&&!document.body.classList.contains('is-admin'))v='revsync';
   if(!el('view-'+v))return;
+  var curv=document.querySelector('.view.on');
+  if(curv&&!VNOPUSH){var cid=curv.id.slice(5);if(cid!==v){VSTACK.push(cid);if(VSTACK.length>20)VSTACK.shift();}}
   document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
   document.querySelectorAll('.nav').forEach(function(x){x.classList.remove('on');});
   el('view-'+v).classList.add('on');
@@ -688,13 +711,6 @@ function applyBlob(){
   el('marketSum').value=BLOB.marketSum||'';
   el('epicReport').value=BLOB.epicReport||'';
   ['rvOcc','rvAdr','rvRevpar','rvPuRooms','rvPuRev','rvStrWOcc','rvStrWAdr','rvStrWRvp','rvStrMOcc','rvStrMAdr','rvStrMRvp','rvStrYOcc','rvStrYAdr','rvStrYRvp','rvPickupNotes','rvRateNotes','rvChannelNotes','rvFollowups'].forEach(function(id){var e=el(id);if(e)e.value=BLOB[id]!==undefined?BLOB[id]:'';});
-  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){var e=el(id);if(e)e.textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Goal '+id[2]:'');});
-  var gr=el('goalsRow');
-  if(gr){
-    var hasGoal=['m1','m2','m3','m4','ms1','ms2','ms3','ms4'].some(function(id){return ((BLOB[id]||'')+'').trim();});
-    var viewer=document.body.classList.contains('role-view')||document.body.classList.contains('role-sm');
-    gr.style.display=(hasGoal||!viewer)?'grid':'none';
-  }
   el('mktBody').innerHTML=BLOB.mktBodyV3||legacyRows(BLOB.mktBodyHTML,5)||'';
   el('agBody').innerHTML=BLOB.agBodyV3||legacyRows(BLOB.agBodyHTML,4)||legacyRows(BLOB.ctBodyHTML,4)||'';
   var log=BLOB.activityLog||[];var e0=log.find(function(x){return x.week===WEEK;});
@@ -720,7 +736,6 @@ function collectBlob(){
   out.execSummary=el('execSummary').value;out.marketSum=el('marketSum').value;
   out.epicReport=el('epicReport').value;
   ['rvOcc','rvAdr','rvRevpar','rvPuRooms','rvPuRev','rvStrWOcc','rvStrWAdr','rvStrWRvp','rvStrMOcc','rvStrMAdr','rvStrMRvp','rvStrYOcc','rvStrYAdr','rvStrYRvp','rvPickupNotes','rvRateNotes','rvChannelNotes','rvFollowups'].forEach(function(id){var e=el(id);if(e)out[id]=e.value;});
-  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){out[id]=el(id).textContent;});
   out.mktBodyV3=el('mktBody').innerHTML;out.agBodyV3=el('agBody').innerHTML;
   var entry={week:WEEK,label:'Wk '+weekLabel(WEEK).replace('Week of ',''),did:el('ayminDid').value.trim(),win:el('ayminWin').value.trim(),block:el('ayminBlock').value.trim(),calls:+el('aCalls').value||0,emails:+el('aEmails').value||0,sites:+el('aSites').value||0,contacts:+el('aContacts').value||0,submittedAt:new Date().toISOString()};
   var log=out.activityLog||[];var i=log.findIndex(function(x){return x.week===WEEK;});
@@ -752,11 +767,22 @@ function renderWOW(){
   if(!log.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--soft);">No activity logged yet.</td></tr>';return;}
   tb.innerHTML=log.map(function(e){return '<tr><td style="font-weight:600;white-space:nowrap;">'+esc(e.label||e.week)+'</td><td>'+(e.calls||0)+'</td><td>'+(e.emails||0)+'</td><td>'+(e.sites||0)+'</td><td>'+(e.contacts||0)+'</td></tr>';}).join('');
 }
+function ovGoSync(){showView(document.body.classList.contains('no-sales')?'revsync':'sync');}
 function renderOverview(){
-  el('ovFocus').textContent=el('weekFocus').value||'No focus set for this week yet.';
   var h=curHotel();
-  if(h.sales_coverage==='epic'){el('ovUpdate').textContent=el('epicReport').value||'No EPIC report for this week yet.';}
-  else{var log=BLOB.activityLog||[];var e0=log[0];el('ovUpdate').textContent=e0&&e0.did?e0.did:'No update submitted yet.';}
+  if(!document.body.classList.contains('no-sales')){
+    el('ovFocusTitle').textContent="This week's focus";
+    el('ovFocus').textContent=el('weekFocus').value||"EPIC has not posted this week's priorities yet.";
+    el('ovUpdateTitle').textContent=h.sales_coverage==='epic'?'Latest EPIC activity report':'Latest weekly update';
+    if(h.sales_coverage==='epic'){el('ovUpdate').textContent=el('epicReport').value||'No EPIC report for this week yet.';}
+    else{var log=BLOB.activityLog||[];var e0=log[0];el('ovUpdate').textContent=e0&&e0.did?e0.did:'No update submitted yet.';}
+  }else{
+    el('ovFocusTitle').textContent="This week's revenue focus";
+    el('ovFocus').textContent=(el('rvPickupNotes')?el('rvPickupNotes').value:'')||"EPIC has not posted this week's revenue notes yet.";
+    el('ovUpdateTitle').textContent='Latest revenue numbers';
+    var occ=BLOB.rvOcc,adr=BLOB.rvAdr,rvp=BLOB.rvRevpar;
+    el('ovUpdate').textContent=(occ||adr||rvp)?('Occupancy '+(occ||'?')+'%, ADR '+(adr||'?')+', RevPAR '+(rvp||'?')):'No numbers posted for this week yet.';
+  }
   var open=ACTIONS.filter(function(a){return a.status==='open'||a.status==='in_progress';});
   var ms=new Date();var mstart=new Date(ms.getFullYear(),ms.getMonth(),1);
   var mt={calls:0,emails:0};
@@ -913,13 +939,22 @@ async function loadMembers(){
     var u=map[em];
     var roles=Object.keys(u.roles).map(roleLabel).join(', ');
     var names=u.hotels.map(function(s){var hh=HOTELS.find(function(x){return x.slug===s;});return hh?hh.name:s;}).join(', ');
-    return '<tr><td>'+esc((PROFILES[em]&&PROFILES[em].display_name)||'')+'</td><td>'+esc(em)+'</td><td>'+esc(roles)+'</td><td title="'+esc(names)+'" style="cursor:help;">'+u.hotels.length+'</td><td style="color:var(--mut);font-size:12px;">'+(seen[em]?new Date(seen[em]).toLocaleDateString():'never')+'</td><td><button class="rowbtn" onclick="removeUser(\''+em+'\')">×</button></td></tr>';
+    return '<tr><td>'+nameCell(em)+'</td><td>'+esc(em)+'</td><td>'+esc(roles)+'</td><td title="'+esc(names)+'" style="cursor:help;">'+u.hotels.length+'</td><td style="color:var(--mut);font-size:12px;">'+(seen[em]?new Date(seen[em]).toLocaleDateString():'never')+'</td><td><button class="rowbtn" title="Edit" onclick="editUser(\''+em+'\')">✎</button> <button class="rowbtn" onclick="removeUser(\''+em+'\')">×</button></td></tr>';
   }).join('');
   html+=admins.map(function(m){
     var self=m.email===EMAIL;
-    return '<tr><td>'+esc((PROFILES[m.email]&&PROFILES[m.email].display_name)||'')+'</td><td>'+esc(m.email)+(self?' <span class="pill gray">you</span>':'')+'</td><td><span class="pill blue">EPIC admin</span></td><td>All</td><td></td><td>'+(self?'':'<button class="rowbtn" onclick="removeAdmin(\''+m.email+'\')">×</button>')+'</td></tr>';
+    return '<tr><td>'+nameCell(m.email)+'</td><td>'+esc(m.email)+(self?' <span class="pill gray">you</span>':'')+'</td><td><span class="pill blue">EPIC admin</span></td><td>All</td><td></td><td><button class="rowbtn" title="Edit" onclick="editUser(\''+m.email+'\')">✎</button> '+(self?'':'<button class="rowbtn" onclick="removeAdmin(\''+m.email+'\')">×</button>')+'</td></tr>';
   }).join('');
   tb.innerHTML=html||'<tr><td colspan="6" style="color:var(--soft);">No users yet.</td></tr>';
+}
+function nameCell(em){var p=PROFILES[em]||{};var n=esc(p.display_name||'');var t=p.title?'<div style="font-size:11px;color:var(--soft);">'+esc(p.title)+'</div>':'';return n+t;}
+var UEDIT='';
+function editUser(em){UEDIT=em;var p=PROFILES[em]||{};el('uEditEmail').textContent=em;el('uEditName').value=p.display_name||'';el('uEditTitle').value=p.title||'';el('uEdit').style.display='block';}
+async function saveUserEdit(){
+  if(!UEDIT)return;
+  await fetch(SUPA_URL+'/rest/v1/profiles',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:UEDIT,display_name:el('uEditName').value.trim(),title:el('uEditTitle').value})});
+  el('uEdit').style.display='none';el('mmMsg').textContent='Saved.';
+  await loadProfiles();loadMembers();
 }
 async function removeUser(email){
   if(!confirm('Remove '+email+' from every hotel they can access? They will no longer be able to sign in.'))return;
@@ -1054,7 +1089,7 @@ var SVCS=[
   {k:'marketing',name:'Digital marketing',desc:'Campaigns, website and OTA content.',view:'reports'},
   {k:'tech',name:'Tech stack and audits',desc:'GDS audits and system reviews.',view:'reports'}
 ];
-var SERVICES={},REPORTS=[];
+var SERVICES={},REPORTS=[],TEAM=[];
 var RPTYPES={pickup:'Pickup report',str:'STR report',revenue:'Revenue',sales:'Sales',marketing:'Marketing',tech:'Tech and audits',revadvisory:'Revenue advisory',general:'Other'};
 function svcName(k){return RPTYPES[k]||'Other';}
 async function loadHome(){
@@ -1069,9 +1104,14 @@ async function loadHome(){
     var sy=await fetch(SUPA_URL+'/rest/v1/hotel_systems?hotel_slug=eq.'+encodeURIComponent(h.slug),{headers:authH()});
     SYS=sy.ok?((await sy.json())[0]||{}):{};
   }catch(e){SYS={};}
+  try{
+    var tm=await fetch(SUPA_URL+'/rest/v1/hotel_members?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&select=email,role&role=eq.consultant',{headers:authH()});
+    TEAM=tm.ok?await tm.json():[];
+  }catch(e){TEAM=[];}
+  document.body.classList.toggle('no-sales',!(SERVICES.sales&&SERVICES.sales.active));
   document.body.classList.toggle('no-rev',!((SERVICES.revenue&&SERVICES.revenue.active)||(SERVICES.revadvisory&&SERVICES.revadvisory.active)));
   if(el('rpDate')&&!el('rpDate').value)el('rpDate').value=new Date().toISOString().slice(0,10);
-  renderHome();renderReports();renderSvcSettings();renderSystems();renderChart();renderOverview();
+  renderHome();renderTeam();renderReports();renderSvcSettings();renderSystems();renderChart();renderOverview();
 }
 function greet(){var g=new Date().getHours();return g<12?'Good morning':(g<17?'Good afternoon':'Good evening');}
 function renderHome(){
@@ -1125,6 +1165,17 @@ async function delReport(id){
   if(!confirm('Remove this report?'))return;
   await fetch(SUPA_URL+'/rest/v1/reports?id=eq.'+id,{method:'DELETE',headers:authH()});
   loadHome();
+}
+function renderTeam(){
+  var box=el('homeTeamList'),card=el('homeTeam');if(!box||!card)return;
+  if(!TEAM.length){card.style.display='none';return;}
+  card.style.display='block';
+  box.innerHTML=TEAM.map(function(m){
+    var p=PROFILES[m.email]||{};
+    var n=esc(p.display_name||m.email.split('@')[0]);
+    var t=p.title?' <span class="pill gray">'+esc(p.title)+'</span>':'';
+    return '<div style="margin-bottom:6px;"><b>'+n+'</b>'+t+'<div style="font-size:12px;color:var(--soft);">'+esc(m.email)+'</div></div>';
+  }).join('');
 }
 function renderSvcSettings(){
   var box=el('svcSettings');if(!box)return;
