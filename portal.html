@@ -182,6 +182,11 @@ body.no-rev .rev-only{display:none!important;}
         <p class="hint" id="homeSub" style="margin-bottom:0;">Your engagement with EPIC at a glance.</p>
       </div>
       <div class="grid2" id="svcCards"></div>
+      <div class="card" id="homeChart" style="display:none;">
+        <h3>EPIC activity, last 8 weeks</h3>
+        <div id="chartBars" style="display:flex;gap:10px;align-items:flex-end;height:150px;"></div>
+        <p class="hint" style="margin-bottom:0;margin-top:8px;">Calls, emails and site visits logged per week. Click a bar to open Weekly sync.</p>
+      </div>
       <div class="card" id="homeSystems" style="display:none;">
         <h3>Systems on file</h3>
         <div id="homeSysList" style="font-size:13px;color:var(--mut);"></div>
@@ -190,10 +195,16 @@ body.no-rev .rev-only{display:none!important;}
 
     <div class="view" id="view-overview">
       <div class="cards">
-        <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Metric 1</div><div class="kv" id="m1" contenteditable="true"></div><div class="ks" id="ms1" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Metric 2</div><div class="kv" id="m2" contenteditable="true"></div><div class="ks" id="ms2" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml3" contenteditable="true">Metric 3</div><div class="kv" id="m3" contenteditable="true"></div><div class="ks" id="ms3" contenteditable="true"></div></div>
-        <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Metric 4</div><div class="kv" id="m4" contenteditable="true"></div><div class="ks" id="ms4" contenteditable="true"></div></div>
+        <div class="kpi" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><div class="kl">Calls this month</div><div class="kv" id="ovCalls">0</div><div class="ks">Logged by EPIC</div></div>
+        <div class="kpi" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><div class="kl">Emails this month</div><div class="kv" id="ovEmails">0</div><div class="ks">Logged by EPIC</div></div>
+        <div class="kpi" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><div class="kl">Open requests</div><div class="kv" id="ovOpen">0</div><div class="ks">Click to view</div></div>
+        <div class="kpi" style="cursor:pointer;" onclick="showView('reports')" title="Open Reports"><div class="kl">Latest report</div><div class="kv" id="ovLastRep" style="font-size:14px;line-height:1.35;">None yet</div><div class="ks" id="ovLastRepDate"></div></div>
+      </div>
+      <div class="cards" id="goalsRow">
+        <div class="kpi"><div class="kl" id="ml1" contenteditable="true">Goal 1</div><div class="kv" id="m1" contenteditable="true"></div><div class="ks" id="ms1" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml2" contenteditable="true">Goal 2</div><div class="kv" id="m2" contenteditable="true"></div><div class="ks" id="ms2" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml3" contenteditable="true">Goal 3</div><div class="kv" id="m3" contenteditable="true"></div><div class="ks" id="ms3" contenteditable="true"></div></div>
+        <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Goal 4</div><div class="kv" id="m4" contenteditable="true"></div><div class="ks" id="ms4" contenteditable="true"></div></div>
       </div>
       <div class="grid2">
         <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint golink" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
@@ -677,7 +688,13 @@ function applyBlob(){
   el('marketSum').value=BLOB.marketSum||'';
   el('epicReport').value=BLOB.epicReport||'';
   ['rvOcc','rvAdr','rvRevpar','rvPuRooms','rvPuRev','rvStrWOcc','rvStrWAdr','rvStrWRvp','rvStrMOcc','rvStrMAdr','rvStrMRvp','rvStrYOcc','rvStrYAdr','rvStrYRvp','rvPickupNotes','rvRateNotes','rvChannelNotes','rvFollowups'].forEach(function(id){var e=el(id);if(e)e.value=BLOB[id]!==undefined?BLOB[id]:'';});
-  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){el(id).textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Metric '+id[2]:'');});
+  ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){var e=el(id);if(e)e.textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Goal '+id[2]:'');});
+  var gr=el('goalsRow');
+  if(gr){
+    var hasGoal=['m1','m2','m3','m4','ms1','ms2','ms3','ms4'].some(function(id){return ((BLOB[id]||'')+'').trim();});
+    var viewer=document.body.classList.contains('role-view')||document.body.classList.contains('role-sm');
+    gr.style.display=(hasGoal||!viewer)?'grid':'none';
+  }
   el('mktBody').innerHTML=BLOB.mktBodyV3||legacyRows(BLOB.mktBodyHTML,5)||'';
   el('agBody').innerHTML=BLOB.agBodyV3||legacyRows(BLOB.agBodyHTML,4)||legacyRows(BLOB.ctBodyHTML,4)||'';
   var log=BLOB.activityLog||[];var e0=log.find(function(x){return x.week===WEEK;});
@@ -741,6 +758,13 @@ function renderOverview(){
   if(h.sales_coverage==='epic'){el('ovUpdate').textContent=el('epicReport').value||'No EPIC report for this week yet.';}
   else{var log=BLOB.activityLog||[];var e0=log[0];el('ovUpdate').textContent=e0&&e0.did?e0.did:'No update submitted yet.';}
   var open=ACTIONS.filter(function(a){return a.status==='open'||a.status==='in_progress';});
+  var ms=new Date();var mstart=new Date(ms.getFullYear(),ms.getMonth(),1);
+  var mt={calls:0,emails:0};
+  (typeof ALLACT!=='undefined'?ALLACT:[]).forEach(function(e){var d=new Date(e.week+'T12:00:00');if(d>=mstart){mt.calls+=e.calls;mt.emails+=e.emails;}});
+  if(el('ovCalls')){el('ovCalls').textContent=mt.calls;el('ovEmails').textContent=mt.emails;}
+  if(el('ovOpen'))el('ovOpen').textContent=open.length;
+  var rep0=(typeof REPORTS!=='undefined'&&REPORTS[0])?REPORTS[0]:null;
+  if(el('ovLastRep')){el('ovLastRep').textContent=rep0?rep0.label:'None yet';el('ovLastRepDate').textContent=rep0?(svcName(rep0.service)+', '+rep0.report_date):'';}
   el('ovRequests').innerHTML=open.length?open.slice(0,5).map(function(a){return '• '+esc(a.title)+' <span class="pill '+(a.status==='in_progress'?'amber':'gray')+'">'+a.status.replace('_',' ')+'</span>';}).join('<br>'):'Nothing open. Submit one in Requests.';
 }
 
@@ -1006,6 +1030,7 @@ function renderTotals(){
   el('atCalls').textContent=t.calls;el('atEmails').textContent=t.emails;
   el('atSites').textContent=t.sites;el('atContacts').textContent=t.contacts;
   el('atWeeks').textContent=n+(n===1?' week logged':' weeks logged');
+  renderChart();renderOverview();
 }
 async function createHotel(){
   var m=el('nhMsg');var name=el('nhName').value.trim();
@@ -1046,7 +1071,7 @@ async function loadHome(){
   }catch(e){SYS={};}
   document.body.classList.toggle('no-rev',!((SERVICES.revenue&&SERVICES.revenue.active)||(SERVICES.revadvisory&&SERVICES.revadvisory.active)));
   if(el('rpDate')&&!el('rpDate').value)el('rpDate').value=new Date().toISOString().slice(0,10);
-  renderHome();renderReports();renderSvcSettings();renderSystems();
+  renderHome();renderReports();renderSvcSettings();renderSystems();renderChart();renderOverview();
 }
 function greet(){var g=new Date().getHours();return g<12?'Good morning':(g<17?'Good afternoon':'Good evening');}
 function renderHome(){
@@ -1243,6 +1268,23 @@ document.addEventListener('keydown',function(e){
 document.addEventListener('focusin',function(e){
   if(e.target.classList&&e.target.classList.contains('rvlist')&&!e.target.value){e.target.value='1. ';}
 });
+function renderChart(){
+  var card=el('homeChart');if(!card)return;
+  var list=(typeof ALLACT!=='undefined'?ALLACT:[]).slice().sort(function(a,b){return a.week<b.week?-1:1;}).slice(-8);
+  if(!list.length){card.style.display='none';return;}
+  card.style.display='block';
+  var max=1;list.forEach(function(e){max=Math.max(max,e.calls+e.emails+e.sites);});
+  el('chartBars').innerHTML=list.map(function(e){
+    var v=e.calls+e.emails+e.sites;
+    var hpx=Math.max(6,Math.round(112*v/max));
+    var lbl=new Date(e.week+'T12:00:00').toLocaleDateString('en-US',{month:'numeric',day:'numeric'});
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;cursor:pointer;height:100%;" onclick="showView(&quot;sync&quot;)" title="'+e.calls+' calls, '+e.emails+' emails, '+e.sites+' site visits">'+
+      '<div style="font-size:11px;color:var(--mut);font-weight:700;">'+v+'</div>'+
+      '<div style="width:70%;max-width:46px;height:'+hpx+'px;background:var(--navy);border-radius:6px 6px 0 0;"></div>'+
+      '<div style="font-size:10px;color:var(--soft);white-space:nowrap;">'+lbl+'</div>'+
+    '</div>';
+  }).join('');
+}
 function toggleTheme(){
   var dark=!document.body.classList.contains('dark');
   document.body.classList.toggle('dark',dark);
