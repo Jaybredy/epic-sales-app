@@ -99,6 +99,7 @@ body:not(.is-admin) .adm-only{display:none!important;}
 body.no-a360 .a360-only{display:none!important;}
 body.cov-epic .inhouse-only{display:none!important;}
 body:not(.cov-epic) .epic-only{display:none!important;}
+body.no-rev .rev-only{display:none!important;}
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy),var(--navy2));z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .logincard{background:white;border-radius:18px;padding:38px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);}
 .avatar{cursor:pointer;overflow:hidden;}
@@ -147,6 +148,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
     <button class="nav on" id="nav-home" onclick="showView('home')">Home</button>
     <button class="nav" id="nav-overview" onclick="showView('overview')">Overview</button>
     <button class="nav" id="nav-sync" onclick="showView('sync')">Weekly sync</button>
+    <button class="nav rev-only" id="nav-revsync" onclick="showView('revsync')">Revenue sync</button>
     <button class="nav a360-only" id="nav-market" onclick="showView('market')">Market intel</button>
     <button class="nav" id="nav-reports" onclick="showView('reports')">Reports</button>
     <button class="nav" id="nav-requests" onclick="showView('requests')">Requests <span class="badge" id="reqBadge" style="display:none;">0</span></button>
@@ -259,6 +261,43 @@ body:not(.cov-epic) .epic-only{display:none!important;}
       </div>
     </div>
 
+    <div class="view" id="view-revsync">
+      <div class="card">
+        <h3>This week's numbers <span class="pill blue">Filled by EPIC</span></h3>
+        <div class="cards" style="margin-bottom:10px;">
+          <div class="kpi"><div class="kl">Occupancy %</div><input type="number" id="rvOcc" min="0" step="0.1" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">ADR</div><input type="number" id="rvAdr" min="0" step="0.01" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">RevPAR</div><input type="number" id="rvRevpar" min="0" step="0.01" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Pickup rooms</div><input type="number" id="rvPuRooms" style="font-size:20px;font-weight:700;text-align:center;"></div>
+          <div class="kpi"><div class="kl">Pickup revenue</div><input type="number" id="rvPuRev" step="0.01" style="font-size:20px;font-weight:700;text-align:center;"></div>
+        </div>
+        <div class="grid2">
+          <div><p class="hint">Month to date: Occ % / ADR / RevPAR</p><input type="text" id="rvMtd" placeholder="e.g. 72% / 189 / 136"></div>
+          <div><p class="hint">Pace vs forecast or budget</p><input type="text" id="rvPace" placeholder="e.g. 6% ahead for next 30 days, 3% behind for 60"></div>
+          <div><p class="hint">Group and events on the books</p><input type="text" id="rvGroup" placeholder="e.g. 240 group room nights next 90 days"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>STR at a glance <span class="pill gray">If subscribed</span></h3>
+        <div class="grid2">
+          <div><p class="hint">This week: RevPAR index and rank</p><input type="text" id="rvStrWeek" placeholder="e.g. RGI 104.2, rank 2 of 6"></div>
+          <div><p class="hint">This month: RevPAR index and rank</p><input type="text" id="rvStrMonth" placeholder="e.g. RGI 98.7, rank 3 of 6"></div>
+        </div>
+        <p class="hint golink" style="margin-top:8px;margin-bottom:0;" onclick="showView('reports')">Attach the full STR report under Reports, type STR report</p>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3>Pickup and pace commentary</h3><textarea id="rvPickupNotes" placeholder="What moved this week and why: demand shifts, events, cancellations"></textarea></div>
+        <div class="card"><h3>Rate and strategy changes</h3><textarea id="rvRateNotes" placeholder="Pricing actions taken: rate changes, restrictions, promotions"></textarea></div>
+        <div class="card"><h3>Channel and OTA notes</h3><textarea id="rvChannelNotes" placeholder="Parity, OTA campaigns, GDS visibility"></textarea></div>
+        <div class="card"><h3>Forecast and outlook</h3><textarea id="rvOutlook" placeholder="The next 30 to 90 days: risks and opportunities"></textarea></div>
+      </div>
+      <div class="card">
+        <h3>Follow ups for the next call</h3>
+        <textarea id="rvFollowups" placeholder="Items to revisit on the next call, one per line"></textarea>
+        <p class="hint golink" style="margin-bottom:0;" onclick="showView('requests')">Formal action items with owners and due dates live in Requests</p>
+      </div>
+    </div>
+
     <div class="view" id="view-market">
       <div class="card"><h3>Executive summary</h3><textarea id="execSummary" style="min-height:140px;"></textarea></div>
       <div class="card"><h3>Market context</h3><textarea id="marketSum"></textarea></div>
@@ -316,33 +355,34 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <h3>Attach a report</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <select id="rpService" style="width:auto;">
-            <option value="sales">Sales advisory</option>
-            <option value="revenue">Revenue management</option>
-            <option value="revadvisory">Revenue management advisory</option>
             <option value="pickup">Pickup report</option>
-            <option value="marketing">Digital marketing</option>
-            <option value="tech">Tech stack and audits</option>
-            <option value="general">General</option>
+            <option value="str">STR report</option>
+            <option value="revenue">Revenue report</option>
+            <option value="sales">Sales report</option>
+            <option value="marketing">Marketing report</option>
+            <option value="tech">Tech and audit report</option>
+            <option value="general">Other</option>
           </select>
           <input type="date" id="rpDate" style="width:auto;">
           <input type="file" id="rpFile" style="flex:1;min-width:200px;">
           <button class="primary" onclick="uploadReport()">Attach</button>
           <button class="cancelbtn" onclick="rpCancel()">Cancel</button>
         </div>
-        <p class="hint" style="margin-top:8px;margin-bottom:0;">The file name becomes the report title. Clients see it right away on their Home page.</p>
+        <p class="hint" style="margin-top:8px;margin-bottom:0;">EPIC team only: pick the report type and its date, attach the file. The file name becomes the title and the hotel sees it right away.</p>
       </div>
       <div class="card">
-        <h3>Reports</h3>
+        <h3>Report library</h3>
+        <p class="hint">Everything published for this hotel. Filter by type and time period.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
           <select id="rpFilter" class="always-edit" style="width:auto;" onchange="renderReports()">
-            <option value="all">All services</option>
-            <option value="sales">Sales advisory</option>
-            <option value="revenue">Revenue management</option>
-            <option value="revadvisory">Revenue management advisory</option>
+            <option value="all">All types</option>
             <option value="pickup">Pickup report</option>
-            <option value="marketing">Digital marketing</option>
-            <option value="tech">Tech stack and audits</option>
-            <option value="general">General</option>
+            <option value="str">STR report</option>
+            <option value="revenue">Revenue report</option>
+            <option value="sales">Sales report</option>
+            <option value="marketing">Marketing report</option>
+            <option value="tech">Tech and audit report</option>
+            <option value="general">Other</option>
           </select>
           <select id="rpRange" class="always-edit" style="width:auto;" onchange="renderReports()">
             <option value="30">Last 30 days</option>
@@ -438,7 +478,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <div><p class="hint">CRS</p><select id="sysCrs" onchange="sysOther('Crs')"></select><input type="text" id="sysCrsOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
           <div><p class="hint">RMS</p><select id="sysRms" onchange="sysOther('Rms')"></select><input type="text" id="sysRmsOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
           <div><p class="hint">Booking engine</p><select id="sysBe" onchange="sysOther('Be')"></select><input type="text" id="sysBeOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
-          <div><p class="hint">Reports using</p><select id="sysRep" onchange="sysOther('Rep')"></select><input type="text" id="sysRepOther" placeholder="Name the report" style="display:none;margin-top:6px;"></div>
+          <div><p class="hint">Reports using</p><div id="repChecks" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:6px 0;"></div><input type="text" id="sysRepOther" placeholder="Other report"></div>
           <div><p class="hint">Sales platforms</p>
             <div id="spChecks" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:6px 0;"></div>
             <input type="text" id="sysSalesOther" placeholder="Other sales platform">
@@ -473,6 +513,11 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         </div>
         <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
         <span class="msg" id="mmMsg"></span>
+      </div>
+      <div class="card">
+        <h3>Everyone with portal access <span class="pill gray" id="auCount"></span></h3>
+        <p class="hint">Every user across all hotels at a glance. Hover the hotel count to see which ones. Manage a user under Portal access with their hotel selected.</p>
+        <div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Hotels</th><th>Last seen</th></tr></thead><tbody id="auBody"></tbody></table></div>
       </div>
     </div>
 
@@ -578,7 +623,7 @@ async function onHotelChange(){
   fetch(SUPA_URL+'/rest/v1/page_views',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:EMAIL,hotel_slug:h.slug,last_seen:new Date().toISOString()})}).catch(function(){});
 }
 
-var WEEKVIEWS={overview:1,sync:1,market:1,comments:1};
+var WEEKVIEWS={overview:1,sync:1,revsync:1,market:1,comments:1};
 function syncChrome(v){var wb=el('weekbar');if(wb)wb.style.display=WEEKVIEWS[v]?'flex':'none';}
 function showView(v){
   if(!el('view-'+v))return;
@@ -641,6 +686,7 @@ function applyBlob(){
   el('execSummary').value=BLOB.execSummary||'';
   el('marketSum').value=BLOB.marketSum||'';
   el('epicReport').value=BLOB.epicReport||'';
+  ['rvOcc','rvAdr','rvRevpar','rvPuRooms','rvPuRev','rvMtd','rvPace','rvGroup','rvStrWeek','rvStrMonth','rvPickupNotes','rvRateNotes','rvChannelNotes','rvOutlook','rvFollowups'].forEach(function(id){var e=el(id);if(e)e.value=BLOB[id]!==undefined?BLOB[id]:'';});
   ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){el(id).textContent=BLOB[id]!==undefined?BLOB[id]:(id[1]==='l'?'Metric '+id[2]:'');});
   el('mktBody').innerHTML=BLOB.mktBodyV3||legacyRows(BLOB.mktBodyHTML,5)||'';
   el('agBody').innerHTML=BLOB.agBodyV3||legacyRows(BLOB.agBodyHTML,4)||legacyRows(BLOB.ctBodyHTML,4)||'';
@@ -666,6 +712,7 @@ function collectBlob(){
   out.weekFocus=el('weekFocus').value;out.consultResponse=el('consultResponse').value;
   out.execSummary=el('execSummary').value;out.marketSum=el('marketSum').value;
   out.epicReport=el('epicReport').value;
+  ['rvOcc','rvAdr','rvRevpar','rvPuRooms','rvPuRev','rvMtd','rvPace','rvGroup','rvStrWeek','rvStrMonth','rvPickupNotes','rvRateNotes','rvChannelNotes','rvOutlook','rvFollowups'].forEach(function(id){var e=el(id);if(e)out[id]=e.value;});
   ['m1','m2','m3','m4','ml1','ml2','ml3','ml4','ms1','ms2','ms3','ms4'].forEach(function(id){out[id]=el(id).textContent;});
   out.mktBodyV3=el('mktBody').innerHTML;out.agBodyV3=el('agBody').innerHTML;
   var entry={week:WEEK,label:'Wk '+weekLabel(WEEK).replace('Week of ',''),did:el('ayminDid').value.trim(),win:el('ayminWin').value.trim(),block:el('ayminBlock').value.trim(),calls:+el('aCalls').value||0,emails:+el('aEmails').value||0,sites:+el('aSites').value||0,contacts:+el('aContacts').value||0,submittedAt:new Date().toISOString()};
@@ -817,6 +864,7 @@ function fillSettings(){
   el('setName').value=h.name;el('setManager').value=h.manager||'';
   el('setCoverage').value=h.sales_coverage||'inhouse';
   loadMembers();
+  loadAllUsers();
 }
 async function saveHotelSettings(){
   var h=curHotel();
@@ -972,13 +1020,14 @@ async function createHotel(){
 
 var SVCS=[
   {k:'sales',name:'Sales advisory',desc:'Weekly sync, focus and activity.',view:'sync'},
-  {k:'revenue',name:'Revenue management',desc:'Pricing, pickup and performance.',view:'reports'},
-  {k:'revadvisory',name:'Revenue management advisory',desc:'Strategy guidance, forecasting and pricing reviews.',view:'reports'},
+  {k:'revenue',name:'Revenue management',desc:'Pricing, pickup and performance.',view:'revsync'},
+  {k:'revadvisory',name:'Revenue management advisory',desc:'Strategy guidance, forecasting and pricing reviews.',view:'revsync'},
   {k:'marketing',name:'Digital marketing',desc:'Campaigns, website and OTA content.',view:'reports'},
   {k:'tech',name:'Tech stack and audits',desc:'GDS audits and system reviews.',view:'reports'}
 ];
 var SERVICES={},REPORTS=[];
-function svcName(k){if(k==='pickup')return 'Pickup report';var s=SVCS.find(function(x){return x.k===k;});return s?s.name:'General';}
+var RPTYPES={pickup:'Pickup report',str:'STR report',revenue:'Revenue',sales:'Sales',marketing:'Marketing',tech:'Tech and audits',revadvisory:'Revenue advisory',general:'Other'};
+function svcName(k){return RPTYPES[k]||'Other';}
 async function loadHome(){
   var h=curHotel();SERVICES={};REPORTS=[];
   try{
@@ -991,6 +1040,7 @@ async function loadHome(){
     var sy=await fetch(SUPA_URL+'/rest/v1/hotel_systems?hotel_slug=eq.'+encodeURIComponent(h.slug),{headers:authH()});
     SYS=sy.ok?((await sy.json())[0]||{}):{};
   }catch(e){SYS={};}
+  document.body.classList.toggle('no-rev',!((SERVICES.revenue&&SERVICES.revenue.active)||(SERVICES.revadvisory&&SERVICES.revadvisory.active)));
   if(el('rpDate')&&!el('rpDate').value)el('rpDate').value=new Date().toISOString().slice(0,10);
   renderHome();renderReports();renderSvcSettings();renderSystems();
 }
@@ -1001,7 +1051,7 @@ function renderHome(){
   el('homeSub').textContent='Here is where '+h.name+' stands with EPIC today. Click any card to dive in.';
   el('svcCards').innerHTML=SVCS.map(function(s){
     var st=SERVICES[s.k];var on=!!(st&&st.active);
-    var rep=REPORTS.find(function(r){return r.service===s.k||(s.k==='revenue'&&r.service==='pickup');});
+    var rep=REPORTS.find(function(r){return r.service===s.k||(s.k==='revenue'&&(r.service==='pickup'||r.service==='str'));});
     var note=(st&&st.note)?esc(st.note):(on?s.desc:'Not part of the current engagement. Ask your EPIC consultant.');
     return '<div class="card" style="cursor:pointer;'+(on?'':'opacity:.55;')+'" onclick="showView(\''+(on?s.view:'requests')+'\')">'+
       '<h3>'+s.name+' <span class="pill '+(on?'green':'gray')+'">'+(on?'Active':'Not active')+'</span></h3>'+
@@ -1074,9 +1124,9 @@ var SYSOPTS={
   Pms:['Cloudbeds','Mews','StayNtouch','Opera Cloud','Opera','Opera V5','SiteMinder','SkyTouch','Skyware','SimpleBooking'],
   Crs:['SynXis','Travel Click','SiteMinder','SiteMinder/Mews Distribution','Windsurfer','Pegasus','Concerto','MyAllocator'],
   Rms:['Duetto','IDeaS','Atomize','Concerto','Lighthouse','MyAllocator'],
-  Be:['SynXis','SiteMinder','Cloudbeds','Mews','Travel Click','Windsurfer','SimpleBooking','StayNtouch'],
-  Rep:['Lighthouse','EPIC pickup report','STR report','Agency 360 report']
+  Be:['SynXis','SiteMinder','Cloudbeds','Mews','Travel Click','Windsurfer','SimpleBooking','StayNtouch']
 };
+var REPLIST=['Lighthouse','EPIC pickup report','STR report','Agency 360 report'];
 var SPLIST=['Agency 360','Cvent','Lanyon','Delphi','Thynk','Tripleseat'];
 function fillSysSelect(sfx,val){
   var opts=SYSOPTS[sfx];var sel=el('sys'+sfx);if(!sel)return;
@@ -1093,7 +1143,7 @@ function spSelected(){
 function renderSystems(){
   if(el('sysPms')){
     fillSysSelect('Pms',SYS.pms||'');fillSysSelect('Crs',SYS.crs||'');fillSysSelect('Rms',SYS.rms||'');
-    fillSysSelect('Be',SYS.booking_engine||'');fillSysSelect('Rep',SYS.reports_using||'');
+    fillSysSelect('Be',SYS.booking_engine||'');
     var h=curHotel();
     var on=(SYS.sales_platforms||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
     if(!on.length){if(SYS.cvent)on.push('Cvent');if(SYS.lanyon)on.push('Lanyon');}
@@ -1102,6 +1152,12 @@ function renderSystems(){
       return '<label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" class="spCk" style="width:auto;" value="'+p+'"'+(on.indexOf(p)>=0?' checked':'')+'> '+p+'</label>';
     }).join('');
     el('sysSalesOther').value=SYS.sales_other||'';
+    var reps=(SYS.reports_using||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+    var otherReps=reps.filter(function(x){return REPLIST.indexOf(x)<0;});
+    el('repChecks').innerHTML=REPLIST.map(function(p){
+      return '<label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" class="repCk" style="width:auto;" value="'+p+'"'+(reps.indexOf(p)>=0?' checked':'')+'> '+p+'</label>';
+    }).join('');
+    el('sysRepOther').value=otherReps.join(', ');
   }
   renderHomeSystems();
 }
@@ -1109,9 +1165,11 @@ function sysVal(sfx){var v=el('sys'+sfx).value;return v==='Other'?el('sys'+sfx+'
 async function saveSystems(){
   var h=curHotel();var m=el('sysMsg');
   var picked=spSelected();
+  var reps=[];document.querySelectorAll('.repCk:checked').forEach(function(cb){reps.push(cb.value);});
+  el('sysRepOther').value.split(',').map(function(x){return x.trim();}).filter(Boolean).forEach(function(x){reps.push(x);});
   var a360=picked.indexOf('Agency 360')>=0;
   var plats=picked.filter(function(p){return p!=='Agency 360';});
-  var body={hotel_slug:h.slug,pms:sysVal('Pms'),crs:sysVal('Crs'),rms:sysVal('Rms'),booking_engine:sysVal('Be'),reports_using:sysVal('Rep'),cvent:plats.indexOf('Cvent')>=0,lanyon:plats.indexOf('Lanyon')>=0,sales_platforms:plats.join(', '),sales_other:el('sysSalesOther').value.trim(),updated_at:new Date().toISOString()};
+  var body={hotel_slug:h.slug,pms:sysVal('Pms'),crs:sysVal('Crs'),rms:sysVal('Rms'),booking_engine:sysVal('Be'),reports_using:reps.join(', '),cvent:plats.indexOf('Cvent')>=0,lanyon:plats.indexOf('Lanyon')>=0,sales_platforms:plats.join(', '),sales_other:el('sysSalesOther').value.trim(),updated_at:new Date().toISOString()};
   var r=await fetch(SUPA_URL+'/rest/v1/hotel_systems?on_conflict=hotel_slug',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
   var r2={ok:true};
   if((h.has_agency360!==false)!==a360){
@@ -1164,6 +1222,31 @@ function acCancel(){
 }
 function rpCancel(){
   el('rpFile').value='';el('rpService').value='sales';el('rpDate').value=new Date().toISOString().slice(0,10);
+}
+async function loadAllUsers(){
+  var tb=el('auBody');if(!tb||!IS_ADMIN)return;
+  var r=await fetch(SUPA_URL+'/rest/v1/hotel_members?select=email,role,hotel_slug&order=email',{headers:authH()});
+  var rows=r.ok?await r.json():[];
+  var a=await fetch(SUPA_URL+'/rest/v1/admins?select=email',{headers:authH()});
+  var admins=a.ok?await a.json():[];
+  var v=await fetch(SUPA_URL+'/rest/v1/page_views?select=email,last_seen',{headers:authH()});
+  var views=v.ok?await v.json():[];
+  var map={};
+  rows.forEach(function(m){
+    if(!map[m.email])map[m.email]={roles:{},hotels:[]};
+    map[m.email].roles[m.role]=1;map[m.email].hotels.push(m.hotel_slug);
+  });
+  admins.forEach(function(m){if(!map[m.email])map[m.email]={roles:{},hotels:[]};map[m.email].roles.admin=1;});
+  var seen={};views.forEach(function(x){if(!seen[x.email]||x.last_seen>seen[x.email])seen[x.email]=x.last_seen;});
+  var emails=Object.keys(map).sort();
+  el('auCount').textContent=emails.length+' users';
+  tb.innerHTML=emails.map(function(em){
+    var u=map[em];
+    var roles=Object.keys(u.roles).map(function(k){return k==='admin'?'EPIC admin':roleLabel(k);}).join(', ');
+    var hn=u.roles.admin?'All':String(u.hotels.length);
+    var names=u.hotels.map(function(s){var hh=HOTELS.find(function(x){return x.slug===s;});return hh?hh.name:s;}).join(', ');
+    return '<tr><td>'+esc((PROFILES[em]&&PROFILES[em].display_name)||'')+'</td><td>'+esc(em)+'</td><td>'+esc(roles)+'</td><td title="'+esc(names)+'">'+hn+'</td><td style="color:var(--mut);font-size:12px;">'+(seen[em]?new Date(seen[em]).toLocaleDateString():'never')+'</td></tr>';
+  }).join('');
 }
 function toggleTheme(){
   var dark=!document.body.classList.contains('dark');
