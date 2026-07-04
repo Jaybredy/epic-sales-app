@@ -86,6 +86,7 @@ body.dark .addbtn{border-color:var(--line);}
 .filerow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F3F4F6;font-size:13px;}
 .filerow:last-child{border-bottom:none;}
 .flink{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:underline;}
+.golink{color:var(--blue);cursor:pointer;text-decoration:underline;font-weight:600;}
 [contenteditable="true"]:hover{background:rgba(42,74,138,.05);border-radius:3px;}
 [contenteditable="true"]:focus{outline:2px solid rgba(42,74,138,.25);border-radius:3px;}
 body.role-view [contenteditable]{pointer-events:none;}
@@ -193,10 +194,10 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <div class="kpi"><div class="kl" id="ml4" contenteditable="true">Metric 4</div><div class="kv" id="m4" contenteditable="true"></div><div class="ks" id="ms4" contenteditable="true"></div></div>
       </div>
       <div class="grid2">
-        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
-        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3>This week's focus <span class="pill blue">Set by EPIC</span></h3><div id="ovFocus" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint golink" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
+        <div class="card" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><h3 id="ovUpdateTitle">Latest weekly update</h3><div id="ovUpdate" style="font-size:13px;color:var(--mut);white-space:pre-wrap;"></div><p class="hint golink" style="margin-top:8px;margin-bottom:0;">Click to open Weekly sync</p></div>
       </div>
-      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:var(--mut);"></div><p class="hint" style="margin-top:8px;margin-bottom:0;">Click to open Requests</p></div>
+      <div class="card" style="cursor:pointer;" onclick="showView('requests')" title="Open Requests"><h3>Open requests and actions</h3><div id="ovRequests" style="font-size:13px;color:var(--mut);"></div><p class="hint golink" style="margin-top:8px;margin-bottom:0;">Click to open Requests</p></div>
       <div class="card">
         <h3>Activity totals <span class="pill gray" id="atWeeks"></span></h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
@@ -211,10 +212,10 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <input type="date" id="atTo" class="always-edit" style="width:auto;display:none;" onchange="renderTotals()">
         </div>
         <div class="cards" style="margin-bottom:0;">
-          <div class="kpi"><div class="kl">Calls</div><div class="kv" id="atCalls">0</div></div>
-          <div class="kpi"><div class="kl">Emails</div><div class="kv" id="atEmails">0</div></div>
-          <div class="kpi"><div class="kl">Site visits</div><div class="kv" id="atSites">0</div></div>
-          <div class="kpi"><div class="kl">New contacts</div><div class="kv" id="atContacts">0</div></div>
+          <div class="kpi" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><div class="kl">Calls</div><div class="kv" id="atCalls">0</div></div>
+          <div class="kpi" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><div class="kl">Emails</div><div class="kv" id="atEmails">0</div></div>
+          <div class="kpi" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><div class="kl">Site visits</div><div class="kv" id="atSites">0</div></div>
+          <div class="kpi" style="cursor:pointer;" onclick="showView('sync')" title="Open Weekly sync"><div class="kl">New contacts</div><div class="kv" id="atContacts">0</div></div>
         </div>
       </div>
     </div>
@@ -318,6 +319,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
             <option value="sales">Sales advisory</option>
             <option value="revenue">Revenue management</option>
             <option value="revadvisory">Revenue management advisory</option>
+            <option value="pickup">Pickup report</option>
             <option value="marketing">Digital marketing</option>
             <option value="tech">Tech stack and audits</option>
             <option value="general">General</option>
@@ -337,6 +339,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
             <option value="sales">Sales advisory</option>
             <option value="revenue">Revenue management</option>
             <option value="revadvisory">Revenue management advisory</option>
+            <option value="pickup">Pickup report</option>
             <option value="marketing">Digital marketing</option>
             <option value="tech">Tech stack and audits</option>
             <option value="general">General</option>
@@ -402,7 +405,6 @@ body:not(.cov-epic) .epic-only{display:none!important;}
             <div><p class="hint">Hotel name</p><input type="text" id="nhName" placeholder="e.g. Casa Bonita Beach Resort"></div>
             <div><p class="hint">Sales manager name (blank if none)</p><input type="text" id="nhManager"></div>
             <div><p class="hint">Sales coverage</p><select id="nhCoverage"><option value="inhouse">In-house sales manager</option><option value="epic">EPIC-managed sales</option></select></div>
-            <div><p class="hint">Agency 360 report</p><select id="nhA360"><option value="false">No</option><option value="true">Yes, show market intel</option></select></div>
           </div>
           <button class="primary" style="margin-top:12px;" onclick="createHotel()">Create hotel</button>
           <button class="cancelbtn" onclick="nhCancel()">Cancel</button>
@@ -415,7 +417,6 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <div><p class="hint">Hotel name</p><input type="text" id="setName"></div>
           <div><p class="hint">Sales manager name (blank if none)</p><input type="text" id="setManager"></div>
           <div><p class="hint">Sales coverage</p><select id="setCoverage"><option value="inhouse">In-house sales manager</option><option value="epic">EPIC-managed sales</option></select></div>
-          <div><p class="hint">Agency 360 report</p><select id="setA360"><option value="true">Yes, show market intel</option><option value="false">No</option></select></div>
         </div>
         <button class="primary" style="margin-top:12px;" onclick="saveHotelSettings()">Save settings</button>
         <button class="cancelbtn" onclick="fillSettings();el('setMsg').textContent='';">Cancel</button>
@@ -439,14 +440,10 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <div><p class="hint">Booking engine</p><select id="sysBe" onchange="sysOther('Be')"></select><input type="text" id="sysBeOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
           <div><p class="hint">Reports using</p><select id="sysRep" onchange="sysOther('Rep')"></select><input type="text" id="sysRepOther" placeholder="Name the report" style="display:none;margin-top:6px;"></div>
           <div><p class="hint">Sales platforms</p>
-            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:6px 0;">
-              <label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" id="sysCvent" style="width:auto;"> Cvent</label>
-              <label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" id="sysLanyon" style="width:auto;"> Lanyon</label>
-            </div>
+            <div id="spChecks" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:6px 0;"></div>
             <input type="text" id="sysSalesOther" placeholder="Other sales platform">
           </div>
         </div>
-        <p class="hint" style="margin-top:8px;">Agency 360 is set in Hotel settings above.</p>
         <button class="primary" style="margin-top:8px;" onclick="saveSystems()">Save systems</button>
         <button class="cancelbtn" onclick="renderSystems();el('sysMsg').textContent='';">Cancel</button>
         <span class="msg" id="sysMsg" style="display:inline-block;margin-left:10px;"></span>
@@ -792,8 +789,14 @@ async function loadFiles(){
   try{
     var r=await fetch(SUPA_URL+'/rest/v1/hotel_files?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&order=created_at.desc',{headers:authH()});
     var rows=r.ok?await r.json():[];
-    list.innerHTML=rows.length?rows.map(function(f){return '<div class="filerow"><span class="flink" onclick="openFile(\''+f.path+'\')">'+esc(f.label)+'</span><span style="color:var(--soft);font-size:12px;margin-left:auto;">'+new Date(f.created_at).toLocaleDateString()+' · '+esc(f.uploaded_by||'')+'</span></div>';}).join(''):'<p class="hint">No files yet.</p>';
+    list.innerHTML=rows.length?rows.map(function(f){return '<div class="filerow"><span class="flink" onclick="openFile(\''+f.path+'\')">'+esc(f.label)+'</span><span style="color:var(--soft);font-size:12px;margin-left:auto;">'+new Date(f.created_at).toLocaleDateString()+' · '+esc(f.uploaded_by||'')+'</span><button class="wkbtn" onclick="openFile(\''+f.path+'\')">View</button><button class="rowbtn edit-only" title="Delete" onclick="delFile(\''+f.id+'\',\''+f.path+'\')">×</button></div>';}).join(''):'<p class="hint">No files yet.</p>';
   }catch(e){list.innerHTML='<p class="hint">Files unavailable.</p>';}
+}
+async function delFile(id,path){
+  if(!confirm('Delete this file for everyone?'))return;
+  await fetch(SUPA_URL+'/rest/v1/hotel_files?id=eq.'+id,{method:'DELETE',headers:authH()});
+  try{await sb.storage.from('crm-uploads').remove([path]);}catch(e){}
+  setSave('ok','File deleted');loadFiles();
 }
 async function uploadFile(){
   var inp=el('fileInput');var f=inp.files[0];if(!f){setSave('err','Choose a file first.');return;}
@@ -813,12 +816,11 @@ function fillSettings(){
   var h=curHotel();
   el('setName').value=h.name;el('setManager').value=h.manager||'';
   el('setCoverage').value=h.sales_coverage||'inhouse';
-  el('setA360').value=String(h.has_agency360!==false);
   loadMembers();
 }
 async function saveHotelSettings(){
   var h=curHotel();
-  var body={name:el('setName').value.trim(),manager:el('setManager').value.trim(),sales_coverage:el('setCoverage').value,has_agency360:el('setA360').value==='true'};
+  var body={name:el('setName').value.trim(),manager:el('setManager').value.trim(),sales_coverage:el('setCoverage').value};
   var r=await fetch(SUPA_URL+'/rest/v1/hotels?slug=eq.'+encodeURIComponent(h.slug),{method:'PATCH',headers:authH({'Content-Type':'application/json'}),body:JSON.stringify(body)});
   var m=el('setMsg');
   if(r.ok){Object.assign(h,body);m.className='msg ok';m.textContent='Saved';onHotelChange();}
@@ -958,7 +960,7 @@ async function createHotel(){
   if(!name){m.className='msg err';m.textContent='Give the hotel a name.';return;}
   var slug=name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,24);
   if(HOTELS.find(function(h){return h.slug===slug;})){m.className='msg err';m.textContent='A hotel with a similar name already exists.';return;}
-  var body={slug:slug,name:name,manager:el('nhManager').value.trim(),has_agency360:el('nhA360').value==='true',sales_coverage:el('nhCoverage').value};
+  var body={slug:slug,name:name,manager:el('nhManager').value.trim(),has_agency360:false,sales_coverage:el('nhCoverage').value};
   var r=await fetch(SUPA_URL+'/rest/v1/hotels',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify(body)});
   if(!r.ok){m.className='msg err';m.textContent='Could not create hotel.';return;}
   HOTELS.push(body);
@@ -976,7 +978,7 @@ var SVCS=[
   {k:'tech',name:'Tech stack and audits',desc:'GDS audits and system reviews.',view:'reports'}
 ];
 var SERVICES={},REPORTS=[];
-function svcName(k){var s=SVCS.find(function(x){return x.k===k;});return s?s.name:'General';}
+function svcName(k){if(k==='pickup')return 'Pickup report';var s=SVCS.find(function(x){return x.k===k;});return s?s.name:'General';}
 async function loadHome(){
   var h=curHotel();SERVICES={};REPORTS=[];
   try{
@@ -999,7 +1001,7 @@ function renderHome(){
   el('homeSub').textContent='Here is where '+h.name+' stands with EPIC today. Click any card to dive in.';
   el('svcCards').innerHTML=SVCS.map(function(s){
     var st=SERVICES[s.k];var on=!!(st&&st.active);
-    var rep=REPORTS.find(function(r){return r.service===s.k;});
+    var rep=REPORTS.find(function(r){return r.service===s.k||(s.k==='revenue'&&r.service==='pickup');});
     var note=(st&&st.note)?esc(st.note):(on?s.desc:'Not part of the current engagement. Ask your EPIC consultant.');
     return '<div class="card" style="cursor:pointer;'+(on?'':'opacity:.55;')+'" onclick="showView(\''+(on?s.view:'requests')+'\')">'+
       '<h3>'+s.name+' <span class="pill '+(on?'green':'gray')+'">'+(on?'Active':'Not active')+'</span></h3>'+
@@ -1025,7 +1027,7 @@ function renderReports(){
     return '<tr><td style="white-space:nowrap;">'+r.report_date+'</td>'+
       '<td><span class="pill blue">'+svcName(r.service)+'</span></td>'+
       '<td><span class="flink" onclick="openFile(\''+r.path+'\')">'+esc(r.label)+'</span></td>'+
-      '<td><button class="rowbtn edit-only" onclick="delReport(\''+r.id+'\')">×</button></td></tr>';
+      '<td style="white-space:nowrap;"><button class="wkbtn" onclick="openFile(\''+r.path+'\')">View</button> <button class="rowbtn edit-only" onclick="delReport(\''+r.id+'\')">×</button></td></tr>';
   }).join('');
 }
 async function uploadReport(){
@@ -1068,8 +1070,14 @@ async function saveServices(){
 }
 
 var SYS={};
-var SYSLIST=['Cloudbeds','Mews','StayNtouch','Opera Cloud','SiteMinder'];
-var SYSOPTS={Pms:SYSLIST,Crs:SYSLIST,Rms:SYSLIST,Be:SYSLIST,Rep:['Lighthouse','EPIC pickup report']};
+var SYSOPTS={
+  Pms:['Cloudbeds','Mews','StayNtouch','Opera Cloud','Opera','Opera V5','SiteMinder','SkyTouch','Skyware','SimpleBooking'],
+  Crs:['SynXis','Travel Click','SiteMinder','SiteMinder/Mews Distribution','Windsurfer','Pegasus','Concerto','MyAllocator'],
+  Rms:['Duetto','IDeaS','Atomize','Concerto','Lighthouse','MyAllocator'],
+  Be:['SynXis','SiteMinder','Cloudbeds','Mews','Travel Click','Windsurfer','SimpleBooking','StayNtouch'],
+  Rep:['Lighthouse','EPIC pickup report','STR report','Agency 360 report']
+};
+var SPLIST=['Agency 360','Cvent','Lanyon','Delphi','Thynk','Tripleseat'];
 function fillSysSelect(sfx,val){
   var opts=SYSOPTS[sfx];var sel=el('sys'+sfx);if(!sel)return;
   sel.innerHTML='<option value="">Not set</option>'+opts.map(function(o){return '<option>'+o+'</option>';}).join('')+'<option>Other</option>';
@@ -1079,20 +1087,38 @@ function fillSysSelect(sfx,val){
   else{sel.value='Other';oth.style.display='block';oth.value=val;}
 }
 function sysOther(sfx){el('sys'+sfx+'Other').style.display=el('sys'+sfx).value==='Other'?'block':'none';}
+function spSelected(){
+  var out=[];document.querySelectorAll('.spCk:checked').forEach(function(c){out.push(c.value);});return out;
+}
 function renderSystems(){
   if(el('sysPms')){
     fillSysSelect('Pms',SYS.pms||'');fillSysSelect('Crs',SYS.crs||'');fillSysSelect('Rms',SYS.rms||'');
     fillSysSelect('Be',SYS.booking_engine||'');fillSysSelect('Rep',SYS.reports_using||'');
-    el('sysCvent').checked=!!SYS.cvent;el('sysLanyon').checked=!!SYS.lanyon;el('sysSalesOther').value=SYS.sales_other||'';
+    var h=curHotel();
+    var on=(SYS.sales_platforms||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+    if(!on.length){if(SYS.cvent)on.push('Cvent');if(SYS.lanyon)on.push('Lanyon');}
+    if(h&&h.has_agency360!==false)on.push('Agency 360');
+    el('spChecks').innerHTML=SPLIST.map(function(p){
+      return '<label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" class="spCk" style="width:auto;" value="'+p+'"'+(on.indexOf(p)>=0?' checked':'')+'> '+p+'</label>';
+    }).join('');
+    el('sysSalesOther').value=SYS.sales_other||'';
   }
   renderHomeSystems();
 }
 function sysVal(sfx){var v=el('sys'+sfx).value;return v==='Other'?el('sys'+sfx+'Other').value.trim():v;}
 async function saveSystems(){
   var h=curHotel();var m=el('sysMsg');
-  var body={hotel_slug:h.slug,pms:sysVal('Pms'),crs:sysVal('Crs'),rms:sysVal('Rms'),booking_engine:sysVal('Be'),reports_using:sysVal('Rep'),cvent:el('sysCvent').checked,lanyon:el('sysLanyon').checked,sales_other:el('sysSalesOther').value.trim(),updated_at:new Date().toISOString()};
+  var picked=spSelected();
+  var a360=picked.indexOf('Agency 360')>=0;
+  var plats=picked.filter(function(p){return p!=='Agency 360';});
+  var body={hotel_slug:h.slug,pms:sysVal('Pms'),crs:sysVal('Crs'),rms:sysVal('Rms'),booking_engine:sysVal('Be'),reports_using:sysVal('Rep'),cvent:plats.indexOf('Cvent')>=0,lanyon:plats.indexOf('Lanyon')>=0,sales_platforms:plats.join(', '),sales_other:el('sysSalesOther').value.trim(),updated_at:new Date().toISOString()};
   var r=await fetch(SUPA_URL+'/rest/v1/hotel_systems?on_conflict=hotel_slug',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
-  if(r.ok){m.className='msg ok';m.textContent='Saved';SYS=body;renderHomeSystems();}
+  var r2={ok:true};
+  if((h.has_agency360!==false)!==a360){
+    r2=await fetch(SUPA_URL+'/rest/v1/hotels?slug=eq.'+encodeURIComponent(h.slug),{method:'PATCH',headers:authH({'Content-Type':'application/json'}),body:JSON.stringify({has_agency360:a360})});
+    if(r2.ok){h.has_agency360=a360;document.body.classList.toggle('no-a360',!a360);}
+  }
+  if(r.ok&&r2.ok){m.className='msg ok';m.textContent='Saved';SYS=body;renderHomeSystems();}
   else{m.className='msg err';m.textContent='Could not save. Has the systems script been run?';}
 }
 function renderHomeSystems(){
@@ -1105,7 +1131,10 @@ function renderHomeSystems(){
   if(SYS.reports_using)rows.push(['Reports',SYS.reports_using]);
   var sp=[];
   if(h&&h.has_agency360!==false)sp.push('Agency 360');
-  if(SYS.cvent)sp.push('Cvent');if(SYS.lanyon)sp.push('Lanyon');if(SYS.sales_other)sp.push(SYS.sales_other);
+  var plats=(SYS.sales_platforms||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  if(!plats.length){if(SYS.cvent)plats.push('Cvent');if(SYS.lanyon)plats.push('Lanyon');}
+  sp=sp.concat(plats);
+  if(SYS.sales_other)sp.push(SYS.sales_other);
   if(sp.length)rows.push(['Sales platforms',sp.join(', ')]);
   if(!rows.length){card.style.display='none';return;}
   card.style.display='block';
@@ -1123,7 +1152,7 @@ function pfCancel(){
   el('pfPhoto').value='';el('pfMsg').textContent='';
 }
 function nhCancel(){
-  el('nhName').value='';el('nhManager').value='';el('nhCoverage').value='inhouse';el('nhA360').value='false';
+  el('nhName').value='';el('nhManager').value='';el('nhCoverage').value='inhouse';
   el('nhMsg').textContent='';el('nhForm').style.display='none';
 }
 function mmCancel(){
