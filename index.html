@@ -8,8 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--navy:#1B2E5E;--navy2:#243D7A;--gold:#C9A84C;--bg:#F4F3EF;--card:#FFFFFF;--line:#E5E5E1;--txt:#111827;--mut:#6B7280;--soft:#9CA3AF;--blue:#2A4A8A;--bluebg:#EEF3FB;--green:#16A34A;--greenbg:#F0FDF4;--amber:#D97706;--amberbg:#FFFBEB;--red:#DC2626;--redbg:#FEF2F2;--thead:#F9FAFB;--rowline:#F3F4F6;}
-body.dark{--navy:#C9D6F2;--navy2:#243D7A;--bg:#0F1522;--card:#1A2233;--line:#2C3850;--txt:#E5E7EB;--mut:#9CA3AF;--soft:#6B7280;--blue:#9DB8E8;--bluebg:#22304D;--green:#4ADE80;--greenbg:#16301F;--amber:#FBBF24;--amberbg:#372B10;--red:#F87171;--redbg:#3A1B1B;--thead:#151D2E;--rowline:#232E45;}
+:root{--navy:#1B2E5E;--navy2:#243D7A;--gold:#C9A84C;--bg:#F4F3EF;--card:#FFFFFF;--line:#E5E5E1;--txt:#111827;--mut:#4B5563;--soft:#9CA3AF;--blue:#2A4A8A;--bluebg:#EEF3FB;--green:#16A34A;--greenbg:#F0FDF4;--amber:#D97706;--amberbg:#FFFBEB;--red:#DC2626;--redbg:#FEF2F2;--thead:#F9FAFB;--rowline:#F3F4F6;}
+body.dark{--navy:#C9D6F2;--navy2:#243D7A;--bg:#0F1522;--card:#1A2233;--line:#2C3850;--txt:#E5E7EB;--mut:#B3BAC5;--soft:#6B7280;--blue:#9DB8E8;--bluebg:#22304D;--green:#4ADE80;--greenbg:#16301F;--amber:#FBBF24;--amberbg:#372B10;--red:#F87171;--redbg:#3A1B1B;--thead:#151D2E;--rowline:#232E45;}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.6;}
 button{font-family:'Inter',sans-serif;cursor:pointer;}
 input,select,textarea{font-family:'Inter',sans-serif;font-size:14px;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--card);width:100%;}
@@ -69,6 +69,14 @@ td{padding:9px 10px;border-top:1px solid var(--rowline);vertical-align:top;}
 .addbtn:hover{background:var(--blue);color:white;}
 .primary{background:var(--navy);color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;}
 .primary:hover{opacity:.88;}
+#nav-home{background:var(--navy);color:#fff;font-weight:700;margin-bottom:6px;}
+#nav-home:hover{opacity:.9;background:var(--navy);color:#fff;}
+#nav-home.on{background:var(--navy);color:#fff;}
+body.dark #nav-home{background:#2E4E9C;color:#F3F6FC;}
+body.dark #nav-home:hover{background:#2E4E9C;color:#F3F6FC;}
+body.dark #nav-home.on{background:#2E4E9C;color:#F3F6FC;}
+body.dark .primary{background:#2E4E9C;color:#F3F6FC;}
+body.dark .addbtn{border-color:var(--line);}
 .citem{border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:9px;}
 .cmeta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--soft);margin-bottom:5px;flex-wrap:wrap;}
 .cauthor{font-weight:700;color:var(--navy);font-size:13px;}
@@ -141,7 +149,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
     <button class="nav" id="nav-requests" onclick="showView('requests')">Requests <span class="badge" id="reqBadge" style="display:none;">0</span></button>
     <button class="nav" id="nav-comments" onclick="showView('comments')">Comments</button>
     <button class="nav" id="nav-files" onclick="showView('files')">Files</button>
-    <button class="nav adm-only" id="nav-members" onclick="showView('members')">Members</button>
+    <button class="nav adm-only" id="nav-members" onclick="showView('members')">Users</button>
     <div style="flex:1;"></div>
     <button class="nav" id="themeBtn" onclick="toggleTheme()">Dark mode</button>
   </div>
@@ -168,6 +176,10 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <p class="hint" id="homeSub" style="margin-bottom:0;">Your engagement with EPIC at a glance.</p>
       </div>
       <div class="grid2" id="svcCards"></div>
+      <div class="card" id="homeSystems" style="display:none;">
+        <h3>Systems on file</h3>
+        <div id="homeSysList" style="font-size:13px;color:var(--mut);"></div>
+      </div>
     </div>
 
     <div class="view" id="view-overview">
@@ -301,6 +313,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <select id="rpService" style="width:auto;">
             <option value="sales">Sales advisory</option>
             <option value="revenue">Revenue management</option>
+            <option value="revadvisory">Revenue management advisory</option>
             <option value="marketing">Digital marketing</option>
             <option value="tech">Tech stack and audits</option>
             <option value="general">General</option>
@@ -318,6 +331,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
             <option value="all">All services</option>
             <option value="sales">Sales advisory</option>
             <option value="revenue">Revenue management</option>
+            <option value="revadvisory">Revenue management advisory</option>
             <option value="marketing">Digital marketing</option>
             <option value="tech">Tech stack and audits</option>
             <option value="general">General</option>
@@ -402,20 +416,50 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <button class="primary" style="margin-top:12px;" onclick="saveServices()">Save services</button>
         <span class="msg" id="svcMsg" style="display:inline-block;margin-left:10px;"></span>
       </div>
+      <div class="card">
+        <h3>Systems and platforms</h3>
+        <p class="hint">What this hotel runs. EPIC edits this here; the hotel sees it read only on their Home page.</p>
+        <div class="grid2">
+          <div><p class="hint">PMS</p><select id="sysPms" onchange="sysOther('Pms')"></select><input type="text" id="sysPmsOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
+          <div><p class="hint">CRS</p><select id="sysCrs" onchange="sysOther('Crs')"></select><input type="text" id="sysCrsOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
+          <div><p class="hint">RMS</p><select id="sysRms" onchange="sysOther('Rms')"></select><input type="text" id="sysRmsOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
+          <div><p class="hint">Booking engine</p><select id="sysBe" onchange="sysOther('Be')"></select><input type="text" id="sysBeOther" placeholder="Name the system" style="display:none;margin-top:6px;"></div>
+          <div><p class="hint">Reports using</p><select id="sysRep" onchange="sysOther('Rep')"></select><input type="text" id="sysRepOther" placeholder="Name the report" style="display:none;margin-top:6px;"></div>
+          <div><p class="hint">Sales platforms</p>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:6px 0;">
+              <label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" id="sysCvent" style="width:auto;"> Cvent</label>
+              <label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" id="sysLanyon" style="width:auto;"> Lanyon</label>
+            </div>
+            <input type="text" id="sysSalesOther" placeholder="Other sales platform">
+          </div>
+        </div>
+        <p class="hint" style="margin-top:8px;">Agency 360 is set in Hotel settings above.</p>
+        <button class="primary" style="margin-top:8px;" onclick="saveSystems()">Save systems</button>
+        <span class="msg" id="sysMsg" style="display:inline-block;margin-left:10px;"></span>
+      </div>
 
       <div class="card">
         <h3>Portal access</h3>
         <p class="hint">Add a person's email, pick their role. They sign in at portvisory.com with that email.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="mmFirst" placeholder="First name" style="flex:1;min-width:110px;">
+          <input type="text" id="mmLast" placeholder="Last name" style="flex:1;min-width:110px;">
           <input type="text" id="mmEmail" placeholder="person@hotel.com" style="flex:2;min-width:180px;">
           <select id="mmRole" style="flex:1;min-width:190px;" onchange="mmRoleChanged()"><option value="gm">Hotel GM (this hotel)</option><option value="sales_manager">Hotel sales manager (this hotel)</option><option value="consultant">EPIC consultant (choose hotels)</option><option value="epic_admin">EPIC admin (all hotels)</option></select>
           <button class="primary" onclick="addMember()">Add</button>
         </div>
-        <div id="mmHotels" style="display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;">
-          <p class="hint" style="margin-bottom:6px;">Hotels this consultant can access:</p>
-          <div id="mmHotelChecks" style="display:flex;gap:14px;flex-wrap:wrap;"></div>
+        <div id="mmHotels" style="display:none;margin-top:10px;">
+          <button type="button" id="mmHotBtn" class="wkbtn" onclick="var p=el('mmHotPanel');p.style.display=p.style.display==='none'?'block':'none';">0 hotels selected</button>
+          <div id="mmHotPanel" style="display:none;border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:6px;max-width:460px;background:var(--card);">
+            <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+              <input type="text" id="mmHotSearch" placeholder="Type to filter hotels" oninput="filterHotChecks()" style="flex:1;min-width:140px;">
+              <button type="button" class="wkbtn" onclick="setAllHotChecks(true)">Select all</button>
+              <button type="button" class="wkbtn" onclick="setAllHotChecks(false)">Clear</button>
+            </div>
+            <div id="mmHotelChecks" style="max-height:190px;overflow:auto;display:flex;flex-direction:column;gap:4px;"></div>
+          </div>
         </div>
-        <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Email</th><th>Role</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
+        <div class="tw" style="margin-top:12px;"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Last seen</th><th></th></tr></thead><tbody id="mmBody"></tbody></table></div>
         <span class="msg" id="mmMsg"></span>
       </div>
     </div>
@@ -781,24 +825,40 @@ async function loadMembers(){
   var admins=a.ok?await a.json():[];
   var html=rows.map(function(m){
     var seen=views.find(function(x){return x.email===m.email;});
-    return '<tr><td>'+esc(m.email)+'</td><td>'+roleLabel(m.role)+'</td><td style="color:var(--mut);font-size:12px;">'+(seen?new Date(seen.last_seen).toLocaleDateString():'never')+'</td><td><button class="rowbtn" onclick="removeMember(\''+m.email+'\')">×</button></td></tr>';
+    return '<tr><td>'+esc((PROFILES[m.email]&&PROFILES[m.email].display_name)||'')+'</td><td>'+esc(m.email)+'</td><td>'+roleLabel(m.role)+'</td><td style="color:var(--mut);font-size:12px;">'+(seen?new Date(seen.last_seen).toLocaleDateString():'never')+'</td><td><button class="rowbtn" onclick="removeMember(\''+m.email+'\')">×</button></td></tr>';
   }).join('');
   html+=admins.map(function(m){
     var self=m.email===EMAIL;
-    return '<tr><td>'+esc(m.email)+(self?' <span class="pill gray">you</span>':'')+'</td><td><span class="pill blue">EPIC admin, all hotels</span></td><td></td><td>'+(self?'':'<button class="rowbtn" onclick="removeAdmin(\''+m.email+'\')">×</button>')+'</td></tr>';
+    return '<tr><td>'+esc((PROFILES[m.email]&&PROFILES[m.email].display_name)||'')+'</td><td>'+esc(m.email)+(self?' <span class="pill gray">you</span>':'')+'</td><td><span class="pill blue">EPIC admin, all hotels</span></td><td></td><td>'+(self?'':'<button class="rowbtn" onclick="removeAdmin(\''+m.email+'\')">×</button>')+'</td></tr>';
   }).join('');
-  tb.innerHTML=html||'<tr><td colspan="4" style="color:var(--soft);">No members yet.</td></tr>';
+  tb.innerHTML=html||'<tr><td colspan="5" style="color:var(--soft);">No users yet.</td></tr>';
 }
 function mmRoleChanged(){
   var isC=el('mmRole').value==='consultant';
   el('mmHotels').style.display=isC?'block':'none';
-  if(isC)renderHotelChecks();
+  if(isC){renderHotelChecks();updateHotCount();}
 }
 function renderHotelChecks(){
   var cur=curHotel().slug;
   el('mmHotelChecks').innerHTML=HOTELS.map(function(h){
-    return '<label style="font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer;"><input type="checkbox" class="mmHck" value="'+h.slug+'"'+(h.slug===cur?' checked':'')+'> '+esc(h.name)+'</label>';
+    return '<label data-name="'+esc(h.name.toLowerCase())+'" style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" class="mmHck" style="width:auto;" value="'+h.slug+'" onchange="updateHotCount()"'+(h.slug===cur?' checked':'')+'> '+esc(h.name)+'</label>';
   }).join('');
+}
+function filterHotChecks(){
+  var q=el('mmHotSearch').value.trim().toLowerCase();
+  el('mmHotelChecks').querySelectorAll('label').forEach(function(l){
+    l.style.display=(!q||l.getAttribute('data-name').indexOf(q)>=0)?'flex':'none';
+  });
+}
+function setAllHotChecks(v){
+  el('mmHotelChecks').querySelectorAll('label').forEach(function(l){
+    if(l.style.display!=='none')l.querySelector('input').checked=v;
+  });
+  updateHotCount();
+}
+function updateHotCount(){
+  var n=el('mmHotelChecks').querySelectorAll('input:checked').length;
+  el('mmHotBtn').textContent=n+' hotel'+(n===1?'':'s')+' selected';
 }
 async function addMember(){
   var email=(el('mmEmail').value||'').trim().toLowerCase();var m=el('mmMsg');
@@ -806,7 +866,7 @@ async function addMember(){
   var role=el('mmRole').value;
   if(role==='epic_admin'){
     var ra=await fetch(SUPA_URL+'/rest/v1/admins',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email})});
-    if(ra.ok){m.className='msg ok';m.textContent=email+' added as EPIC admin with access to every hotel.';el('mmEmail').value='';loadMembers();}
+    if(ra.ok){await saveName(email);m.className='msg ok';m.textContent=email+' added as EPIC admin with access to every hotel.';el('mmEmail').value='';loadMembers();}
     else{m.className='msg err';m.textContent='Could not add admin. Has the admin policy script been run?';}
     return;
   }
@@ -818,12 +878,12 @@ async function addMember(){
       var rc=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:slugs[i],role:'consultant'})});
       if(!rc.ok)fails++;
     }
-    if(!fails){m.className='msg ok';m.textContent=email+' added as EPIC consultant for '+slugs.length+' hotel'+(slugs.length>1?'s':'')+'.';el('mmEmail').value='';loadMembers();}
+    if(!fails){await saveName(email);m.className='msg ok';m.textContent=email+' added as EPIC consultant for '+slugs.length+' hotel'+(slugs.length>1?'s':'')+'.';el('mmEmail').value='';loadMembers();}
     else{m.className='msg err';m.textContent='Could not add '+fails+' of the hotels. Try again.';}
     return;
   }
   var r=await fetch(SUPA_URL+'/rest/v1/hotel_members',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,hotel_slug:curHotel().slug,role:role})});
-  if(r.ok){m.className='msg ok';m.textContent=email+' added. They can now sign in.';el('mmEmail').value='';loadMembers();}
+  if(r.ok){await saveName(email);m.className='msg ok';m.textContent=email+' added. They can now sign in.';el('mmEmail').value='';loadMembers();}
   else{m.className='msg err';m.textContent='Could not add.';}
 }
 async function removeAdmin(email){
@@ -896,6 +956,7 @@ async function createHotel(){
 var SVCS=[
   {k:'sales',name:'Sales advisory',desc:'Weekly sync, focus and activity.',view:'sync'},
   {k:'revenue',name:'Revenue management',desc:'Pricing, pickup and performance.',view:'reports'},
+  {k:'revadvisory',name:'Revenue management advisory',desc:'Strategy guidance, forecasting and pricing reviews.',view:'reports'},
   {k:'marketing',name:'Digital marketing',desc:'Campaigns, website and OTA content.',view:'reports'},
   {k:'tech',name:'Tech stack and audits',desc:'GDS audits and system reviews.',view:'reports'}
 ];
@@ -909,8 +970,12 @@ async function loadHome(){
     var p=await fetch(SUPA_URL+'/rest/v1/reports?hotel_slug=eq.'+encodeURIComponent(h.slug)+'&order=report_date.desc,created_at.desc',{headers:authH()});
     if(p.ok)REPORTS=await p.json();
   }catch(e){}
+  try{
+    var sy=await fetch(SUPA_URL+'/rest/v1/hotel_systems?hotel_slug=eq.'+encodeURIComponent(h.slug),{headers:authH()});
+    SYS=sy.ok?((await sy.json())[0]||{}):{};
+  }catch(e){SYS={};}
   if(el('rpDate')&&!el('rpDate').value)el('rpDate').value=new Date().toISOString().slice(0,10);
-  renderHome();renderReports();renderSvcSettings();
+  renderHome();renderReports();renderSvcSettings();renderSystems();
 }
 function greet(){var g=new Date().getHours();return g<12?'Good morning':(g<17?'Good afternoon':'Good evening');}
 function renderHome(){
@@ -969,9 +1034,9 @@ function renderSvcSettings(){
   var box=el('svcSettings');if(!box)return;
   box.innerHTML=SVCS.map(function(s){
     var st=SERVICES[s.k]||{};
-    return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;">'+
-      '<label style="display:flex;gap:6px;align-items:center;min-width:200px;font-size:13px;cursor:pointer;"><input type="checkbox" id="svc_'+s.k+'"'+(st.active?' checked':'')+'> '+s.name+'</label>'+
-      '<input type="text" id="svcNote_'+s.k+'" placeholder="Status line clients see, e.g. Q3 audit in progress" style="flex:1;min-width:220px;" value="'+esc(st.note||'')+'">'+
+    return '<div style="display:grid;grid-template-columns:250px 1fr;gap:10px;align-items:center;margin-top:8px;">'+
+      '<label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;"><input type="checkbox" id="svc_'+s.k+'" style="width:auto;"'+(st.active?' checked':'')+'> '+s.name+'</label>'+
+      '<input type="text" id="svcNote_'+s.k+'" placeholder="Status line clients see, e.g. Q3 audit in progress" value="'+esc(st.note||'')+'">'+
       '</div>';
   }).join('');
 }
@@ -987,6 +1052,57 @@ async function saveServices(){
   else{m.className='msg err';m.textContent='Could not save. Has the Phase B script been run?';}
 }
 
+var SYS={};
+var SYSLIST=['Cloudbeds','Mews','StayNtouch','Opera Cloud','SiteMinder'];
+var SYSOPTS={Pms:SYSLIST,Crs:SYSLIST,Rms:SYSLIST,Be:SYSLIST,Rep:['Lighthouse','EPIC pickup report']};
+function fillSysSelect(sfx,val){
+  var opts=SYSOPTS[sfx];var sel=el('sys'+sfx);if(!sel)return;
+  sel.innerHTML='<option value="">Not set</option>'+opts.map(function(o){return '<option>'+o+'</option>';}).join('')+'<option>Other</option>';
+  var oth=el('sys'+sfx+'Other');
+  if(!val){sel.value='';oth.style.display='none';oth.value='';}
+  else if(opts.indexOf(val)>=0){sel.value=val;oth.style.display='none';oth.value='';}
+  else{sel.value='Other';oth.style.display='block';oth.value=val;}
+}
+function sysOther(sfx){el('sys'+sfx+'Other').style.display=el('sys'+sfx).value==='Other'?'block':'none';}
+function renderSystems(){
+  if(el('sysPms')){
+    fillSysSelect('Pms',SYS.pms||'');fillSysSelect('Crs',SYS.crs||'');fillSysSelect('Rms',SYS.rms||'');
+    fillSysSelect('Be',SYS.booking_engine||'');fillSysSelect('Rep',SYS.reports_using||'');
+    el('sysCvent').checked=!!SYS.cvent;el('sysLanyon').checked=!!SYS.lanyon;el('sysSalesOther').value=SYS.sales_other||'';
+  }
+  renderHomeSystems();
+}
+function sysVal(sfx){var v=el('sys'+sfx).value;return v==='Other'?el('sys'+sfx+'Other').value.trim():v;}
+async function saveSystems(){
+  var h=curHotel();var m=el('sysMsg');
+  var body={hotel_slug:h.slug,pms:sysVal('Pms'),crs:sysVal('Crs'),rms:sysVal('Rms'),booking_engine:sysVal('Be'),reports_using:sysVal('Rep'),cvent:el('sysCvent').checked,lanyon:el('sysLanyon').checked,sales_other:el('sysSalesOther').value.trim(),updated_at:new Date().toISOString()};
+  var r=await fetch(SUPA_URL+'/rest/v1/hotel_systems?on_conflict=hotel_slug',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
+  if(r.ok){m.className='msg ok';m.textContent='Saved';SYS=body;renderHomeSystems();}
+  else{m.className='msg err';m.textContent='Could not save. Has the systems script been run?';}
+}
+function renderHomeSystems(){
+  var card=el('homeSystems');if(!card)return;
+  var h=curHotel();var rows=[];
+  if(SYS.pms)rows.push(['PMS',SYS.pms]);
+  if(SYS.crs)rows.push(['CRS',SYS.crs]);
+  if(SYS.rms)rows.push(['RMS',SYS.rms]);
+  if(SYS.booking_engine)rows.push(['Booking engine',SYS.booking_engine]);
+  if(SYS.reports_using)rows.push(['Reports',SYS.reports_using]);
+  var sp=[];
+  if(h&&h.has_agency360!==false)sp.push('Agency 360');
+  if(SYS.cvent)sp.push('Cvent');if(SYS.lanyon)sp.push('Lanyon');if(SYS.sales_other)sp.push(SYS.sales_other);
+  if(sp.length)rows.push(['Sales platforms',sp.join(', ')]);
+  if(!rows.length){card.style.display='none';return;}
+  card.style.display='block';
+  el('homeSysList').innerHTML=rows.map(function(r){return '<div style="padding:3px 0;"><strong style="color:var(--txt);">'+esc(r[0])+':</strong> '+esc(r[1])+'</div>';}).join('');
+}
+async function saveName(email){
+  var fn=el('mmFirst').value.trim(),ln=el('mmLast').value.trim();
+  if(!fn&&!ln)return;
+  await fetch(SUPA_URL+'/rest/v1/profiles',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,display_name:(fn+' '+ln).trim()})});
+  el('mmFirst').value='';el('mmLast').value='';
+  await loadProfiles();
+}
 function toggleTheme(){
   var dark=!document.body.classList.contains('dark');
   document.body.classList.toggle('dark',dark);
