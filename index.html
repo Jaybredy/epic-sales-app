@@ -69,6 +69,8 @@ td{padding:9px 10px;border-top:1px solid var(--rowline);vertical-align:top;}
 .addbtn:hover{background:var(--blue);color:white;}
 .primary{background:var(--navy);color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;}
 .primary:hover{opacity:.88;}
+.cancelbtn{background:var(--card);color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;margin-left:8px;}
+.cancelbtn:hover{background:var(--bg);color:var(--txt);}
 #nav-home{background:var(--navy);color:#fff;font-weight:700;margin-bottom:6px;}
 #nav-home:hover{opacity:.9;background:var(--navy);color:#fff;}
 #nav-home.on{background:var(--navy);color:#fff;}
@@ -151,6 +153,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
     <button class="nav" id="nav-files" onclick="showView('files')">Files</button>
     <button class="nav adm-only" id="nav-members" onclick="showView('members')">Users</button>
     <div style="flex:1;"></div>
+    <button class="nav" id="nav-profile" onclick="showView('profile')">My settings</button>
     <button class="nav" id="themeBtn" onclick="toggleTheme()">Dark mode</button>
   </div>
 
@@ -282,6 +285,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         </div>
         <textarea id="acDetail" class="always-edit" style="margin-top:8px;min-height:56px;" placeholder="Context, deadline, accounts involved…"></textarea>
         <button class="primary always-edit" style="margin-top:10px;" onclick="addAction()">Submit</button>
+        <button class="cancelbtn always-edit" onclick="acCancel()">Cancel</button>
       </div>
       <div class="card">
         <h3>Tracker</h3>
@@ -321,6 +325,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <input type="date" id="rpDate" style="width:auto;">
           <input type="file" id="rpFile" style="flex:1;min-width:200px;">
           <button class="primary" onclick="uploadReport()">Attach</button>
+          <button class="cancelbtn" onclick="rpCancel()">Cancel</button>
         </div>
         <p class="hint" style="margin-top:8px;margin-bottom:0;">The file name becomes the report title. Clients see it right away on their Home page.</p>
       </div>
@@ -373,14 +378,19 @@ body:not(.cov-epic) .epic-only{display:none!important;}
 
     <div class="view" id="view-profile">
       <div class="card" style="max-width:480px;">
-        <h3>My profile</h3>
+        <h3>My settings</h3>
         <p class="hint">Your name and photo appear next to your comments.</p>
         <p class="hint" style="margin-bottom:4px;">Display name</p>
         <input type="text" id="pfName" class="always-edit" placeholder="e.g. Judith B.">
         <p class="hint" style="margin:10px 0 4px;">Profile photo</p>
         <input type="file" id="pfPhoto" class="always-edit" accept="image/*">
-        <button class="primary always-edit" style="margin-top:12px;" onclick="saveProfile()">Save profile</button>
-        <span class="msg" id="pfMsg" style="display:inline-block;margin-left:10px;"></span>
+        <p class="hint" style="margin:10px 0 4px;">Appearance</p>
+        <button class="cancelbtn" style="margin-left:0;" onclick="toggleTheme()">Switch light or dark mode</button>
+        <div style="margin-top:12px;">
+          <button class="primary always-edit" onclick="saveProfile()">Save profile</button>
+          <button class="cancelbtn always-edit" onclick="pfCancel()">Cancel</button>
+          <span class="msg" id="pfMsg" style="display:inline-block;margin-left:10px;"></span>
+        </div>
       </div>
     </div>
 
@@ -395,6 +405,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
             <div><p class="hint">Agency 360 report</p><select id="nhA360"><option value="false">No</option><option value="true">Yes, show market intel</option></select></div>
           </div>
           <button class="primary" style="margin-top:12px;" onclick="createHotel()">Create hotel</button>
+          <button class="cancelbtn" onclick="nhCancel()">Cancel</button>
           <span class="msg" id="nhMsg" style="display:inline-block;margin-left:10px;"></span>
         </div>
       </div>
@@ -407,6 +418,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <div><p class="hint">Agency 360 report</p><select id="setA360"><option value="true">Yes, show market intel</option><option value="false">No</option></select></div>
         </div>
         <button class="primary" style="margin-top:12px;" onclick="saveHotelSettings()">Save settings</button>
+        <button class="cancelbtn" onclick="fillSettings();el('setMsg').textContent='';">Cancel</button>
         <span class="msg" id="setMsg" style="display:inline-block;margin-left:10px;"></span>
       </div>
       <div class="card">
@@ -414,6 +426,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         <p class="hint">Toggle what this hotel subscribes to and keep each status line current. Clients see this first when they sign in.</p>
         <div id="svcSettings"></div>
         <button class="primary" style="margin-top:12px;" onclick="saveServices()">Save services</button>
+        <button class="cancelbtn" onclick="renderSvcSettings();el('svcMsg').textContent='';">Cancel</button>
         <span class="msg" id="svcMsg" style="display:inline-block;margin-left:10px;"></span>
       </div>
       <div class="card">
@@ -435,6 +448,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
         </div>
         <p class="hint" style="margin-top:8px;">Agency 360 is set in Hotel settings above.</p>
         <button class="primary" style="margin-top:8px;" onclick="saveSystems()">Save systems</button>
+        <button class="cancelbtn" onclick="renderSystems();el('sysMsg').textContent='';">Cancel</button>
         <span class="msg" id="sysMsg" style="display:inline-block;margin-left:10px;"></span>
       </div>
 
@@ -447,6 +461,7 @@ body:not(.cov-epic) .epic-only{display:none!important;}
           <input type="text" id="mmEmail" placeholder="person@hotel.com" style="flex:2;min-width:180px;">
           <select id="mmRole" style="flex:1;min-width:190px;" onchange="mmRoleChanged()"><option value="gm">Hotel GM (this hotel)</option><option value="sales_manager">Hotel sales manager (this hotel)</option><option value="consultant">EPIC consultant (choose hotels)</option><option value="epic_admin">EPIC admin (all hotels)</option></select>
           <button class="primary" onclick="addMember()">Add</button>
+          <button class="cancelbtn" onclick="mmCancel()">Cancel</button>
         </div>
         <div id="mmHotels" style="display:none;margin-top:10px;">
           <button type="button" id="mmHotBtn" class="wkbtn" onclick="var p=el('mmHotPanel');p.style.display=p.style.display==='none'?'block':'none';">0 hotels selected</button>
@@ -1102,6 +1117,24 @@ async function saveName(email){
   await fetch(SUPA_URL+'/rest/v1/profiles',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,display_name:(fn+' '+ln).trim()})});
   el('mmFirst').value='';el('mmLast').value='';
   await loadProfiles();
+}
+function pfCancel(){
+  el('pfName').value=(PROFILES[EMAIL]&&PROFILES[EMAIL].display_name)||'';
+  el('pfPhoto').value='';el('pfMsg').textContent='';
+}
+function nhCancel(){
+  el('nhName').value='';el('nhManager').value='';el('nhCoverage').value='inhouse';el('nhA360').value='false';
+  el('nhMsg').textContent='';el('nhForm').style.display='none';
+}
+function mmCancel(){
+  el('mmFirst').value='';el('mmLast').value='';el('mmEmail').value='';el('mmRole').value='gm';
+  el('mmMsg').textContent='';el('mmHotels').style.display='none';el('mmHotPanel').style.display='none';
+}
+function acCancel(){
+  el('acTitle').value='';el('acDetail').value='';el('acDue').value='';el('acOwner').value='epic';
+}
+function rpCancel(){
+  el('rpFile').value='';el('rpService').value='sales';el('rpDate').value=new Date().toISOString().slice(0,10);
 }
 function toggleTheme(){
   var dark=!document.body.classList.contains('dark');
