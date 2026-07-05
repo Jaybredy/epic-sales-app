@@ -809,6 +809,7 @@ function tourShow(){
 function tourNext(){if(TOURI>=TOURSTEPS.length-1)tourEnd();else{TOURI++;tourShow();}}
 function tourBack(){if(TOURI>0){TOURI--;tourShow();}}
 function tourEnd(){el('tourOverlay').style.display='none';try{localStorage.setItem('pvTour_'+EMAIL,'1');}catch(e){}showView('home');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&el('tourOverlay')&&el('tourOverlay').style.display==='flex')tourEnd();});
 function ovGoSync(){showView(document.body.classList.contains('no-sales')?'revsync':'sync');}
 function renderOverview(){
   var h=curHotel();
