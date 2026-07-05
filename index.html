@@ -160,6 +160,7 @@ body.no-sales .sales-cta{display:block;}
     <button class="nav adm-only" id="nav-members" onclick="showView('members')">Admin settings</button>
     <div style="flex:1;"></div>
     <button class="nav sales-cta" onclick="needSales()">Need sales?</button>
+    <button class="nav" onclick="startTour()">Help</button>
     <button class="nav" id="nav-profile" onclick="showView('profile')">My settings</button>
     <button class="nav" id="themeBtn" onclick="toggleTheme()">Dark mode</button>
   </div>
@@ -547,6 +548,19 @@ body.no-sales .sales-cta{display:block;}
   </div>
 </div>
 
+<div id="tourOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,20,40,.35);z-index:2500;align-items:flex-end;justify-content:center;padding:24px;">
+  <div style="background:var(--card);border-radius:14px;padding:20px 22px;max-width:440px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3);margin-bottom:40px;">
+    <h3 id="tourTitle" style="margin:0 0 8px;"></h3>
+    <p id="tourText" style="font-size:13px;color:var(--mut);margin:0 0 14px;"></p>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="wkbtn" id="tourBack" onclick="tourBack()">&#8249; Back</button>
+      <div style="flex:1;"></div>
+      <button class="cancelbtn" onclick="tourEnd()">Skip</button>
+      <button class="primary" id="tourNext" style="width:auto;padding:8px 18px;" onclick="tourNext()">Next</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
 var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
@@ -642,6 +656,7 @@ async function onHotelChange(){
   loadFiles();
   loadAllActivity();
   loadHome();
+  if(!window.__tourAuto){window.__tourAuto=1;try{if(!localStorage.getItem('pvTour_'+EMAIL))setTimeout(startTour,1400);}catch(e){}}
   if(IS_ADMIN)fillSettings();
   fetch(SUPA_URL+'/rest/v1/page_views',{method:'POST',headers:authH({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:EMAIL,hotel_slug:h.slug,last_seen:new Date().toISOString()})}).catch(function(){});
 }
@@ -771,6 +786,29 @@ function renderWOW(){
   if(!log.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--soft);">No activity logged yet.</td></tr>';return;}
   tb.innerHTML=log.map(function(e){return '<tr><td style="font-weight:600;white-space:nowrap;">'+esc(e.label||e.week)+'</td><td>'+(e.calls||0)+'</td><td>'+(e.emails||0)+'</td><td>'+(e.sites||0)+'</td><td>'+(e.contacts||0)+'</td></tr>';}).join('');
 }
+var TOURI=0,TOURSTEPS=[];
+function buildTour(){
+  var salesOn=!document.body.classList.contains('no-sales');
+  TOURSTEPS=[
+    {v:'home',t:'Home',d:'Welcome. This page shows your engagement with EPIC at a glance: active services, your EPIC team and systems on file. Click any card to dive in.'},
+    {v:'overview',t:'Overview',d:'The numbers, updated automatically: calls and emails this month, open requests and the latest report. Use the arrows in the week bar to look at past weeks, and the Activity totals card for month, quarter or year to date.'}
+  ];
+  if(salesOn)TOURSTEPS.push({v:'sync',t:'Weekly sync',d:'The heartbeat of sales advisory. EPIC posts the weekly focus, activity and numbers here. Check it before your weekly call.'});
+  else TOURSTEPS.push({v:'revsync',t:'RevMax commentaries',d:'Your weekly revenue picture: occupancy, ADR, RevPAR, pickup and strategy notes, posted by EPIC.'});
+  TOURSTEPS.push({v:'reports',t:'Reports',d:'Every report EPIC attaches lives here, dated and sorted by type. Open or download any time.'});
+  TOURSTEPS.push({v:'requests',t:'Requests',d:'Need something? Submit it here. Both sides see owners, due dates and status, so nothing slips.'});
+}
+function startTour(){buildTour();TOURI=0;el('tourOverlay').style.display='flex';tourShow();}
+function tourShow(){
+  var s=TOURSTEPS[TOURI];showView(s.v);
+  el('tourTitle').textContent=(TOURI+1)+' of '+TOURSTEPS.length+': '+s.t;
+  el('tourText').textContent=s.d;
+  el('tourBack').style.visibility=TOURI?'visible':'hidden';
+  el('tourNext').textContent=TOURI===TOURSTEPS.length-1?'Done':'Next';
+}
+function tourNext(){if(TOURI>=TOURSTEPS.length-1)tourEnd();else{TOURI++;tourShow();}}
+function tourBack(){if(TOURI>0){TOURI--;tourShow();}}
+function tourEnd(){el('tourOverlay').style.display='none';try{localStorage.setItem('pvTour_'+EMAIL,'1');}catch(e){}showView('home');}
 function ovGoSync(){showView(document.body.classList.contains('no-sales')?'revsync':'sync');}
 function renderOverview(){
   var h=curHotel();
