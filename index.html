@@ -112,6 +112,8 @@ body.no-sales .sales-cta{display:block;}
 .cav img{width:100%;height:100%;object-fit:cover;}
 .msg{margin-top:12px;font-size:13px;min-height:18px;color:#374151;}
 .msg.ok{color:var(--green);font-weight:600;}.msg.err{color:var(--red);font-weight:600;}
+.loginlink{color:var(--blue);font-size:13px;font-weight:600;text-decoration:none;background:none;border:none;padding:0;}
+.loginlink:hover{text-decoration:underline;}
 @media(max-width:760px){
   .layout{grid-template-columns:1fr;}
   .sidebar{flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);}
@@ -126,12 +128,25 @@ body.no-sales .sales-cta{display:block;}
 <body>
 
 <div id="loginOverlay">
-  <div class="logincard">
+  <div class="logincard" id="loginCard">
     <div class="brand" style="font-size:22px;margin-bottom:6px;">EPIC <span>Sales</span> Portal</div>
-    <p style="font-size:13px;color:var(--mut);margin-bottom:20px;">Enter your email for a one-click sign-in link. No password needed.</p>
-    <input type="text" id="loginEmail" placeholder="you@yourhotel.com" style="text-align:center;margin-bottom:10px;" onkeydown="if(event.key==='Enter')sendLoginLink()">
-    <button class="primary" style="width:100%;" onclick="sendLoginLink()">Send sign-in link</button>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:18px;">Sign in with your email and password.</p>
+    <input type="email" id="loginEmail" placeholder="you@yourhotel.com" style="text-align:center;margin-bottom:10px;" onkeydown="if(event.key==='Enter')el('loginPass').focus()">
+    <input type="password" id="loginPass" placeholder="Password" style="text-align:center;margin-bottom:10px;" onkeydown="if(event.key==='Enter')signInPassword()">
+    <button class="primary" style="width:100%;" onclick="signInPassword()">Sign in</button>
     <div class="msg" id="loginMsg"></div>
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;">
+      <button type="button" class="loginlink" onclick="forgotPassword()">Forgot password</button>
+      <button type="button" class="loginlink" onclick="sendLoginLink()">Email me a sign in link instead</button>
+    </div>
+  </div>
+  <div class="logincard" id="resetCard" style="display:none;">
+    <div class="brand" style="font-size:22px;margin-bottom:6px;">EPIC <span>Sales</span> Portal</div>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:18px;">Choose a password for your account.</p>
+    <input type="password" id="resetPass" placeholder="New password" style="text-align:center;margin-bottom:10px;" onkeydown="if(event.key==='Enter')el('resetPass2').focus()">
+    <input type="password" id="resetPass2" placeholder="Confirm new password" style="text-align:center;margin-bottom:10px;" onkeydown="if(event.key==='Enter')setNewPassword()">
+    <button class="primary" style="width:100%;" onclick="setNewPassword()">Set password and sign in</button>
+    <div class="msg" id="resetMsg"></div>
   </div>
 </div>
 
@@ -605,6 +620,45 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function authH(extra){var h={'apikey':SUPA_KEY,'Authorization':'Bearer '+(SESSION?SESSION.access_token:SUPA_KEY)};if(extra)for(var k in extra)h[k]=extra[k];return h;}
 function setSave(state,txt){el('saveDot').className='savedot '+state;el('saveTxt').textContent=txt;}
 
+async function signInPassword(){
+  var email=(el('loginEmail').value||'').trim().toLowerCase();
+  var pass=el('loginPass').value||'';var m=el('loginMsg');
+  if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email address.';return;}
+  if(!pass){m.className='msg err';m.textContent='Enter your password.';return;}
+  m.className='msg';m.textContent='Signing in…';
+  try{
+    var r=await sb.auth.signInWithPassword({email:email,password:pass});
+    if(r&&r.error){m.className='msg err';m.textContent='Could not sign in. Check your email and password, or use a sign in link.';}
+    else{m.className='msg ok';m.textContent='Signed in.';}
+  }catch(e){m.className='msg err';m.textContent='Could not sign in: '+(e.message||'unknown error');}
+}
+async function forgotPassword(){
+  var email=(el('loginEmail').value||'').trim().toLowerCase();var m=el('loginMsg');
+  if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter your email above, then tap Forgot password.';return;}
+  m.className='msg';m.textContent='Sending reset link…';
+  try{
+    var r=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
+    if(r&&r.error){m.className='msg err';m.textContent='Could not send reset link: '+r.error.message;}
+    else{m.className='msg ok';m.textContent='Reset link sent. Check your inbox and spam folder.';}
+  }catch(e){m.className='msg err';m.textContent='Could not send reset link: '+(e.message||'unknown error');}
+}
+async function setNewPassword(){
+  var p1=el('resetPass').value||'',p2=el('resetPass2').value||'';var m=el('resetMsg');
+  if(p1.length<8){m.className='msg err';m.textContent='Password must be at least 8 characters.';return;}
+  if(p1!==p2){m.className='msg err';m.textContent='Passwords do not match.';return;}
+  m.className='msg';m.textContent='Saving…';
+  try{
+    var r=await sb.auth.updateUser({password:p1});
+    if(r&&r.error){m.className='msg err';m.textContent='Could not set password: '+r.error.message;return;}
+    m.className='msg ok';m.textContent='Password set. Signing you in…';
+    RECOVERY=false;
+    try{history.replaceState(null,'',window.location.pathname+window.location.search);}catch(e){}
+    var got=await sb.auth.getSession();SESSION=got.data?got.data.session:null;
+    if(SESSION){onSignedIn();}else{showLoginCard();}
+  }catch(e){m.className='msg err';m.textContent='Could not set password: '+(e.message||'unknown error');}
+}
+function showReset(){el('loginOverlay').style.display='flex';el('loginCard').style.display='none';el('resetCard').style.display='block';}
+function showLoginCard(){el('loginOverlay').style.display='flex';el('resetCard').style.display='none';el('loginCard').style.display='block';}
 async function sendLoginLink(){
   var email=(el('loginEmail').value||'').trim().toLowerCase();var m=el('loginMsg');
   if(!email||email.indexOf('@')<0){m.className='msg err';m.textContent='Enter a valid email address.';return;}
@@ -1396,12 +1450,20 @@ function toggleTheme(){
 (function(){try{if(localStorage.getItem('pv_theme')==='dark'){document.body.classList.add('dark');el('themeBtn').textContent='Light mode';}}catch(e){}})();
 
 window.addEventListener('beforeunload',function(){flushSave();});
+var RECOVERY=(location.hash.indexOf('type=recovery')>=0);
 (async function(){
   var got=await sb.auth.getSession();SESSION=got.data?got.data.session:null;
-  sb.auth.onAuthStateChange(function(ev,s){var had=!!SESSION;SESSION=s;if(s&&!had)onSignedIn();if(!s&&ev==='SIGNED_OUT')el('loginOverlay').style.display='flex';});
-  if(SESSION)onSignedIn();else el('loginOverlay').style.display='flex';
+  sb.auth.onAuthStateChange(function(ev,s){
+    if(ev==='PASSWORD_RECOVERY'){RECOVERY=true;SESSION=s;showReset();return;}
+    var had=!!SESSION;SESSION=s;
+    if(s&&!had&&!RECOVERY)onSignedIn();
+    if(!s&&ev==='SIGNED_OUT'){RECOVERY=false;showLoginCard();}
+  });
+  if(RECOVERY){showReset();}
+  else if(SESSION){onSignedIn();}
+  else{showLoginCard();}
   var h0=(location.hash||'').slice(1);
-  if(h0&&el('view-'+h0))showView(h0);
+  if(h0&&h0.indexOf('type=recovery')<0&&el('view-'+h0))showView(h0);
 })();
 </script>
 </body>
