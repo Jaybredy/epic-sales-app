@@ -105,6 +105,7 @@ body.no-a360 .a360-only{display:none!important;}
 body.cov-epic .inhouse-only{display:none!important;}
 body:not(.cov-epic) .epic-only{display:none!important;}
 body.no-rev .rev-only{display:none!important;}
+body.no-revmax .rev-only{display:none!important;}
 body.no-sales #nav-sync{opacity:.4;}
 body.no-sales:not(.is-admin) #nav-sync{pointer-events:none;}
 .sales-cta{display:none;background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600;}
@@ -590,6 +591,8 @@ body.no-sales .sales-cta{display:block;}
 var SUPA_URL="https://utcgwkgtjlyfjgywoczw.supabase.co";
 var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0Y2d3a2d0amx5ZmpneXdvY3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDQ1NjksImV4cCI6MjA5MTE4MDU2OX0.LxTWXVY3-yStAdcTciTWZg4dpgH51YvYBxdoSK-Gav0";
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+var SHOW_REVMAX=false;
+try{document.body.classList.toggle('no-revmax',!SHOW_REVMAX);}catch(e){}
 var SESSION=null,EMAIL='',IS_ADMIN=false,MEMBERSHIPS=[],HOTELS=[];
 var BLOB={},WEEK='',SAVEDWEEKS=[],ACTIONS=[],DIRTY=false,SAVETIMER=null,LOADING=false,PROFILES={};
 
@@ -739,7 +742,8 @@ function syncChrome(v){var wb=el('weekbar');if(wb)wb.style.display=WEEKVIEWS[v]?
 var VSTACK=[],VNOPUSH=false;
 function goBack(){var p=VSTACK.pop()||'home';VNOPUSH=true;showView(p);VNOPUSH=false;}
 function showView(v){
-  if(v==='sync'&&document.body.classList.contains('no-sales')&&!document.body.classList.contains('is-admin'))v='revsync';
+  if(!SHOW_REVMAX&&v==='revsync')v='sync';
+  if(v==='sync'&&document.body.classList.contains('no-sales')&&!document.body.classList.contains('is-admin')&&SHOW_REVMAX)v='revsync';
   if(!el('view-'+v))return;
   var curv=document.querySelector('.view.on');
   if(curv&&!VNOPUSH){var cid=curv.id.slice(5);if(cid!==v){VSTACK.push(cid);if(VSTACK.length>20)VSTACK.shift();}}
@@ -867,7 +871,7 @@ function buildTour(){
     {v:'overview',t:'Overview',d:'The numbers, updated automatically: calls and emails this month, open requests and the latest report. Use the arrows in the week bar to look at past weeks, and the Activity totals card for month, quarter or year to date.'}
   ];
   if(salesOn)TOURSTEPS.push({v:'sync',t:'Weekly sync',d:'The heartbeat of sales advisory. EPIC posts the weekly focus, activity and numbers here. Check it before your weekly call.'});
-  else TOURSTEPS.push({v:'revsync',t:'RevMax commentaries',d:'Your weekly revenue picture: occupancy, ADR, RevPAR, pickup and strategy notes, posted by EPIC.'});
+  else if(SHOW_REVMAX)TOURSTEPS.push({v:'revsync',t:'RevMax commentaries',d:'Your weekly revenue picture: occupancy, ADR, RevPAR, pickup and strategy notes, posted by EPIC.'});
   TOURSTEPS.push({v:'reports',t:'Reports',d:'Every report EPIC attaches lives here, dated and sorted by type. Open or download any time.'});
   TOURSTEPS.push({v:'requests',t:'Requests',d:'Need something? Submit it here. Both sides see owners, due dates and status, so nothing slips.'});
 }
@@ -1242,7 +1246,7 @@ function renderHome(){
   var h=curHotel();if(!el('svcCards'))return;
   el('homeGreet').textContent=greet()+', '+myName();
   el('homeSub').textContent='Here is where '+h.name+' stands with EPIC today. Click any card to dive in.';
-  el('svcCards').innerHTML=SVCS.map(function(s){
+  el('svcCards').innerHTML=SVCS.filter(function(s){return SHOW_REVMAX||s.view!=='revsync';}).map(function(s){
     var st=SERVICES[s.k];var on=!!(st&&st.active);
     var rep=REPORTS.find(function(r){return r.service===s.k||(s.k==='revenue'&&(r.service==='pickup'||r.service==='str'));});
     var note=(st&&st.note)?esc(st.note):(on?s.desc:'Not part of the current engagement. Ask your EPIC consultant.');

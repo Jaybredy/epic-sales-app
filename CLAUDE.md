@@ -79,6 +79,18 @@ on them:
   rate limited and often lands in spam.
 * The Reset Password email template should be branded and point at the site.
 
+## Feature flags
+
+Near the top of the script, just after the Supabase client is created:
+
+* `SHOW_REVMAX` : controls the RevMax commentaries tab and the revenue view.
+  It is `false` for portvisory, because EPIC gets that revenue picture from
+  another report. When `false` the RevMax sidebar tab is hidden, the two
+  revenue Home cards (Revenue management and Revenue management advisory) are
+  filtered out, and any navigation into that view falls back to Weekly sync.
+  For the bredysolutions clone, set it to `true` to restore the whole revenue
+  section. Nothing is deleted, so this is a one line change.
+
 ## Deploy and verify
 
 1. Edit `index.html`, then copy it over `portal.html`.
